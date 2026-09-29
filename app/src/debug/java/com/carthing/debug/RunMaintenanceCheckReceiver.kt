@@ -7,7 +7,7 @@ import com.carthing.notifications.MaintenanceCheckWorker
 
 /**
  * Debug builds only. Runs the maintenance reminder check immediately:
- * adb shell am broadcast -n com.carthing/.debug.RunMaintenanceCheckReceiver
+ * adb shell am broadcast -n com.carthing.debug/com.carthing.debug.RunMaintenanceCheckReceiver
  */
 class RunMaintenanceCheckReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) = MaintenanceCheckWorker.runOnce(context)

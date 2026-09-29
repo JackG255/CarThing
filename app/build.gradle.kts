@@ -6,6 +6,23 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+import java.util.Properties
+
+/**
+ * Release signing: from `keystore.properties` in the project root (never committed), or from
+ * environment variables in CI. Without either, release builds are left unsigned.
+ */
+val signing = Properties().apply {
+    rootProject.file("keystore.properties").takeIf { it.exists() }?.inputStream()?.use(::load)
+    System.getenv("CARTHING_KEYSTORE")?.let { path ->
+        setProperty("storeFile", path)
+        setProperty("storePassword", System.getenv("CARTHING_KEYSTORE_PASSWORD"))
+        setProperty("keyAlias", System.getenv("CARTHING_KEY_ALIAS"))
+        setProperty("keyPassword", System.getenv("CARTHING_KEY_PASSWORD"))
+    }
+}
+
+
 android {
     namespace = "com.carthing"
     compileSdk = 35
@@ -18,10 +35,37 @@ android {
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        if (signing.getProperty("storeFile") != null) create("release") {
+            storeFile = file(signing.getProperty("storeFile"))
+            storePassword = signing.getProperty("storePassword")
+            keyAlias = signing.getProperty("keyAlias")
+            keyPassword = signing.getProperty("keyPassword")
+        }
+    }
+
     buildTypes {
+        debug {
+            // Installs next to the release app, so testing never touches real data.
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.findByName("release")
+        }
+    }
+
+    // One APK per CPU type: the bundled text-recognition model ships native code for each,
+    // which is most of a universal APK's size. Phones from the last decade use arm64-v8a.
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86_64")
+            isUniversalApk = false
         }
     }
     compileOptions {
