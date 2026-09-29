@@ -24,18 +24,18 @@ data class MaintenanceStatus(
         private const val SOON_KM = 1_000.0
         private const val SOON_DAYS = 30L
 
-        /** [recordedOdometerKm] is the highest known reading, used when usage can't project further. */
+        /** Status of one [schedule]; [recordedOdometerKm] is the highest known reading, used when usage can't project further. */
         fun of(
-            item: MaintenanceItem, usage: Usage, recordedOdometerKm: Double, nowMillis: Long,
+            schedule: Schedule, usage: Usage, recordedOdometerKm: Double, nowMillis: Long,
             zone: ZoneId = ZoneId.systemDefault()
         ): MaintenanceStatus {
             val odometer = maxOf(recordedOdometerKm, usage.estimatedOdometerKm(nowMillis) ?: 0.0)
-            val kmRemaining = item.intervalKm?.let { interval ->
-                val base = item.lastDoneOdometerKm ?: return@let null
+            val kmRemaining = schedule.intervalKm?.let { interval ->
+                val base = schedule.lastDoneOdometerKm ?: return@let null
                 base + interval - odometer
             }
-            val daysRemaining = item.intervalMonths?.let { months ->
-                val base = item.lastDoneEpochMillis ?: return@let null
+            val daysRemaining = schedule.intervalMonths?.let { months ->
+                val base = schedule.lastDoneEpochMillis ?: return@let null
                 val due = Instant.ofEpochMilli(base).atZone(zone).plusMonths(months.toLong()).toInstant().toEpochMilli()
                 Math.floorDiv(due - nowMillis, Usage.DAY_MILLIS)
             }
@@ -45,8 +45,8 @@ data class MaintenanceStatus(
             }
 
             // "Soon" scales down for short intervals, so a monthly check isn't permanently due soon.
-            val soonKm = item.intervalKm?.let { min(SOON_KM, it / 10) } ?: SOON_KM
-            val soonDays = item.intervalMonths?.let { min(SOON_DAYS, it * 30L / 4) } ?: SOON_DAYS
+            val soonKm = schedule.intervalKm?.let { min(SOON_KM, it / 10) } ?: SOON_KM
+            val soonDays = schedule.intervalMonths?.let { min(SOON_DAYS, it * 30L / 4) } ?: SOON_DAYS
 
             val level = when {
                 kmRemaining == null && daysRemaining == null -> DueLevel.UNKNOWN
@@ -58,5 +58,44 @@ data class MaintenanceStatus(
             }
             return MaintenanceStatus(level, kmRemaining, daysRemaining, predicted)
         }
+    }
+}
+
+/** Status of a component's schedules; either is null when the component doesn't have it. */
+data class ComponentStatus(val inspection: MaintenanceStatus?, val replacement: MaintenanceStatus?) {
+    /** The more urgent schedule, preferring replacement on a tie; null only with no schedules at all. */
+    val primaryKind: ScheduleKind?
+        get() = when {
+            inspection == null -> replacement?.let { ScheduleKind.REPLACEMENT }
+            replacement == null -> ScheduleKind.INSPECTION
+            urgency(inspection) < urgency(replacement) -> ScheduleKind.INSPECTION
+            else -> ScheduleKind.REPLACEMENT
+        }
+
+    val primary: MaintenanceStatus?
+        get() = when (primaryKind) {
+            ScheduleKind.INSPECTION -> inspection
+            ScheduleKind.REPLACEMENT -> replacement
+            null -> null
+        }
+
+    val level: DueLevel get() = primary?.level ?: DueLevel.UNKNOWN
+
+    fun of(kind: ScheduleKind): MaintenanceStatus? = if (kind == ScheduleKind.INSPECTION) inspection else replacement
+
+    companion object {
+        private val levelOrder = listOf(DueLevel.OVERDUE, DueLevel.DUE_SOON, DueLevel.UNKNOWN, DueLevel.OK)
+
+        /** Lower is more urgent: by level, then by days until due. */
+        fun urgency(s: MaintenanceStatus): Pair<Int, Long> = levelOrder.indexOf(s.level) to (s.daysUntilDue ?: Long.MAX_VALUE)
+
+        private operator fun Pair<Int, Long>.compareTo(other: Pair<Int, Long>): Int =
+            compareValuesBy(this, other, { it.first }, { it.second })
+
+        fun of(item: MaintenanceItem, usage: Usage, recordedOdometerKm: Double, nowMillis: Long,
+               zone: ZoneId = ZoneId.systemDefault()) = ComponentStatus(
+            item.inspection?.let { MaintenanceStatus.of(it, usage, recordedOdometerKm, nowMillis, zone) },
+            item.replacement?.let { MaintenanceStatus.of(it, usage, recordedOdometerKm, nowMillis, zone) }
+        )
     }
 }

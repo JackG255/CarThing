@@ -8,6 +8,7 @@ import com.carthing.data.entity.ServiceEntry
 import com.carthing.data.entity.Vehicle
 import com.carthing.data.maintenance.DefaultSchedule
 import com.carthing.data.maintenance.DueLevel
+import com.carthing.data.maintenance.ScheduleKind
 import com.carthing.data.maintenance.Usage.Companion.DAY_MILLIS
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -41,78 +42,100 @@ class MaintenanceRepositoryTest {
     private suspend fun items(vehicleId: Long) = maintenance.observeWithStatus(vehicleId).first()
     private suspend fun item(vehicleId: Long, name: String) = items(vehicleId).first { it.item.name == name }.item
 
+    /** A component with both schedules, like a timing belt. */
+    private suspend fun belt(vehicleId: Long): MaintenanceItem {
+        val id = maintenance.save(MaintenanceItem(vehicleId = vehicleId, name = "Belt",
+            inspectMonths = 12, replaceKm = 210_000.0, replaceMonths = 120))
+        return maintenance.getById(id)!!
+    }
+
     @Test fun newVehicleGetsDefaultScheduleButEditDoesNot() = runTest {
         val id = vehicles.save(Vehicle(name = "Car"))
         vehicles.save(Vehicle(id = id, name = "Car renamed"))
         val all = items(id)
         assertEquals(DefaultSchedule.templates.size, all.size)
         assertTrue(all.all { it.status.level == DueLevel.UNKNOWN })
-        assertTrue(all.any { it.item.name == "Tire pressure" && it.item.isCheck && it.item.intervalMonths == 1 })
+        val pressure = all.first { it.item.name == "Tire pressure" }.item
+        assertEquals(1, pressure.inspectMonths)
+        assertNull(pressure.replacement)
     }
 
-    @Test fun markDoneReplacementAddsLinkedServiceEntry() = runTest {
+    @Test fun replacementAddsLinkedServiceEntryAndResetsBothSchedules() = runTest {
         val id = vehicles.save(Vehicle(name = "Car", initialOdometerKm = 50_000.0))
-        val oil = item(id, "Engine oil & filter")
-        val entryId = maintenance.markDone(oil, now, 50_000.0, cost = 80.0)!!
+        val belt = belt(id)
+        val entryId = maintenance.markDone(belt, ScheduleKind.REPLACEMENT, now, 50_000.0, cost = 400.0)!!
 
         val entry = service.observeForVehicle(id).first().single()
         assertEquals(entryId, entry.id)
-        assertEquals(oil.id, entry.maintenanceItemId)
-        assertEquals("Engine oil & filter", entry.type)
-        val updated = items(id).first { it.item.id == oil.id }
-        assertEquals(50_000.0, updated.item.lastDoneOdometerKm!!, 1e-9)
-        assertEquals(DueLevel.OK, updated.status.level)
+        assertEquals(belt.id, entry.maintenanceItemId)
+        assertEquals(400.0, entry.cost!!, 1e-9)
+        val updated = maintenance.getById(belt.id)!!
+        assertEquals(now, updated.lastReplacedEpochMillis)
+        assertEquals(now, updated.lastInspectedEpochMillis)
+        assertEquals(DueLevel.OK, items(id).first { it.item.id == belt.id }.status.level)
     }
 
-    @Test fun markDoneCheckAddsNoServiceEntry() = runTest {
+    @Test fun inspectionResetsOnlyInspectionAndAddsNoServiceEntry() = runTest {
         val id = vehicles.save(Vehicle(name = "Car"))
-        assertNull(maintenance.markDone(item(id, "Tire pressure"), now, 0.0))
+        val belt = belt(id)
+        assertNull(maintenance.markDone(belt, ScheduleKind.INSPECTION, now, 90_000.0))
         assertTrue(service.observeForVehicle(id).first().isEmpty())
-        assertEquals(now, item(id, "Tire pressure").lastDoneEpochMillis)
+        val updated = maintenance.getById(belt.id)!!
+        assertEquals(now, updated.lastInspectedEpochMillis)
+        assertNull(updated.lastReplacedEpochMillis)
     }
 
-    @Test fun linkedServiceEntryResetsItemOnlyWhenNewer() = runTest {
+    @Test fun linkedServiceEntryCountsAsReplacementOnlyWhenNewer() = runTest {
         val id = vehicles.save(Vehicle(name = "Car"))
         val oil = item(id, "Engine oil & filter")
         service.save(ServiceEntry(vehicleId = id, dateEpochMillis = now, odometerKm = 60_000.0, type = "Oil", maintenanceItemId = oil.id))
-        assertEquals(60_000.0, item(id, oil.name).lastDoneOdometerKm!!, 1e-9)
+        assertEquals(60_000.0, maintenance.getById(oil.id)!!.lastReplacedOdometerKm!!, 1e-9)
 
-        // Backfilling an older record doesn't move "last done" backwards.
+        // Backfilling an older record doesn't move "last replaced" backwards.
         service.save(ServiceEntry(vehicleId = id, dateEpochMillis = now - 400 * DAY_MILLIS, odometerKm = 45_000.0,
             type = "Oil", maintenanceItemId = oil.id))
-        assertEquals(60_000.0, item(id, oil.name).lastDoneOdometerKm!!, 1e-9)
+        assertEquals(60_000.0, maintenance.getById(oil.id)!!.lastReplacedOdometerKm!!, 1e-9)
     }
 
     @Test fun deletingItemKeepsServiceHistory() = runTest {
         val id = vehicles.save(Vehicle(name = "Car"))
         val oil = item(id, "Engine oil & filter")
-        maintenance.markDone(oil, now, 0.0)
+        maintenance.markDone(oil, ScheduleKind.REPLACEMENT, now, 0.0)
         maintenance.delete(oil)
         assertNull(service.observeForVehicle(id).first().single().maintenanceItemId)
     }
 
-    @Test fun collectRemindersNotifiesOncePerLevel() = runTest {
+    @Test fun remindersPerScheduleNotifyOncePerLevel() = runTest {
         val id = vehicles.save(Vehicle(name = "Car"))
-        val wipers = item(id, "Wiper blades") // 12 months, no km limit
-        maintenance.markDone(wipers, now - 350 * DAY_MILLIS, 0.0)
+        // Inspection 12 months, replacement 120 months; both last done 350 days ago.
+        maintenance.markDone(belt(id), ScheduleKind.REPLACEMENT, now - 350 * DAY_MILLIS, 0.0)
 
         val first = maintenance.collectReminders()
-        assertEquals(listOf("Wiper blades" to DueLevel.DUE_SOON), first.map { it.item.name to it.level })
+        assertEquals(listOf(ScheduleKind.INSPECTION to DueLevel.DUE_SOON), first.map { it.kind to it.level })
         assertTrue(maintenance.collectReminders().isEmpty())
 
         now += 30 * DAY_MILLIS
-        assertEquals(listOf(DueLevel.OVERDUE), maintenance.collectReminders().map { it.level })
+        assertEquals(listOf(ScheduleKind.INSPECTION to DueLevel.OVERDUE), maintenance.collectReminders().map { it.kind to it.level })
         assertTrue(maintenance.collectReminders().isEmpty())
 
-        // Doing it again resets the reminder state.
-        maintenance.markDone(item(id, "Wiper blades"), now, 0.0)
-        assertEquals(0, item(id, "Wiper blades").notifiedLevel)
+        // Inspecting resets only the inspection reminder state.
+        val belt = items(id).first { it.item.name == "Belt" }.item
+        maintenance.markDone(belt, ScheduleKind.INSPECTION, now, 0.0)
+        assertEquals(0, maintenance.getById(belt.id)!!.inspectNotifiedLevel)
+    }
+
+    @Test fun inspectionAndReplacementRemindIndependently() = runTest {
+        val id = vehicles.save(Vehicle(name = "Car"))
+        val belt = belt(id)
+        // Replacement overdue (done 121 months ago), inspection fine (done yesterday).
+        maintenance.save(belt.copy(lastReplacedEpochMillis = now - 3_700 * DAY_MILLIS, lastInspectedEpochMillis = now - DAY_MILLIS))
+        assertEquals(listOf(ScheduleKind.REPLACEMENT to DueLevel.OVERDUE), maintenance.collectReminders().map { it.kind to it.level })
     }
 
     @Test fun disabledItemsSortLastAndNeverRemind() = runTest {
         val id = vehicles.save(Vehicle(name = "Car"))
         val wipers = item(id, "Wiper blades")
-        maintenance.save(wipers.copy(enabled = false, lastDoneEpochMillis = now - 800 * DAY_MILLIS))
+        maintenance.save(wipers.copy(enabled = false, lastReplacedEpochMillis = now - 800 * DAY_MILLIS))
         assertEquals("Wiper blades", items(id).last().item.name)
         assertTrue(maintenance.collectReminders().isEmpty())
     }

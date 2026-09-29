@@ -1,6 +1,5 @@
 package com.carthing.data.maintenance
 
-import com.carthing.data.entity.MaintenanceItem
 import com.carthing.data.maintenance.Usage.Companion.DAY_MILLIS
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -15,10 +14,9 @@ class MaintenanceStatusTest {
     private val noUsage = Usage(null, null)
 
     private fun item(km: Double? = 15_000.0, months: Int? = 12, doneAt: Long? = null, doneKm: Double? = null) =
-        MaintenanceItem(id = 1, vehicleId = 1, name = "Oil", intervalKm = km, intervalMonths = months,
-            lastDoneEpochMillis = doneAt, lastDoneOdometerKm = doneKm)
+        Schedule(km, months, doneAt, doneKm)
 
-    private fun status(item: MaintenanceItem, odometer: Double, usage: Usage = noUsage) =
+    private fun status(item: Schedule, odometer: Double, usage: Usage = noUsage) =
         MaintenanceStatus.of(item, usage, odometer, now, utc)
 
     @Test fun neverDoneIsUnknown() {
@@ -80,5 +78,35 @@ class MaintenanceStatusTest {
         val s = status(item(doneAt = day(2026, 3, 1), doneKm = 40_000.0), 50_000.0, usage)
         assertEquals(50L, s.predictedDaysByKm) // 5,000 km / 100
         assertEquals(50L, s.daysUntilDue)
+    }
+}
+
+class ComponentStatusTest {
+    private val now = 1_000L * Usage.DAY_MILLIS
+    private val usage = Usage(null, null)
+
+    @Test fun primaryIsMoreUrgentSchedule() {
+        // Inspection overdue by time, replacement far off: inspection wins.
+        val item = com.carthing.data.entity.MaintenanceItem(
+            vehicleId = 1, name = "Timing belt",
+            inspectMonths = 12, lastInspectedEpochMillis = now - 400 * Usage.DAY_MILLIS,
+            replaceKm = 210_000.0, lastReplacedOdometerKm = 0.0
+        )
+        val s = ComponentStatus.of(item, usage, 90_000.0, now, ZoneOffset.UTC)
+        assertEquals(ScheduleKind.INSPECTION, s.primaryKind)
+        assertEquals(DueLevel.OVERDUE, s.level)
+        assertEquals(DueLevel.OK, s.replacement!!.level)
+    }
+
+    @Test fun singleScheduleAndNoSchedule() {
+        val oilOnly = com.carthing.data.entity.MaintenanceItem(vehicleId = 1, name = "Oil", replaceMonths = 12)
+        val s = ComponentStatus.of(oilOnly, usage, 0.0, now, ZoneOffset.UTC)
+        assertNull(s.inspection)
+        assertEquals(ScheduleKind.REPLACEMENT, s.primaryKind)
+        assertEquals(DueLevel.UNKNOWN, s.level)
+
+        val none = ComponentStatus(null, null)
+        assertNull(none.primaryKind)
+        assertEquals(DueLevel.UNKNOWN, none.level)
     }
 }

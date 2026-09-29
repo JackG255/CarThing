@@ -6,18 +6,26 @@ import com.carthing.data.entity.FuelEntry
 import com.carthing.data.entity.MaintenanceItem
 import com.carthing.data.entity.ServiceEntry
 import com.carthing.data.entity.Vehicle
+import com.carthing.data.maintenance.ComponentStatus
 import com.carthing.data.maintenance.DueLevel
 import com.carthing.data.maintenance.MaintenanceStatus
 import com.carthing.data.maintenance.OdometerReading
 import com.carthing.data.maintenance.ReminderPolicy
+import com.carthing.data.maintenance.ScheduleKind
 import com.carthing.data.maintenance.Usage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 
-data class ItemWithStatus(val item: MaintenanceItem, val status: MaintenanceStatus)
+data class ItemWithStatus(val item: MaintenanceItem, val status: ComponentStatus)
 
 /** A reminder the background check should post. */
-data class Reminder(val vehicle: Vehicle, val item: MaintenanceItem, val level: DueLevel, val status: MaintenanceStatus)
+data class Reminder(
+    val vehicle: Vehicle,
+    val item: MaintenanceItem,
+    val kind: ScheduleKind,
+    val level: DueLevel,
+    val status: MaintenanceStatus
+)
 
 class MaintenanceRepository(
     private val db: CarThingDatabase,
@@ -34,7 +42,7 @@ class MaintenanceRepository(
     ) { items, fuel, service, odometer ->
         val usage = usageOf(fuel, service)
         val now = clock()
-        items.map { ItemWithStatus(it, MaintenanceStatus.of(it, usage, odometer ?: 0.0, now)) }
+        items.map { ItemWithStatus(it, ComponentStatus.of(it, usage, odometer ?: 0.0, now)) }
             .sortedWith(urgency)
     }
 
@@ -42,7 +50,7 @@ class MaintenanceRepository(
 
     suspend fun save(item: MaintenanceItem): Long {
         require(item.name.isNotBlank()) { "Name must not be blank" }
-        require(item.intervalKm != null || item.intervalMonths != null) { "At least one interval is required" }
+        require(item.inspection != null || item.replacement != null) { "At least one interval is required" }
         val id = dao.upsert(item.copy(name = item.name.trim()))
         return if (id == -1L) item.id else id
     }
@@ -50,22 +58,24 @@ class MaintenanceRepository(
     suspend fun delete(item: MaintenanceItem) = dao.delete(item)
 
     /**
-     * Records [item] as done: resets its interval and, unless it is only a check, adds a service
-     * entry linked to it. Returns the service entry id, or null for checks.
+     * Records [kind] as done for [item]. An inspection resets only the inspection schedule.
+     * A replacement resets both (a new part needs no inspection yet) and adds a service entry
+     * linked to the item. Returns the service entry id, or null for inspections.
      */
-    suspend fun markDone(item: MaintenanceItem, epochMillis: Long, odometerKm: Double, cost: Double? = null): Long? =
-        db.withTransaction {
-            dao.upsert(item.copy(lastDoneEpochMillis = epochMillis, lastDoneOdometerKm = odometerKm, notifiedLevel = 0))
-            if (item.isCheck) null
-            else db.serviceEntryDao().upsert(
-                ServiceEntry(vehicleId = item.vehicleId, dateEpochMillis = epochMillis, odometerKm = odometerKm,
-                    type = item.name, cost = cost, maintenanceItemId = item.id)
-            )
-        }
+    suspend fun markDone(
+        item: MaintenanceItem, kind: ScheduleKind, epochMillis: Long, odometerKm: Double, cost: Double? = null
+    ): Long? = db.withTransaction {
+        dao.upsert(item.recorded(kind, epochMillis, odometerKm))
+        if (kind == ScheduleKind.INSPECTION) null
+        else db.serviceEntryDao().upsert(
+            ServiceEntry(vehicleId = item.vehicleId, dateEpochMillis = epochMillis, odometerKm = odometerKm,
+                type = item.name, cost = cost, maintenanceItemId = item.id)
+        )
+    }
 
     /**
-     * Evaluates every vehicle's enabled items, stores the new notified levels and returns the
-     * reminders to post. Called by the daily background check.
+     * Evaluates every schedule of every enabled item, stores the new notified levels and returns
+     * the reminders to post. Called by the daily background check.
      */
     suspend fun collectReminders(): List<Reminder> = db.withTransaction {
         val now = clock()
@@ -76,10 +86,22 @@ class MaintenanceRepository(
             val usage = usageOf(fuel, service)
             val recorded = (fuel.map { it.odometerKm } + service.map { it.odometerKm } + vehicle.initialOdometerKm).max()
             for (item in dao.getEnabledForVehicle(vehicle.id)) {
-                val status = MaintenanceStatus.of(item, usage, recorded, now)
-                val decision = ReminderPolicy.decide(item, status)
-                if (decision.newNotifiedLevel != item.notifiedLevel) dao.setNotifiedLevel(item.id, decision.newNotifiedLevel)
-                decision.notify?.let { reminders += Reminder(vehicle, item, it, status) }
+                val status = ComponentStatus.of(item, usage, recorded, now)
+                var inspectLevel = item.inspectNotifiedLevel
+                var replaceLevel = item.replaceNotifiedLevel
+                status.inspection?.let { s ->
+                    val d = ReminderPolicy.decide(item.enabled, item.inspectNotifiedLevel, s)
+                    inspectLevel = d.newNotifiedLevel
+                    d.notify?.let { reminders += Reminder(vehicle, item, ScheduleKind.INSPECTION, it, s) }
+                }
+                status.replacement?.let { s ->
+                    val d = ReminderPolicy.decide(item.enabled, item.replaceNotifiedLevel, s)
+                    replaceLevel = d.newNotifiedLevel
+                    d.notify?.let { reminders += Reminder(vehicle, item, ScheduleKind.REPLACEMENT, it, s) }
+                }
+                if (inspectLevel != item.inspectNotifiedLevel || replaceLevel != item.replaceNotifiedLevel) {
+                    dao.setNotifiedLevels(item.id, inspectLevel, replaceLevel)
+                }
             }
         }
         reminders
@@ -95,8 +117,15 @@ class MaintenanceRepository(
         private val urgency = compareBy<ItemWithStatus>(
             { !it.item.enabled },
             { levelOrder.indexOf(it.status.level) },
-            { it.status.daysUntilDue ?: Long.MAX_VALUE },
+            { it.status.primary?.daysUntilDue ?: Long.MAX_VALUE },
             { it.item.name }
         )
     }
+}
+
+/** [this] with [kind] recorded as done at the given time and odometer, and its reminders reset. */
+fun MaintenanceItem.recorded(kind: ScheduleKind, epochMillis: Long, odometerKm: Double): MaintenanceItem {
+    val inspected = copy(lastInspectedEpochMillis = epochMillis, lastInspectedOdometerKm = odometerKm, inspectNotifiedLevel = 0)
+    return if (kind == ScheduleKind.INSPECTION) inspected
+    else inspected.copy(lastReplacedEpochMillis = epochMillis, lastReplacedOdometerKm = odometerKm, replaceNotifiedLevel = 0)
 }

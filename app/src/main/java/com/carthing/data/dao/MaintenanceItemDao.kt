@@ -15,8 +15,8 @@ interface MaintenanceItemDao {
     @Query("SELECT * FROM maintenance_items WHERE id = :id")
     suspend fun getById(id: Long): MaintenanceItem?
 
-    @Query("UPDATE maintenance_items SET notifiedLevel = :level WHERE id = :id")
-    suspend fun setNotifiedLevel(id: Long, level: Int)
+    @Query("UPDATE maintenance_items SET inspectNotifiedLevel = :inspect, replaceNotifiedLevel = :replace WHERE id = :id")
+    suspend fun setNotifiedLevels(id: Long, inspect: Int, replace: Int)
 
     @Insert suspend fun insertAll(items: List<MaintenanceItem>)
     @Upsert suspend fun upsert(item: MaintenanceItem): Long

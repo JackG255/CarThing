@@ -1,8 +1,10 @@
 package com.carthing.ui.maintenance
 
-import com.carthing.data.entity.MaintenanceItem
+import com.carthing.data.maintenance.ComponentStatus
 import com.carthing.data.maintenance.DueLevel
 import com.carthing.data.maintenance.MaintenanceStatus
+import com.carthing.data.maintenance.Schedule
+import com.carthing.data.maintenance.ScheduleKind
 import com.carthing.ui.common.formatDate
 import com.carthing.ui.common.formatKm
 import kotlin.math.abs
@@ -33,8 +35,8 @@ fun formatDays(days: Long): String = when {
     else -> "${days / 365} years"
 }
 
-/** E.g. "Every 15,000 km or 12 months · last 12 Mar 2026 at 50,000 km". */
-fun MaintenanceItem.describeSchedule(): String {
+/** E.g. "Replace every 15,000 km or 12 months · last 12 Mar 2026 at 50,000 km". */
+fun Schedule.describe(kind: ScheduleKind): String {
     val every = listOfNotNull(
         intervalKm?.let { formatKm(it) },
         intervalMonths?.let { if (it == 1) "month" else "$it months" }
@@ -42,5 +44,15 @@ fun MaintenanceItem.describeSchedule(): String {
     val last = lastDoneEpochMillis?.let { date ->
         "last ${formatDate(date)}" + (lastDoneOdometerKm?.let { " at ${formatKm(it)}" } ?: "")
     }
-    return listOfNotNull("Every $every", last).joinToString(" · ")
+    return listOfNotNull("${kind.verb()} every $every", last).joinToString(" · ")
+}
+
+fun ScheduleKind.verb(): String = if (this == ScheduleKind.INSPECTION) "Inspect" else "Replace"
+fun ScheduleKind.noun(): String = if (this == ScheduleKind.INSPECTION) "inspection" else "replacement"
+
+/** Status line for a component, naming the schedule when it has both, e.g. "Inspection: Due in 3 weeks". */
+fun ComponentStatus.describe(): String {
+    val kind = primaryKind ?: return "No schedule"
+    val text = primary!!.describe()
+    return if (inspection != null && replacement != null) "${kind.noun().replaceFirstChar { it.uppercase() }}: $text" else text
 }

@@ -8,14 +8,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,6 +36,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.carthing.data.entity.MaintenanceItem
 import com.carthing.data.maintenance.DueLevel
+import com.carthing.data.maintenance.ScheduleKind
 import com.carthing.data.repository.ItemWithStatus
 import com.carthing.notifications.MaintenanceNotifier
 import com.carthing.ui.common.DateInput
@@ -43,10 +49,10 @@ fun MaintenanceTab(
     items: List<ItemWithStatus>,
     currentOdometerKm: Double,
     onEdit: (Long) -> Unit,
-    onMarkDone: (MaintenanceItem, epochMillis: Long, odometerKm: Double, cost: Double?) -> Unit
+    onRecord: (MaintenanceItem, ScheduleKind, epochMillis: Long, odometerKm: Double, cost: Double?) -> Unit
 ) {
     RequestNotificationPermissionOnce()
-    var marking by remember { mutableStateOf<MaintenanceItem?>(null) }
+    var recording by remember { mutableStateOf<MaintenanceItem?>(null) }
 
     LazyColumn(contentPadding = PaddingValues(bottom = 88.dp)) {
         items(items, key = { it.item.id }) { (item, status) ->
@@ -54,12 +60,13 @@ fun MaintenanceTab(
                 headlineContent = { Text(item.name) },
                 supportingContent = {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(item.describeSchedule(), style = MaterialTheme.typography.bodySmall)
+                        item.inspection?.let { Text(it.describe(ScheduleKind.INSPECTION), style = MaterialTheme.typography.bodySmall) }
+                        item.replacement?.let { Text(it.describe(ScheduleKind.REPLACEMENT), style = MaterialTheme.typography.bodySmall) }
                         if (item.enabled) StatusChip(status.level, status.describe()) else Text("Not tracked")
                     }
                 },
                 trailingContent = {
-                    if (item.enabled) TextButton(onClick = { marking = item }) { Text(if (item.isCheck) "Checked" else "Done") }
+                    if (item.enabled) TextButton(onClick = { recording = item }) { Text(recordLabel(item)) }
                 },
                 modifier = Modifier.clickable { onEdit(item.id) }
             )
@@ -67,12 +74,18 @@ fun MaintenanceTab(
         }
     }
 
-    marking?.let { item ->
-        MarkDoneDialog(item, currentOdometerKm, onDismiss = { marking = null }) { date, odo, cost ->
-            marking = null
-            onMarkDone(item, date, odo, cost)
+    recording?.let { item ->
+        RecordDialog(item, currentOdometerKm, onDismiss = { recording = null }) { kind, date, odo, cost ->
+            recording = null
+            onRecord(item, kind, date, odo, cost)
         }
     }
+}
+
+private fun recordLabel(item: MaintenanceItem) = when {
+    item.inspection != null && item.replacement != null -> "Record"
+    item.inspection != null -> "Inspected"
+    else -> "Replaced"
 }
 
 @Composable
@@ -91,40 +104,59 @@ private fun StatusChip(level: DueLevel, text: String) {
     )
 }
 
+/**
+ * Records an inspection or a replacement. Components with only one schedule skip the choice;
+ * one with only an inspection schedule can still be recorded as replaced (e.g. worn brake pads).
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MarkDoneDialog(
+private fun RecordDialog(
     item: MaintenanceItem,
     currentOdometerKm: Double,
     onDismiss: () -> Unit,
-    onConfirm: (epochMillis: Long, odometerKm: Double, cost: Double?) -> Unit
+    onConfirm: (ScheduleKind, epochMillis: Long, odometerKm: Double, cost: Double?) -> Unit
 ) {
+    val canInspect = item.inspection != null
+    var kind by rememberSaveable { mutableStateOf(if (canInspect) ScheduleKind.INSPECTION else ScheduleKind.REPLACEMENT) }
     var date by rememberSaveable { mutableLongStateOf(System.currentTimeMillis()) }
     var odometer by rememberSaveable { mutableStateOf(editableNumber(currentOdometerKm)) }
     var cost by rememberSaveable { mutableStateOf("") }
     val odo = parseDecimal(odometer)
     val costValue = parseDecimal(cost)
-    val costInvalid = cost.isNotBlank() && costValue == null
+    val costInvalid = kind == ScheduleKind.REPLACEMENT && cost.isNotBlank() && costValue == null
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(item.name) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (canInspect) {
+                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                        ScheduleKind.entries.forEachIndexed { i, k ->
+                            SegmentedButton(
+                                selected = kind == k, onClick = { kind = k },
+                                shape = SegmentedButtonDefaults.itemShape(i, ScheduleKind.entries.size)
+                            ) { Text(if (k == ScheduleKind.INSPECTION) "Inspected" else "Replaced") }
+                        }
+                    }
+                }
                 Text(
-                    if (item.isCheck) "Record that this was checked. The next check is scheduled from here."
-                    else "Record the service. It's added to the service history and the interval restarts.",
+                    if (kind == ScheduleKind.INSPECTION) "Only the inspection schedule restarts. Nothing is added to the service history."
+                    else "Added to the service history. Both schedules restart, since a new part needs no inspection yet.",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 DateInput(date, { date = it }, "Date")
                 DecimalInput(odometer, { odometer = it }, "Odometer (km)",
                     error = if (odo == null || odo < 0) "Enter the odometer reading" else null)
-                if (!item.isCheck) DecimalInput(cost, { cost = it }, "Cost", error = if (costInvalid) "Enter a valid cost" else null)
+                if (kind == ScheduleKind.REPLACEMENT) {
+                    DecimalInput(cost, { cost = it }, "Cost", error = if (costInvalid) "Enter a valid cost" else null)
+                }
             }
         },
         confirmButton = {
             TextButton(
                 enabled = odo != null && odo >= 0 && !costInvalid,
-                onClick = { onConfirm(date, odo!!, costValue) }
+                onClick = { onConfirm(kind, date, odo!!, costValue.takeIf { kind == ScheduleKind.REPLACEMENT }) }
             ) { Text("Save") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }

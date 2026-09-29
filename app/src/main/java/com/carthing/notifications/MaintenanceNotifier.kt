@@ -16,6 +16,7 @@ import com.carthing.R
 import com.carthing.data.maintenance.DueLevel
 import com.carthing.data.repository.Reminder
 import com.carthing.ui.maintenance.describe
+import com.carthing.ui.maintenance.noun
 
 object MaintenanceNotifier {
     private const val CHANNEL_ID = "maintenance"
@@ -37,8 +38,8 @@ object MaintenanceNotifier {
         if (!canPost(context)) return
         ensureChannel(context)
         val title = when (reminder.level) {
-            DueLevel.OVERDUE -> "${reminder.item.name} is overdue"
-            else -> "${reminder.item.name} is due soon"
+            DueLevel.OVERDUE -> "${reminder.item.name} ${reminder.kind.noun()} is overdue"
+            else -> "${reminder.item.name} ${reminder.kind.noun()} is due soon"
         }
         val tap = PendingIntent.getActivity(
             context, reminder.vehicle.id.toInt(),
@@ -55,7 +56,8 @@ object MaintenanceNotifier {
             .setAutoCancel(true)
             .build()
         try {
-            NotificationManagerCompat.from(context).notify(reminder.item.id.toInt(), notification)
+            // One slot per component and schedule, so an inspection reminder doesn't replace a replacement one.
+            NotificationManagerCompat.from(context).notify((reminder.item.id * 2 + reminder.kind.ordinal).toInt(), notification)
         } catch (_: SecurityException) {
             // Permission revoked between the check and the post; the Maintenance tab still shows the status.
         }

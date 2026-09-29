@@ -15,7 +15,7 @@ import com.carthing.data.entity.Vehicle
 
 @Database(
     entities = [Vehicle::class, FuelEntry::class, ServiceEntry::class, MaintenanceItem::class],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class CarThingDatabase : RoomDatabase() {
@@ -30,7 +30,7 @@ abstract class CarThingDatabase : RoomDatabase() {
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
                     context.applicationContext, CarThingDatabase::class.java, "carthing.db"
-                ).addMigrations(MIGRATION_1_2).build().also { instance = it }
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build().also { instance = it }
             }
     }
 }

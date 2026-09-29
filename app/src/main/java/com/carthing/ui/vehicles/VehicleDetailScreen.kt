@@ -112,8 +112,8 @@ fun VehicleDetailScreen(
             when (tab) {
                 TAB_FUEL -> FuelList(s.fuelEntries, onEditFuel)
                 TAB_SERVICE -> ServiceList(s.serviceEntries, onEditService)
-                else -> MaintenanceTab(s.maintenance, s.currentOdometerKm, onEditMaintenanceItem) { item, date, odo, cost ->
-                    scope.launch { viewModel.markDone(item, date, odo, cost) }
+                else -> MaintenanceTab(s.maintenance, s.currentOdometerKm, onEditMaintenanceItem) { item, kind, date, odo, cost ->
+                    scope.launch { viewModel.markDone(item, kind, date, odo, cost) }
                 }
             }
         }

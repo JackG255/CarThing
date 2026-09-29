@@ -12,6 +12,7 @@ import com.carthing.data.entity.FuelEntry
 import com.carthing.data.entity.MaintenanceItem
 import com.carthing.data.entity.ServiceEntry
 import com.carthing.data.entity.Vehicle
+import com.carthing.data.maintenance.ScheduleKind
 import com.carthing.data.repository.FuelRepository
 import com.carthing.data.repository.ItemWithStatus
 import com.carthing.data.repository.MaintenanceRepository
@@ -70,8 +71,8 @@ class VehicleDetailViewModel(
 
     suspend fun saveMaintenanceItem(item: MaintenanceItem): Long = maintenance.save(item.copy(vehicleId = vehicleId))
     suspend fun deleteMaintenanceItem(item: MaintenanceItem) = maintenance.delete(item)
-    suspend fun markDone(item: MaintenanceItem, epochMillis: Long, odometerKm: Double, cost: Double?) =
-        maintenance.markDone(item, epochMillis, odometerKm, cost)
+    suspend fun markDone(item: MaintenanceItem, kind: ScheduleKind, epochMillis: Long, odometerKm: Double, cost: Double?) =
+        maintenance.markDone(item, kind, epochMillis, odometerKm, cost)
 
     companion object {
         fun factory(vehicleId: Long): ViewModelProvider.Factory = viewModelFactory {
