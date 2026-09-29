@@ -12,7 +12,7 @@ object FuelEconomy {
     }
 
     fun segments(entries: List<FuelEntry>): List<Segment> {
-        val sorted = entries.sortedBy { it.odometerKm }
+        val sorted = entries.sortedWith(compareBy({ it.odometerKm }, { it.dateEpochMillis }, { it.id }))
         val result = mutableListOf<Segment>()
         var lastFull: FuelEntry? = null
         var accumulated = 0.0
@@ -22,8 +22,11 @@ object FuelEconomy {
             accumulated += e.liters
             if (e.isFullTank) {
                 val dist = e.odometerKm - lastFull.odometerKm
-                if (dist > 0) result += Segment(e.id, dist, accumulated)
-                lastFull = e; accumulated = 0.0
+                if (dist > 0) {
+                    result += Segment(e.id, dist, accumulated)
+                    lastFull = e; accumulated = 0.0
+                }
+                // dist <= 0: conflicting data, so keep the chain open and carry the liters forward
             }
         }
         return result
