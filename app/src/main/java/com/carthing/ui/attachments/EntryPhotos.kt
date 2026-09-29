@@ -25,7 +25,13 @@ fun rememberPendingPhotos(): SnapshotStateList<String> =
  * orphan sweep if the form is abandoned.
  */
 @Composable
-fun EntryPhotos(owner: AttachmentOwner?, pending: SnapshotStateList<String>, viewModel: VehicleDetailViewModel) {
+fun EntryPhotos(
+    owner: AttachmentOwner?,
+    pending: SnapshotStateList<String>,
+    viewModel: VehicleDetailViewModel,
+    /** Called with each newly added photo, e.g. to read it as a receipt. */
+    onPhotoAdded: (fileName: String) -> Unit = {},
+) {
     val scope = rememberCoroutineScope()
     val savedFlow = remember(owner) { owner?.let(viewModel::observeAttachments) ?: flowOf(emptyList()) }
     val saved by savedFlow.collectAsStateWithLifecycle(emptyList())
@@ -35,7 +41,7 @@ fun EntryPhotos(owner: AttachmentOwner?, pending: SnapshotStateList<String>, vie
         photos = items,
         newCameraUri = viewModel::newCameraUri,
         importPhoto = viewModel::importPhoto,
-        onAdded = { pending += it },
+        onAdded = { pending += it; onPhotoAdded(it) },
         onDelete = { item ->
             val attachment = saved.firstOrNull { it.id == item.savedId }
             if (attachment != null) scope.launch { viewModel.deleteAttachment(attachment) }

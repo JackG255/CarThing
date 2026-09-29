@@ -1,6 +1,7 @@
 package com.carthing.ui.vehicles
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -13,6 +14,8 @@ import com.carthing.data.attachments.AttachmentOwner
 import com.carthing.data.attachments.AttachmentRepository
 import com.carthing.data.attachments.PhotoStore
 import com.carthing.data.entity.Attachment
+import com.carthing.data.ocr.FuelReceipt
+import com.carthing.data.ocr.ReceiptTextReader
 import com.carthing.data.entity.Deadline
 import com.carthing.data.entity.FuelEntry
 import com.carthing.data.entity.MaintenanceItem
@@ -74,6 +77,7 @@ class VehicleDetailViewModel(
     private val notifications: ReminderNotifications,
     private val attachments: AttachmentRepository,
     private val photos: PhotoStore,
+    private val receipts: ReceiptTextReader,
 ) : ViewModel() {
     val uiState: StateFlow<VehicleDetailUiState> = combine(
         vehicles.observe(vehicleId),
@@ -122,6 +126,11 @@ class VehicleDetailViewModel(
     /** A photo added in a form that is being discarded before saving. */
     fun discardPhoto(fileName: String) = photos.delete(fileName)
 
+    /** Reads a just-added photo as a fuel receipt; null if recognition fails (the photo is still attached). */
+    suspend fun readFuelReceipt(fileName: String): FuelReceipt? =
+        runCatching { receipts.readFuelReceipt(photos.file(fileName)) }
+            .onFailure { Log.w("CarThing", "Receipt reading failed", it) }.getOrNull()
+
     suspend fun saveDeadline(deadline: Deadline): Long = deadlines.save(deadline.copy(vehicleId = vehicleId))
     suspend fun deleteDeadline(deadline: Deadline) {
         deadlines.delete(deadline)
@@ -137,7 +146,8 @@ class VehicleDetailViewModel(
             initializer {
                 val c = (this[APPLICATION_KEY] as CarThingApp).container
                 VehicleDetailViewModel(vehicleId, c.vehicleRepository, c.fuelRepository, c.serviceRepository,
-                    c.maintenanceRepository, c.deadlineRepository, c.reminderNotifications, c.attachmentRepository, c.photoStore)
+                    c.maintenanceRepository, c.deadlineRepository, c.reminderNotifications, c.attachmentRepository, c.photoStore,
+                    c.receiptReader)
             }
         }
     }
