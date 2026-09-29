@@ -21,7 +21,7 @@ class MigrationTest {
     val helper = MigrationTestHelper(InstrumentationRegistry.getInstrumentation(), CarThingDatabase::class.java)
 
     private fun openRoom() = Room.databaseBuilder(ApplicationProvider.getApplicationContext(), CarThingDatabase::class.java, dbName)
-        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).allowMainThreadQueries().build()
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6).allowMainThreadQueries().build()
 
     @Test fun migrate1To4KeepsDataAndSeedsSplitSchedule() = runTest {
         helper.createDatabase(dbName, 1).use { db ->
@@ -35,6 +35,7 @@ class MigrationTest {
         helper.runMigrationsAndValidate(dbName, 3, true, MIGRATION_2_3).close()
         helper.runMigrationsAndValidate(dbName, 4, true, MIGRATION_3_4).close()
         helper.runMigrationsAndValidate(dbName, 5, true, MIGRATION_4_5).close()
+        helper.runMigrationsAndValidate(dbName, 6, true, MIGRATION_5_6).close()
 
         val room = openRoom()
         try {
@@ -74,6 +75,7 @@ class MigrationTest {
         helper.runMigrationsAndValidate(dbName, 3, true, MIGRATION_2_3).close()
         helper.runMigrationsAndValidate(dbName, 4, true, MIGRATION_3_4).close()
         helper.runMigrationsAndValidate(dbName, 5, true, MIGRATION_4_5).close()
+        helper.runMigrationsAndValidate(dbName, 6, true, MIGRATION_5_6).close()
 
         val room = openRoom()
         try {

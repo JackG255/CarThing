@@ -125,8 +125,8 @@ fun VehicleDetailScreen(
                 )
             }
             when (tab) {
-                TAB_FUEL -> FuelList(s.fuelEntries, onEditFuel)
-                TAB_SERVICE -> ServiceList(s.serviceEntries, onEditService)
+                TAB_FUEL -> FuelList(s.fuelEntries, s.fuelWithPhotos, onEditFuel)
+                TAB_SERVICE -> ServiceList(s.serviceEntries, s.serviceWithPhotos, onEditService)
                 else -> MaintenanceTab(
                     s.maintenance, s.currentOdometerKm, onEditMaintenanceItem,
                     onRecord = { item, kind, date, odo, cost -> scope.launch { viewModel.markDone(item, kind, date, odo, cost) } },
@@ -141,6 +141,9 @@ fun VehicleDetailScreen(
 const val TAB_FUEL = 0
 const val TAB_SERVICE = 1
 const val TAB_MAINTENANCE = 2
+
+/** Shown on entries that have receipt photos. */
+private const val PHOTO_MARK = "📎"
 
 @Composable
 private fun StatsCard(odometerKm: Double, stats: VehicleStats, onUpdateOdometer: () -> Unit) {
@@ -171,12 +174,12 @@ private fun Stat(label: String, value: String, modifier: Modifier) {
 }
 
 @Composable
-private fun FuelList(entries: List<FuelEntry>, onEdit: (Long) -> Unit) {
+private fun FuelList(entries: List<FuelEntry>, withPhotos: Set<Long>, onEdit: (Long) -> Unit) {
     if (entries.isEmpty()) return EmptyTab("No fill-ups yet")
     val economyByEntry = remember(entries) { FuelEconomy.segments(entries).associate { it.endEntryId to it.litersPer100Km } }
     LazyColumn(contentPadding = PaddingValues(bottom = 88.dp)) {
         items(entries, key = { it.id }) { e ->
-            val flags = listOfNotNull("partial".takeIf { !e.isFullTank }, "missed previous".takeIf { e.missedPrevious })
+            val flags = listOfNotNull("partial".takeIf { !e.isFullTank }, "missed previous".takeIf { e.missedPrevious }, PHOTO_MARK.takeIf { e.id in withPhotos })
             ListItem(
                 headlineContent = { Text("${formatLiters(e.liters)} · ${formatKm(e.odometerKm)}") },
                 supportingContent = {
@@ -196,14 +199,14 @@ private fun FuelList(entries: List<FuelEntry>, onEdit: (Long) -> Unit) {
 }
 
 @Composable
-private fun ServiceList(entries: List<ServiceEntry>, onEdit: (Long) -> Unit) {
+private fun ServiceList(entries: List<ServiceEntry>, withPhotos: Set<Long>, onEdit: (Long) -> Unit) {
     if (entries.isEmpty()) return EmptyTab("No service records yet")
     LazyColumn(contentPadding = PaddingValues(bottom = 88.dp)) {
         items(entries, key = { it.id }) { e ->
             ListItem(
                 headlineContent = { Text(e.type) },
                 supportingContent = {
-                    Text((listOf(formatDate(e.dateEpochMillis), formatKm(e.odometerKm)) + listOfNotNull(e.shop)).joinToString(" · "))
+                    Text((listOf(formatDate(e.dateEpochMillis), formatKm(e.odometerKm)) + listOfNotNull(e.shop, PHOTO_MARK.takeIf { e.id in withPhotos })).joinToString(" · "))
                 },
                 trailingContent = { e.cost?.let { Text(formatMoney(it)) } },
                 modifier = Modifier.clickable { onEdit(e.id) }

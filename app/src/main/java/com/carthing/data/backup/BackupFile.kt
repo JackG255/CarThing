@@ -1,5 +1,6 @@
 package com.carthing.data.backup
 
+import com.carthing.data.entity.Attachment
 import com.carthing.data.entity.Deadline
 import com.carthing.data.entity.FuelEntry
 import com.carthing.data.entity.MaintenanceItem
@@ -23,8 +24,10 @@ data class BackupFile(
     val deadlines: List<DeadlineDto>,
     /** Added in format 2; absent (empty) in format 1 files. */
     val odometerEntries: List<OdometerEntryDto> = emptyList(),
+    /** Added in format 3; the photos themselves travel next to the JSON in the zip. */
+    val attachments: List<AttachmentDto> = emptyList(),
 ) {
-    companion object { const val FORMAT_VERSION = 2 }
+    companion object { const val FORMAT_VERSION = 3 }
 }
 
 @Serializable
@@ -97,5 +100,16 @@ data class OdometerEntryDto(val id: Long, val vehicleId: Long, val dateEpochMill
     fun toEntity() = OdometerEntry(id, vehicleId, dateEpochMillis, odometerKm)
     companion object {
         fun of(e: OdometerEntry) = OdometerEntryDto(e.id, e.vehicleId, e.dateEpochMillis, e.odometerKm)
+    }
+}
+
+@Serializable
+data class AttachmentDto(
+    val id: Long, val fuelEntryId: Long? = null, val serviceEntryId: Long? = null,
+    val fileName: String, val addedEpochMillis: Long,
+) {
+    fun toEntity() = Attachment(id, fuelEntryId, serviceEntryId, fileName, addedEpochMillis)
+    companion object {
+        fun of(a: Attachment) = AttachmentDto(a.id, a.fuelEntryId, a.serviceEntryId, a.fileName, a.addedEpochMillis)
     }
 }

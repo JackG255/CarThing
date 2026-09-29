@@ -129,3 +129,18 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_odometer_entries_vehicleId` ON `odometer_entries` (`vehicleId`)")
     }
 }
+
+/** v6: attachments (receipt and invoice photos) on fuel and service entries. */
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `attachments` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`fuelEntryId` INTEGER, `serviceEntryId` INTEGER, `fileName` TEXT NOT NULL, `addedEpochMillis` INTEGER NOT NULL, " +
+                "FOREIGN KEY(`fuelEntryId`) REFERENCES `fuel_entries`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , " +
+                "FOREIGN KEY(`serviceEntryId`) REFERENCES `service_entries`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_attachments_fuelEntryId` ON `attachments` (`fuelEntryId`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_attachments_serviceEntryId` ON `attachments` (`serviceEntryId`)")
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_attachments_fileName` ON `attachments` (`fileName`)")
+    }
+}

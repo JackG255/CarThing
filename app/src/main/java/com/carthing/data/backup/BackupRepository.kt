@@ -16,6 +16,10 @@ class BackupRepository(
 ) {
     private val json = Json { prettyPrint = true; ignoreUnknownKeys = true; encodeDefaults = true }
 
+    companion object {
+        val SAFE_PHOTO_NAME = Regex("""[A-Za-z0-9-]{1,64}\.jpg""")
+    }
+
     /** Serializes all data to JSON. */
     suspend fun export(): String = db.withTransaction {
         val vehicles = db.vehicleDao().getAll()
@@ -28,6 +32,7 @@ class BackupRepository(
             maintenanceItems = vehicles.flatMap { db.maintenanceItemDao().getForVehicle(it.id) }.map(MaintenanceItemDto::of),
             deadlines = vehicles.flatMap { db.deadlineDao().getForVehicle(it.id) }.map(DeadlineDto::of),
             odometerEntries = vehicles.flatMap { db.odometerEntryDao().getForVehicle(it.id) }.map(OdometerEntryDto::of),
+            attachments = db.attachmentDao().getAll().map(AttachmentDto::of),
         )
         json.encodeToString(BackupFile.serializer(), file)
     }
@@ -64,6 +69,7 @@ class BackupRepository(
             file.serviceEntries.forEach { db.serviceEntryDao().upsert(it.toEntity()) }
             file.deadlines.forEach { db.deadlineDao().upsert(it.toEntity()) }
             file.odometerEntries.forEach { db.odometerEntryDao().upsert(it.toEntity()) }
+            db.attachmentDao().insertAll(file.attachments.map { it.toEntity() })
         }
     }
 
@@ -80,5 +86,15 @@ class BackupRepository(
         if (file.maintenanceItems.any { it.vehicleId !in vehicleIds }) fail("component for a missing vehicle")
         if (file.deadlines.any { it.vehicleId !in vehicleIds }) fail("deadline for a missing vehicle")
         if (file.odometerEntries.any { it.vehicleId !in vehicleIds }) fail("odometer reading for a missing vehicle")
+        val fuelIds = file.fuelEntries.map { it.id }.toSet()
+        val serviceIds = file.serviceEntries.map { it.id }.toSet()
+        for (a in file.attachments) {
+            if ((a.fuelEntryId == null) == (a.serviceEntryId == null)) fail("photo without exactly one entry")
+            if (a.fuelEntryId != null && a.fuelEntryId !in fuelIds) fail("photo for a missing fill-up")
+            if (a.serviceEntryId != null && a.serviceEntryId !in serviceIds) fail("photo for a missing service")
+            // Names become file paths on restore; allow only the app's own generated names.
+            if (!SAFE_PHOTO_NAME.matches(a.fileName)) fail("bad photo name")
+        }
+        if (file.attachments.map { it.fileName }.toSet().size != file.attachments.size) fail("duplicate photos")
     }
 }

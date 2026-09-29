@@ -21,8 +21,9 @@ object BackupPolicy {
 
     /**
      * Of the file names in the backup folder, the automatic backups to delete: all but the newest
-     * [keep]. Names embed a sortable timestamp; other files are never touched.
+     * [keep]. Names embed a sortable timestamp; older .json and newer .zip backups count alike, other files are never touched.
      */
     fun autoBackupsToDelete(names: List<String>, keep: Int = KEEP_AUTO_BACKUPS): List<String> =
-        names.filter { it.startsWith(AUTO_PREFIX) && it.endsWith(".json") }.sortedDescending().drop(keep)
+        names.filter { it.startsWith(AUTO_PREFIX) && (it.endsWith(".zip") || it.endsWith(".json")) }
+            .sortedByDescending { it.substringBeforeLast(".") }.drop(keep)
 }

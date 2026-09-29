@@ -45,13 +45,13 @@ fun BackupMenu(snackbar: SnackbarHostState, viewModel: BackupViewModel = viewMod
     val settings by viewModel.settingsState.collectAsStateWithLifecycle()
     var showAuto by remember { mutableStateOf(false) }
 
-    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
         uri?.let(viewModel::exportTo)
     }
     val folderLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         uri?.let(viewModel::enableAutoBackup)
     }
-    // Some file providers report JSON as text/plain or octet-stream, so accept those too; the content is validated.
+    // Zip for current backups, JSON for older ones; some providers report either as text/plain or octet-stream. The content is validated.
     val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let(viewModel::prepareImport)
     }
@@ -65,7 +65,7 @@ fun BackupMenu(snackbar: SnackbarHostState, viewModel: BackupViewModel = viewMod
             })
             DropdownMenuItem(text = { Text("Restore from backup") }, onClick = {
                 open = false
-                importLauncher.launch(arrayOf("application/json", "text/plain", "application/octet-stream"))
+                importLauncher.launch(arrayOf("application/zip", "application/json", "text/plain", "application/octet-stream"))
             })
             DropdownMenuItem(text = { Text("Automatic backups…") }, onClick = { open = false; showAuto = true })
         }
@@ -141,7 +141,7 @@ private fun AutoBackupDialog(
 @Composable
 fun BackupBanner(viewModel: BackupViewModel) {
     val settings by viewModel.settingsState.collectAsStateWithLifecycle()
-    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
         uri?.let(viewModel::exportTo)
     }
     Card(
