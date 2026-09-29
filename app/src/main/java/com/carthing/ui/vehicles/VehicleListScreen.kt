@@ -18,16 +18,20 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.carthing.data.dao.VehicleWithOdometer
+import com.carthing.ui.backup.BackupMenu
 import com.carthing.ui.common.LoadingBox
 import com.carthing.ui.common.formatKm
 
@@ -39,8 +43,10 @@ fun VehicleListScreen(
     viewModel: VehicleListViewModel = viewModel(factory = VehicleListViewModel.Factory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbar = remember { SnackbarHostState() }
     Scaffold(
-        topBar = { TopAppBar(title = { Text("CarThing") }) },
+        topBar = { TopAppBar(title = { Text("CarThing") }, actions = { BackupMenu(snackbar) }) },
+        snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddVehicle) { Icon(Icons.Default.Add, contentDescription = "Add vehicle") }
         }

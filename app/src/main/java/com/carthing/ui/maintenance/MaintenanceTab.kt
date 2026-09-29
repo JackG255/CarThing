@@ -34,11 +34,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.carthing.data.entity.Deadline
 import com.carthing.data.entity.MaintenanceItem
 import com.carthing.data.maintenance.DueLevel
 import com.carthing.data.maintenance.ScheduleKind
+import com.carthing.data.repository.DeadlineWithStatus
 import com.carthing.data.repository.ItemWithStatus
 import com.carthing.notifications.MaintenanceNotifier
+import com.carthing.ui.deadlines.RenewDialog
+import com.carthing.ui.deadlines.deadlinesSection
 import com.carthing.ui.common.DateInput
 import com.carthing.ui.common.DecimalInput
 import com.carthing.ui.common.editableNumber
@@ -49,12 +53,18 @@ fun MaintenanceTab(
     items: List<ItemWithStatus>,
     currentOdometerKm: Double,
     onEdit: (Long) -> Unit,
-    onRecord: (MaintenanceItem, ScheduleKind, epochMillis: Long, odometerKm: Double, cost: Double?) -> Unit
+    onRecord: (MaintenanceItem, ScheduleKind, epochMillis: Long, odometerKm: Double, cost: Double?) -> Unit,
+    deadlines: List<DeadlineWithStatus>,
+    onAddDeadline: () -> Unit,
+    onEditDeadline: (Long) -> Unit,
+    onRenewDeadline: (Deadline, newDueEpochMillis: Long) -> Unit,
 ) {
     RequestNotificationPermissionOnce()
     var recording by remember { mutableStateOf<MaintenanceItem?>(null) }
+    var renewing by remember { mutableStateOf<Deadline?>(null) }
 
     LazyColumn(contentPadding = PaddingValues(bottom = 88.dp)) {
+        deadlinesSection(deadlines, onAddDeadline, onEditDeadline, onRenew = { renewing = it })
         items(items, key = { it.item.id }) { (item, status) ->
             ListItem(
                 headlineContent = { Text(item.name) },
@@ -74,6 +84,9 @@ fun MaintenanceTab(
         }
     }
 
+    renewing?.let { deadline ->
+        RenewDialog(deadline, onDismiss = { renewing = null }) { due -> renewing = null; onRenewDeadline(deadline, due) }
+    }
     recording?.let { item ->
         RecordDialog(item, currentOdometerKm, onDismiss = { recording = null }) { kind, date, odo, cost ->
             recording = null

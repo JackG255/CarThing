@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.carthing.data.CarThingDatabase
 import com.carthing.data.entity.FuelEntry
 import com.carthing.data.entity.Vehicle
+import com.carthing.data.repository.DeadlineRepository
 import com.carthing.data.repository.FuelRepository
 import com.carthing.data.repository.MaintenanceRepository
 import com.carthing.data.repository.ServiceRepository
@@ -43,7 +44,7 @@ class VehicleDetailViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun viewModel(id: Long) = VehicleDetailViewModel(id, vehicles, fuel, ServiceRepository(db), MaintenanceRepository(db))
+    private fun viewModel(id: Long) = VehicleDetailViewModel(id, vehicles, fuel, ServiceRepository(db), MaintenanceRepository(db), DeadlineRepository(db))
 
     @Test fun loadedStateCombinesVehicleEntriesAndStats() = runTest {
         val id = vehicles.save(Vehicle(name = "Car", initialOdometerKm = 900.0))

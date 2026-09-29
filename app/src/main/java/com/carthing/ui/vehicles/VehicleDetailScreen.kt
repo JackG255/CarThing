@@ -45,6 +45,7 @@ import com.carthing.data.VehicleStats
 import com.carthing.data.entity.FuelEntry
 import com.carthing.data.entity.ServiceEntry
 import com.carthing.data.maintenance.DueLevel
+import com.carthing.data.repository.DeadlineRepository
 import com.carthing.ui.common.BackButton
 import com.carthing.ui.common.LoadingBox
 import com.carthing.ui.common.formatCostPerKm
@@ -68,6 +69,8 @@ fun VehicleDetailScreen(
     onEditService: (Long) -> Unit,
     onAddMaintenanceItem: () -> Unit,
     onEditMaintenanceItem: (Long) -> Unit,
+    onAddDeadline: () -> Unit,
+    onEditDeadline: (Long) -> Unit,
     initialTab: Int = TAB_FUEL,
     viewModel: VehicleDetailViewModel = viewModel(factory = VehicleDetailViewModel.factory(vehicleId))
 ) {
@@ -98,7 +101,8 @@ fun VehicleDetailScreen(
         }
     ) { padding ->
         val s = state as? VehicleDetailUiState.Loaded ?: return@Scaffold LoadingBox(Modifier.padding(padding))
-        val attention = s.maintenance.count { it.item.enabled && it.status.level in setOf(DueLevel.DUE_SOON, DueLevel.OVERDUE) }
+        val attention = s.maintenance.count { it.item.enabled && it.status.level in setOf(DueLevel.DUE_SOON, DueLevel.OVERDUE) } +
+            s.deadlines.count { DeadlineRepository.needsAttention(it.status) }
         Column(Modifier.padding(padding)) {
             StatsCard(s.currentOdometerKm, s.stats)
             TabRow(selectedTabIndex = tab) {
@@ -112,9 +116,12 @@ fun VehicleDetailScreen(
             when (tab) {
                 TAB_FUEL -> FuelList(s.fuelEntries, onEditFuel)
                 TAB_SERVICE -> ServiceList(s.serviceEntries, onEditService)
-                else -> MaintenanceTab(s.maintenance, s.currentOdometerKm, onEditMaintenanceItem) { item, kind, date, odo, cost ->
-                    scope.launch { viewModel.markDone(item, kind, date, odo, cost) }
-                }
+                else -> MaintenanceTab(
+                    s.maintenance, s.currentOdometerKm, onEditMaintenanceItem,
+                    onRecord = { item, kind, date, odo, cost -> scope.launch { viewModel.markDone(item, kind, date, odo, cost) } },
+                    deadlines = s.deadlines, onAddDeadline = onAddDeadline, onEditDeadline = onEditDeadline,
+                    onRenewDeadline = { d, due -> scope.launch { viewModel.renewDeadline(d, due) } }
+                )
             }
         }
     }

@@ -104,3 +104,16 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
         db.execSQL("DROP TABLE service_links")
     }
 }
+
+/** v4: deadlines table (technical inspection, vignette, insurance...). */
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `deadlines` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`vehicleId` INTEGER NOT NULL, `title` TEXT NOT NULL, `dueEpochMillis` INTEGER NOT NULL, " +
+                "`repeatMonths` INTEGER, `note` TEXT, `notifiedLevel` INTEGER NOT NULL, " +
+                "FOREIGN KEY(`vehicleId`) REFERENCES `vehicles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_deadlines_vehicleId` ON `deadlines` (`vehicleId`)")
+    }
+}

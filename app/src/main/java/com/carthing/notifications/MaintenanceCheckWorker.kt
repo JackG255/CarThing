@@ -10,11 +10,12 @@ import androidx.work.WorkerParameters
 import com.carthing.CarThingApp
 import java.util.concurrent.TimeUnit
 
-/** Daily check that posts a reminder when a component becomes due soon or overdue. */
+/** Daily check that posts a reminder when a component or deadline becomes due soon or overdue. */
 class MaintenanceCheckWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        val repository = (applicationContext as CarThingApp).container.maintenanceRepository
-        repository.collectReminders().forEach { MaintenanceNotifier.post(applicationContext, it) }
+        val container = (applicationContext as CarThingApp).container
+        container.maintenanceRepository.collectReminders().forEach { MaintenanceNotifier.post(applicationContext, it) }
+        container.deadlineRepository.collectReminders().forEach { MaintenanceNotifier.post(applicationContext, it) }
         return Result.success()
     }
 

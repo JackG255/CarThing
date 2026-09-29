@@ -8,11 +8,14 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.carthing.CarThingApp
 import com.carthing.data.VehicleStats
+import com.carthing.data.entity.Deadline
 import com.carthing.data.entity.FuelEntry
 import com.carthing.data.entity.MaintenanceItem
 import com.carthing.data.entity.ServiceEntry
 import com.carthing.data.entity.Vehicle
 import com.carthing.data.maintenance.ScheduleKind
+import com.carthing.data.repository.DeadlineRepository
+import com.carthing.data.repository.DeadlineWithStatus
 import com.carthing.data.repository.FuelRepository
 import com.carthing.data.repository.ItemWithStatus
 import com.carthing.data.repository.MaintenanceRepository
@@ -35,7 +38,9 @@ sealed interface VehicleDetailUiState {
         val serviceEntries: List<ServiceEntry>,
         val stats: VehicleStats,
         /** Most urgent first. */
-        val maintenance: List<ItemWithStatus>
+        val maintenance: List<ItemWithStatus>,
+        /** Soonest first. */
+        val deadlines: List<DeadlineWithStatus>
     ) : VehicleDetailUiState
 }
 
@@ -44,19 +49,20 @@ class VehicleDetailViewModel(
     vehicles: VehicleRepository,
     private val fuel: FuelRepository,
     private val service: ServiceRepository,
-    private val maintenance: MaintenanceRepository
+    private val maintenance: MaintenanceRepository,
+    private val deadlines: DeadlineRepository
 ) : ViewModel() {
     val uiState: StateFlow<VehicleDetailUiState> = combine(
         vehicles.observe(vehicleId),
         vehicles.observeCurrentOdometer(vehicleId),
         fuel.observeForVehicle(vehicleId),
         service.observeForVehicle(vehicleId),
-        maintenance.observeWithStatus(vehicleId)
-    ) { vehicle, odometer, fuelEntries, serviceEntries, items ->
+        combine(maintenance.observeWithStatus(vehicleId), deadlines.observeWithStatus(vehicleId), ::Pair)
+    ) { vehicle, odometer, fuelEntries, serviceEntries, (items, deadlineList) ->
         if (vehicle == null) VehicleDetailUiState.NotFound
         else VehicleDetailUiState.Loaded(
             vehicle, odometer ?: vehicle.initialOdometerKm, fuelEntries, serviceEntries,
-            VehicleStats.from(fuelEntries, serviceEntries), items
+            VehicleStats.from(fuelEntries, serviceEntries), items, deadlineList
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), VehicleDetailUiState.Loading)
 
@@ -74,11 +80,16 @@ class VehicleDetailViewModel(
     suspend fun markDone(item: MaintenanceItem, kind: ScheduleKind, epochMillis: Long, odometerKm: Double, cost: Double?) =
         maintenance.markDone(item, kind, epochMillis, odometerKm, cost)
 
+    suspend fun saveDeadline(deadline: Deadline): Long = deadlines.save(deadline.copy(vehicleId = vehicleId))
+    suspend fun deleteDeadline(deadline: Deadline) = deadlines.delete(deadline)
+    suspend fun renewDeadline(deadline: Deadline, newDueEpochMillis: Long) = deadlines.renew(deadline, newDueEpochMillis)
+
     companion object {
         fun factory(vehicleId: Long): ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val c = (this[APPLICATION_KEY] as CarThingApp).container
-                VehicleDetailViewModel(vehicleId, c.vehicleRepository, c.fuelRepository, c.serviceRepository, c.maintenanceRepository)
+                VehicleDetailViewModel(vehicleId, c.vehicleRepository, c.fuelRepository, c.serviceRepository,
+                    c.maintenanceRepository, c.deadlineRepository)
             }
         }
     }

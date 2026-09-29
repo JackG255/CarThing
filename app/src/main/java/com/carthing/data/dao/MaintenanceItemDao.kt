@@ -9,6 +9,9 @@ interface MaintenanceItemDao {
     @Query("SELECT * FROM maintenance_items WHERE vehicleId = :vehicleId ORDER BY name")
     fun observeForVehicle(vehicleId: Long): Flow<List<MaintenanceItem>>
 
+    @Query("SELECT * FROM maintenance_items WHERE vehicleId = :vehicleId")
+    suspend fun getForVehicle(vehicleId: Long): List<MaintenanceItem>
+
     @Query("SELECT * FROM maintenance_items WHERE vehicleId = :vehicleId AND enabled = 1")
     suspend fun getEnabledForVehicle(vehicleId: Long): List<MaintenanceItem>
 
