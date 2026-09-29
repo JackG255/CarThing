@@ -2,7 +2,7 @@ package com.carthing.data.maintenance
 
 /**
  * Decides when to notify about one schedule: once on reaching "due soon", once more on "overdue",
- * never repeating a level. Inspection and replacement are tracked separately.
+ * never repeating a level. Each schedule and deadline is tracked separately.
  */
 object ReminderPolicy {
     data class Decision(
@@ -12,9 +12,12 @@ object ReminderPolicy {
         val newNotifiedLevel: Int
     )
 
-    fun decide(enabled: Boolean, notifiedLevel: Int, status: MaintenanceStatus): Decision {
-        val level = if (enabled) status.level.notifyLevel else 0
+    fun decide(enabled: Boolean, notifiedLevel: Int, status: MaintenanceStatus): Decision =
+        decide(enabled, notifiedLevel, status.level)
+
+    fun decide(enabled: Boolean, notifiedLevel: Int, dueLevel: DueLevel): Decision {
+        val level = if (enabled) dueLevel.notifyLevel else 0
         // Storing a lower level (e.g. after the interval was extended) lets a later rise notify again.
-        return Decision(notify = status.level.takeIf { level > notifiedLevel }, newNotifiedLevel = level)
+        return Decision(notify = dueLevel.takeIf { level > notifiedLevel }, newNotifiedLevel = level)
     }
 }

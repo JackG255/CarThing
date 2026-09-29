@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.carthing.ui.deadlines.DeadlineFormScreen
 import com.carthing.ui.fuel.FuelFormScreen
 import com.carthing.ui.maintenance.MaintenanceItemFormScreen
 import com.carthing.ui.service.ServiceFormScreen
@@ -24,6 +25,7 @@ import kotlinx.serialization.Serializable
 @Serializable data class FuelFormRoute(val vehicleId: Long, val entryId: Long = 0)
 @Serializable data class ServiceFormRoute(val vehicleId: Long, val entryId: Long = 0)
 @Serializable data class MaintenanceItemFormRoute(val vehicleId: Long, val itemId: Long = 0)
+@Serializable data class DeadlineFormRoute(val vehicleId: Long, val deadlineId: Long = 0)
 
 @Composable
 fun CarThingNavHost(openVehicleId: Long? = null, onOpenedVehicle: () -> Unit = {}) {
@@ -68,6 +70,8 @@ fun CarThingNavHost(openVehicleId: Long? = null, onOpenedVehicle: () -> Unit = {
                 onEditService = { nav.navigate(ServiceFormRoute(id, it)) },
                 onAddMaintenanceItem = { nav.navigate(MaintenanceItemFormRoute(id)) },
                 onEditMaintenanceItem = { nav.navigate(MaintenanceItemFormRoute(id, it)) },
+                onAddDeadline = { nav.navigate(DeadlineFormRoute(id)) },
+                onEditDeadline = { nav.navigate(DeadlineFormRoute(id, it)) },
                 initialTab = route.tab
             )
         }
@@ -82,6 +86,10 @@ fun CarThingNavHost(openVehicleId: Long? = null, onOpenedVehicle: () -> Unit = {
         composable<MaintenanceItemFormRoute> { entry ->
             val route = entry.toRoute<MaintenanceItemFormRoute>()
             MaintenanceItemFormScreen(route.vehicleId, route.itemId, onDone = { nav.popBackStack() })
+        }
+        composable<DeadlineFormRoute> { entry ->
+            val route = entry.toRoute<DeadlineFormRoute>()
+            DeadlineFormScreen(route.vehicleId, route.deadlineId, onDone = { nav.popBackStack() })
         }
     }
 }

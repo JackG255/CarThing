@@ -26,4 +26,6 @@ class VehicleRepository(private val db: CarThingDatabase) {
     }
 
     suspend fun delete(vehicle: Vehicle) = dao.delete(vehicle)
+
+    suspend fun count(): Int = dao.getAll().size
 }

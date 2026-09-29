@@ -21,9 +21,9 @@ class MigrationTest {
     val helper = MigrationTestHelper(InstrumentationRegistry.getInstrumentation(), CarThingDatabase::class.java)
 
     private fun openRoom() = Room.databaseBuilder(ApplicationProvider.getApplicationContext(), CarThingDatabase::class.java, dbName)
-        .addMigrations(MIGRATION_1_2, MIGRATION_2_3).allowMainThreadQueries().build()
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).allowMainThreadQueries().build()
 
-    @Test fun migrate1To3KeepsDataAndSeedsSplitSchedule() = runTest {
+    @Test fun migrate1To4KeepsDataAndSeedsSplitSchedule() = runTest {
         helper.createDatabase(dbName, 1).use { db ->
             db.execSQL("INSERT INTO vehicles (id, name, initialOdometerKm) VALUES (1, 'Car', 1000.0)")
             db.execSQL("INSERT INTO vehicles (id, name, initialOdometerKm) VALUES (2, 'Van', 0.0)")
@@ -33,6 +33,7 @@ class MigrationTest {
         // Each step is validated against its exported schema.
         helper.runMigrationsAndValidate(dbName, 2, true, MIGRATION_1_2).close()
         helper.runMigrationsAndValidate(dbName, 3, true, MIGRATION_2_3).close()
+        helper.runMigrationsAndValidate(dbName, 4, true, MIGRATION_3_4).close()
 
         val room = openRoom()
         try {
@@ -40,6 +41,7 @@ class MigrationTest {
             assertEquals(7L, service.id)
             assertNull(service.maintenanceItemId)
             assertEquals(1, room.fuelEntryDao().getForVehicle(1).size)
+            assertEquals(0, room.deadlineDao().getForVehicle(1).size)
 
             for (vehicleId in listOf(1L, 2L)) {
                 val items = room.maintenanceItemDao().observeForVehicle(vehicleId).first().associateBy { it.name }
@@ -56,7 +58,7 @@ class MigrationTest {
         }
     }
 
-    @Test fun migrate2To3MapsLastDoneAndKeepsServiceLinks() = runTest {
+    @Test fun migrate2To4MapsLastDoneAndKeepsServiceLinks() = runTest {
         helper.createDatabase(dbName, 2).use { db ->
             db.execSQL("INSERT INTO vehicles (id, name, initialOdometerKm) VALUES (1, 'Car', 0.0)")
             db.execSQL(
@@ -68,6 +70,7 @@ class MigrationTest {
             db.execSQL("INSERT INTO service_entries (id, vehicleId, dateEpochMillis, odometerKm, type, maintenanceItemId) VALUES (5, 1, 500, 50000.0, 'Engine oil', 10)")
         }
         helper.runMigrationsAndValidate(dbName, 3, true, MIGRATION_2_3).close()
+        helper.runMigrationsAndValidate(dbName, 4, true, MIGRATION_3_4).close()
 
         val room = openRoom()
         try {
