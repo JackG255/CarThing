@@ -73,14 +73,16 @@ data class MaintenanceItemDto(
     val lastInspectedEpochMillis: Long? = null, val lastInspectedOdometerKm: Double? = null, val inspectNotifiedLevel: Int = 0,
     val replaceKm: Double? = null, val replaceMonths: Int? = null,
     val lastReplacedEpochMillis: Long? = null, val lastReplacedOdometerKm: Double? = null, val replaceNotifiedLevel: Int = 0,
+    /** Added later in format 4; older apps ignore it, older files leave it null (automatic icon). */
+    val icon: String? = null,
 ) {
     fun toEntity() = MaintenanceItem(id, vehicleId, name, enabled,
         inspectKm, inspectMonths, lastInspectedEpochMillis, lastInspectedOdometerKm, inspectNotifiedLevel,
-        replaceKm, replaceMonths, lastReplacedEpochMillis, lastReplacedOdometerKm, replaceNotifiedLevel)
+        replaceKm, replaceMonths, lastReplacedEpochMillis, lastReplacedOdometerKm, replaceNotifiedLevel, icon)
     companion object {
         fun of(m: MaintenanceItem) = MaintenanceItemDto(m.id, m.vehicleId, m.name, m.enabled,
             m.inspectKm, m.inspectMonths, m.lastInspectedEpochMillis, m.lastInspectedOdometerKm, m.inspectNotifiedLevel,
-            m.replaceKm, m.replaceMonths, m.lastReplacedEpochMillis, m.lastReplacedOdometerKm, m.replaceNotifiedLevel)
+            m.replaceKm, m.replaceMonths, m.lastReplacedEpochMillis, m.lastReplacedOdometerKm, m.replaceNotifiedLevel, m.icon)
     }
 }
 
