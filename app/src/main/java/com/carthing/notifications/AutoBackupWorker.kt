@@ -3,6 +3,7 @@ package com.carthing.notifications
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -30,16 +31,19 @@ class AutoBackupWorker(context: Context, params: WorkerParameters) : CoroutineWo
     companion object {
         private const val WORK_NAME = "auto-backup"
 
-        /** Replaces any existing weekly schedule; call [runOnce] as well for an immediate backup. */
+        /** Replaces any existing weekly schedule. The first run is a week out; use [runOnce] for an immediate backup. */
         fun schedule(context: Context) {
-            val request = PeriodicWorkRequestBuilder<AutoBackupWorker>(7, TimeUnit.DAYS).build()
+            val request = PeriodicWorkRequestBuilder<AutoBackupWorker>(7, TimeUnit.DAYS).setInitialDelay(7, TimeUnit.DAYS).build()
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(WORK_NAME, ExistingPeriodicWorkPolicy.UPDATE, request)
         }
 
         fun cancel(context: Context) = WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
 
         fun runOnce(context: Context) {
-            WorkManager.getInstance(context).enqueue(OneTimeWorkRequestBuilder<AutoBackupWorker>().build())
+            // Unique, so tapping "Back up now" repeatedly doesn't write several files at once.
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                "$WORK_NAME-now", ExistingWorkPolicy.KEEP, OneTimeWorkRequestBuilder<AutoBackupWorker>().build()
+            )
         }
     }
 }
