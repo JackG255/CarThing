@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shown while the app starts: the icon on the app's background colour, light or dark. -->
+    <style name="Theme.CarThing.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/window_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/brand</item>
+        <item name="postSplashScreenTheme">@style/Theme.CarThing</item>
+    </style>
+
+    <!-- The window behind Compose; matches the Compose background so there's no flash. -->
+    <style name="Theme.CarThing" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+    </style>
+</resources>
