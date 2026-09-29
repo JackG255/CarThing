@@ -42,5 +42,18 @@ or when the `CARTHING_KEYSTORE`, `CARTHING_KEYSTORE_PASSWORD`, `CARTHING_KEY_ALI
 **Keep the keystore and its password backed up.** Updates must be signed with the same key;
 losing it means uninstalling the app (restore data from a CarThing backup) to install a new build.
 
+### Publishing a release
+Tag a commit on `main` and push the tag:
+
+```
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+The Release workflow runs the tests, builds a signed APK (version name and code come from the tag:
+`v1.2.3` → `1.2.3` / `10203`, so each tag must be higher than the last) and publishes it on
+[Releases](https://github.com/JackG255/CarThing/releases/latest). Share that link: it always points
+to the newest build. Signing uses the `CARTHING_*` repository secrets.
+
 Trigger the daily maintenance check on a debug build:
 `adb shell am broadcast -n com.carthing.debug/com.carthing.debug.RunMaintenanceCheckReceiver`
