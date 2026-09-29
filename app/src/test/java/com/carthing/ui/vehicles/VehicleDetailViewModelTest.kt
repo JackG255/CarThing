@@ -10,6 +10,7 @@ import com.carthing.data.repository.FuelRepository
 import com.carthing.data.repository.MaintenanceRepository
 import com.carthing.data.repository.ServiceRepository
 import com.carthing.data.repository.VehicleRepository
+import com.carthing.notifications.ReminderNotifications
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -44,7 +45,8 @@ class VehicleDetailViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun viewModel(id: Long) = VehicleDetailViewModel(id, vehicles, fuel, ServiceRepository(db), MaintenanceRepository(db), DeadlineRepository(db))
+    private fun viewModel(id: Long) = VehicleDetailViewModel(id, vehicles, fuel, ServiceRepository(db), MaintenanceRepository(db), DeadlineRepository(db),
+        ReminderNotifications(ApplicationProvider.getApplicationContext()))
 
     @Test fun loadedStateCombinesVehicleEntriesAndStats() = runTest {
         val id = vehicles.save(Vehicle(name = "Car", initialOdometerKm = 900.0))

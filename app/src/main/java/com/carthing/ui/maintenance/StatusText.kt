@@ -44,7 +44,9 @@ fun Schedule.describe(kind: ScheduleKind): String {
     val last = lastDoneEpochMillis?.let { date ->
         "last ${formatDate(date)}" + (lastDoneOdometerKm?.let { " at ${formatKm(it)}" } ?: "")
     }
-    return listOfNotNull("${kind.verb()} every $every", last).joinToString(" · ")
+    // With a date but no reading, only the time limit is checked; say so rather than fail silently.
+    val kmMissing = "km not recorded".takeIf { intervalKm != null && lastDoneEpochMillis != null && lastDoneOdometerKm == null }
+    return listOfNotNull("${kind.verb()} every $every", last, kmMissing).joinToString(" · ")
 }
 
 fun ScheduleKind.verb(): String = if (this == ScheduleKind.INSPECTION) "Inspect" else "Replace"

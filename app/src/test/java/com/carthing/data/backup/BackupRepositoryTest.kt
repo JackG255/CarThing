@@ -44,6 +44,7 @@ class BackupRepositoryTest {
         val oil = maintenance.observeWithStatus(id).first().first { it.item.name == "Engine oil & filter" }.item
         maintenance.markDone(oil, ScheduleKind.REPLACEMENT, 3_000, 94_020.0, cost = 2200.0)
         DeadlineRepository(db).save(Deadline(vehicleId = id, title = "STK", dueEpochMillis = 5_000, repeatMonths = 24, note = "sticker"))
+        VehicleRepository(db).addOdometerReading(id, 6_000, 95_000.0)
         return id
     }
 
@@ -61,6 +62,20 @@ class BackupRepositoryTest {
         assertEquals(snapshot(source), snapshot(target))
         val service = target.serviceEntryDao().getForVehicle(target.vehicleDao().getAll().single().id)
         assertTrue("service link survives", service.any { it.maintenanceItemId != null })
+    }
+
+    @Test fun format1FilesStillImport() = runTest {
+        populate(source)
+        val repo = BackupRepository(source)
+        // A version-1 file has no odometerEntries field at all.
+        val v1 = repo.export().replace("\"formatVersion\": 2", "\"formatVersion\": 1")
+            .replace(Regex(""",\s*"odometerEntries":\s*\[[^\]]*\]"""), "")
+        assertTrue(!v1.contains("odometerEntries"))
+        val file = repo.read(v1)
+        assertEquals(1, file.formatVersion)
+        assertTrue(file.odometerEntries.isEmpty())
+        repo.replaceAll(file)
+        assertEquals(1, source.vehicleDao().getAll().size)
     }
 
     @Test fun summaryCountsRecords() = runTest {
@@ -82,7 +97,7 @@ class BackupRepositoryTest {
         }
         assertRejected("not json at all")
         assertRejected("""{"hello": "world"}""")
-        assertRejected(good.replace("\"formatVersion\": 1", "\"formatVersion\": 99"))
+        assertRejected(good.replace("\"formatVersion\": 2", "\"formatVersion\": 99"))
         // A fill-up pointing at a vehicle that isn't in the file.
         val vehicleId = source.vehicleDao().getAll().single().id
         assertRejected(good.replaceFirst("\"vehicleId\": $vehicleId", "\"vehicleId\": 12345"))

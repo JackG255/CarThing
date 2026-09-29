@@ -3,6 +3,7 @@ package com.carthing.data.backup
 import com.carthing.data.entity.Deadline
 import com.carthing.data.entity.FuelEntry
 import com.carthing.data.entity.MaintenanceItem
+import com.carthing.data.entity.OdometerEntry
 import com.carthing.data.entity.ServiceEntry
 import com.carthing.data.entity.Vehicle
 import kotlinx.serialization.Serializable
@@ -20,8 +21,10 @@ data class BackupFile(
     val serviceEntries: List<ServiceEntryDto>,
     val maintenanceItems: List<MaintenanceItemDto>,
     val deadlines: List<DeadlineDto>,
+    /** Added in format 2; absent (empty) in format 1 files. */
+    val odometerEntries: List<OdometerEntryDto> = emptyList(),
 ) {
-    companion object { const val FORMAT_VERSION = 1 }
+    companion object { const val FORMAT_VERSION = 2 }
 }
 
 @Serializable
@@ -86,5 +89,13 @@ data class DeadlineDto(
     fun toEntity() = Deadline(id, vehicleId, title, dueEpochMillis, repeatMonths, note, notifiedLevel)
     companion object {
         fun of(d: Deadline) = DeadlineDto(d.id, d.vehicleId, d.title, d.dueEpochMillis, d.repeatMonths, d.note, d.notifiedLevel)
+    }
+}
+
+@Serializable
+data class OdometerEntryDto(val id: Long, val vehicleId: Long, val dateEpochMillis: Long, val odometerKm: Double) {
+    fun toEntity() = OdometerEntry(id, vehicleId, dateEpochMillis, odometerKm)
+    companion object {
+        fun of(e: OdometerEntry) = OdometerEntryDto(e.id, e.vehicleId, e.dateEpochMillis, e.odometerKm)
     }
 }

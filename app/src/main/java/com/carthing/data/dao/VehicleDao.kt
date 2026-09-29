@@ -18,7 +18,8 @@ interface VehicleDao {
     @Query(
         """SELECT v.*, MAX(v.initialOdometerKm,
                COALESCE((SELECT MAX(odometerKm) FROM fuel_entries WHERE vehicleId = v.id), 0),
-               COALESCE((SELECT MAX(odometerKm) FROM service_entries WHERE vehicleId = v.id), 0)) AS currentOdometerKm
+               COALESCE((SELECT MAX(odometerKm) FROM service_entries WHERE vehicleId = v.id), 0),
+               COALESCE((SELECT MAX(odometerKm) FROM odometer_entries WHERE vehicleId = v.id), 0)) AS currentOdometerKm
            FROM vehicles v ORDER BY v.name"""
     )
     fun observeAllWithOdometer(): Flow<List<VehicleWithOdometer>>
@@ -26,11 +27,12 @@ interface VehicleDao {
     @Query("SELECT * FROM vehicles WHERE id = :id")
     fun observeById(id: Long): Flow<Vehicle?>
 
-    /** Highest known odometer: max of the initial value and all fuel/service readings. */
+    /** Highest known odometer: max of the initial value and all fuel, service and odometer readings. */
     @Query(
         """SELECT MAX(v.initialOdometerKm,
                COALESCE((SELECT MAX(odometerKm) FROM fuel_entries WHERE vehicleId = v.id), 0),
-               COALESCE((SELECT MAX(odometerKm) FROM service_entries WHERE vehicleId = v.id), 0))
+               COALESCE((SELECT MAX(odometerKm) FROM service_entries WHERE vehicleId = v.id), 0),
+               COALESCE((SELECT MAX(odometerKm) FROM odometer_entries WHERE vehicleId = v.id), 0))
            FROM vehicles v WHERE v.id = :id"""
     )
     fun observeCurrentOdometer(id: Long): Flow<Double?>

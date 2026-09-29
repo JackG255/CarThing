@@ -117,3 +117,15 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_deadlines_vehicleId` ON `deadlines` (`vehicleId`)")
     }
 }
+
+/** v5: odometer_entries, readings logged without a fill-up or service. */
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `odometer_entries` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`vehicleId` INTEGER NOT NULL, `dateEpochMillis` INTEGER NOT NULL, `odometerKm` REAL NOT NULL, " +
+                "FOREIGN KEY(`vehicleId`) REFERENCES `vehicles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_odometer_entries_vehicleId` ON `odometer_entries` (`vehicleId`)")
+    }
+}

@@ -9,6 +9,7 @@ import com.carthing.data.repository.FuelRepository
 import com.carthing.data.repository.MaintenanceRepository
 import com.carthing.data.repository.ServiceRepository
 import com.carthing.data.repository.VehicleRepository
+import com.carthing.notifications.ReminderNotifications
 
 /** Manual dependency container; one instance per process, owned by [com.carthing.CarThingApp]. */
 class AppContainer(context: Context, db: CarThingDatabase = CarThingDatabase.get(context)) {
@@ -20,4 +21,5 @@ class AppContainer(context: Context, db: CarThingDatabase = CarThingDatabase.get
     val backupRepository = BackupRepository(db)
     val backupSettings = BackupSettings(context)
     val folderBackup = FolderBackup(context.contentResolver)
+    val reminderNotifications = ReminderNotifications(context)
 }
