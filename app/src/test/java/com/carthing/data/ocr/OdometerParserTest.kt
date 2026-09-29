@@ -25,7 +25,18 @@ class OdometerParserTest {
     }
 
     @Test fun withoutAnythingElseTheLongestNumberWins() {
-        assertEquals(listOf(123456.0, 88.0), OdometerParser.candidates(listOf("88", "123456")))
+        assertEquals(listOf(123456.0), OdometerParser.candidates(listOf("88", "123456")))
+        assertEquals(listOf(523.0, 88.0), OdometerParser.candidates(listOf("88", "523")))
+    }
+
+    /** Rows exactly as ML Kit returned them for a real Škoda Fabia III cluster photo. */
+    @Test fun realFabiaClusterPhoto() {
+        val rows = listOf(
+            "40   7:59   100   120 -", "50", "Ø spotřeba   80", "70 vookm", "0d načerpání", "11.0c", "km   trip",
+            "94020   386.5   20", "g0", "-   O km/lh", "130", "0.0 /SET",
+        )
+        assertEquals(listOf(94020.0), OdometerParser.candidates(rows))
+        assertEquals(listOf(94020.0), OdometerParser.candidates(rows, expectedKm = 93_500.0))
     }
 
     @Test fun datesAndDecimalsAreNotReadings() {

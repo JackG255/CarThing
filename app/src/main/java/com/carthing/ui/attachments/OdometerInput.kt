@@ -3,12 +3,16 @@ package com.carthing.ui.attachments
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -53,24 +57,38 @@ fun OdometerInput(
     var reading by remember { mutableStateOf(false) }
     var choices by remember { mutableStateOf<List<Double>?>(null) }
 
+    var menu by remember { mutableStateOf(false) }
+
+    fun read(uri: Uri) = scope.launch {
+        reading = true
+        choices = runCatching {
+            val name = viewModel.importPhoto(uri)
+            onPhotoAdded(name)
+            viewModel.readOdometer(name, expectedKm)
+        }.onFailure { Log.w("CarThing", "Dashboard photo failed", it) }.getOrDefault(emptyList())
+        reading = false
+    }
     val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { taken ->
         val uri = cameraUri?.takeIf { taken }
         cameraUri = null
-        if (uri != null) scope.launch {
-            reading = true
-            choices = runCatching {
-                val name = viewModel.importPhoto(uri)
-                onPhotoAdded(name)
-                viewModel.readOdometer(name, expectedKm)
-            }.onFailure { Log.w("CarThing", "Dashboard photo failed", it) }.getOrDefault(emptyList())
-            reading = false
-        }
+        uri?.let(::read)
     }
+    val gallery = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> uri?.let(::read) }
 
     DecimalInput(value, onValueChange, "Odometer (km)", error, hint) {
         if (reading) CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
-        else IconButton(onClick = { viewModel.newCameraUri().also { cameraUri = it; camera.launch(it) } }) {
-            Icon(CameraIcon, contentDescription = "Read from dashboard photo")
+        else Box {
+            IconButton(onClick = { menu = true }) { Icon(CameraIcon, contentDescription = "Read from dashboard photo") }
+            DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                DropdownMenuItem(text = { Text("Take photo") }, onClick = {
+                    menu = false
+                    viewModel.newCameraUri().also { cameraUri = it; camera.launch(it) }
+                })
+                DropdownMenuItem(text = { Text("Choose from gallery") }, onClick = {
+                    menu = false
+                    gallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                })
+            }
         }
     }
 

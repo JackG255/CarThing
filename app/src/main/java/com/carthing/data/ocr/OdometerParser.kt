@@ -39,6 +39,8 @@ object OdometerParser {
         } else {
             found.sortedByDescending { it.score }
         }
-        return ranked.map { it.km }.distinct().take(limit)
+        // Gauge scales ("100", "120") are short; once a longer reading is seen, they're just noise.
+        val shown = if (ranked.any { it.km >= 1000 }) ranked.filter { it.km >= 1000 } else ranked
+        return shown.map { it.km }.distinct().take(limit)
     }
 }
