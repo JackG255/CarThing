@@ -27,6 +27,7 @@ class BackupRepository(
             serviceEntries = vehicles.flatMap { db.serviceEntryDao().getForVehicle(it.id) }.map(ServiceEntryDto::of),
             maintenanceItems = vehicles.flatMap { db.maintenanceItemDao().getForVehicle(it.id) }.map(MaintenanceItemDto::of),
             deadlines = vehicles.flatMap { db.deadlineDao().getForVehicle(it.id) }.map(DeadlineDto::of),
+            odometerEntries = vehicles.flatMap { db.odometerEntryDao().getForVehicle(it.id) }.map(OdometerEntryDto::of),
         )
         json.encodeToString(BackupFile.serializer(), file)
     }
@@ -62,6 +63,7 @@ class BackupRepository(
             file.fuelEntries.forEach { db.fuelEntryDao().upsert(it.toEntity()) }
             file.serviceEntries.forEach { db.serviceEntryDao().upsert(it.toEntity()) }
             file.deadlines.forEach { db.deadlineDao().upsert(it.toEntity()) }
+            file.odometerEntries.forEach { db.odometerEntryDao().upsert(it.toEntity()) }
         }
     }
 
@@ -77,5 +79,6 @@ class BackupRepository(
         if (file.serviceEntries.any { it.maintenanceItemId != null && it.maintenanceItemId !in itemIds }) fail("service linked to a missing component")
         if (file.maintenanceItems.any { it.vehicleId !in vehicleIds }) fail("component for a missing vehicle")
         if (file.deadlines.any { it.vehicleId !in vehicleIds }) fail("deadline for a missing vehicle")
+        if (file.odometerEntries.any { it.vehicleId !in vehicleIds }) fail("odometer reading for a missing vehicle")
     }
 }

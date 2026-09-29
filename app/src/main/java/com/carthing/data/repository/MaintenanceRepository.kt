@@ -4,6 +4,7 @@ import androidx.room.withTransaction
 import com.carthing.data.CarThingDatabase
 import com.carthing.data.entity.FuelEntry
 import com.carthing.data.entity.MaintenanceItem
+import com.carthing.data.entity.OdometerEntry
 import com.carthing.data.entity.ServiceEntry
 import com.carthing.data.entity.Vehicle
 import com.carthing.data.maintenance.ComponentStatus
@@ -38,15 +39,17 @@ class MaintenanceRepository(
         dao.observeForVehicle(vehicleId),
         db.fuelEntryDao().observeForVehicle(vehicleId),
         db.serviceEntryDao().observeForVehicle(vehicleId),
-        db.vehicleDao().observeCurrentOdometer(vehicleId)
-    ) { items, fuel, service, odometer ->
-        val usage = usageOf(fuel, service)
+        db.vehicleDao().observeCurrentOdometer(vehicleId),
+        db.odometerEntryDao().observeForVehicle(vehicleId)
+    ) { items, fuel, service, odometer, readings ->
+        val usage = usageOf(fuel, service, readings)
         val now = clock()
         items.map { ItemWithStatus(it, ComponentStatus.of(it, usage, odometer ?: 0.0, now)) }
             .sortedWith(urgency)
     }
 
     suspend fun getById(id: Long): MaintenanceItem? = dao.getById(id)
+    suspend fun idsForVehicle(vehicleId: Long): List<Long> = dao.getForVehicle(vehicleId).map { it.id }
 
     suspend fun save(item: MaintenanceItem): Long {
         require(item.name.isNotBlank()) { "Name must not be blank" }
@@ -83,8 +86,10 @@ class MaintenanceRepository(
         for (vehicle in db.vehicleDao().getAll()) {
             val fuel = db.fuelEntryDao().getForVehicle(vehicle.id)
             val service = db.serviceEntryDao().getForVehicle(vehicle.id)
-            val usage = usageOf(fuel, service)
-            val recorded = (fuel.map { it.odometerKm } + service.map { it.odometerKm } + vehicle.initialOdometerKm).max()
+            val readings = db.odometerEntryDao().getForVehicle(vehicle.id)
+            val usage = usageOf(fuel, service, readings)
+            val recorded = (fuel.map { it.odometerKm } + service.map { it.odometerKm } + readings.map { it.odometerKm } +
+                vehicle.initialOdometerKm).max()
             for (item in dao.getEnabledForVehicle(vehicle.id)) {
                 val status = ComponentStatus.of(item, usage, recorded, now)
                 var inspectLevel = item.inspectNotifiedLevel
@@ -108,9 +113,10 @@ class MaintenanceRepository(
     }
 
     companion object {
-        internal fun usageOf(fuel: List<FuelEntry>, service: List<ServiceEntry>) = Usage.estimate(
+        internal fun usageOf(fuel: List<FuelEntry>, service: List<ServiceEntry>, readings: List<OdometerEntry> = emptyList()) = Usage.estimate(
             fuel.map { OdometerReading(it.dateEpochMillis, it.odometerKm) } +
-                service.map { OdometerReading(it.dateEpochMillis, it.odometerKm) }
+                service.map { OdometerReading(it.dateEpochMillis, it.odometerKm) } +
+                readings.map { OdometerReading(it.dateEpochMillis, it.odometerKm) }
         )
 
         private val levelOrder = listOf(DueLevel.OVERDUE, DueLevel.DUE_SOON, DueLevel.UNKNOWN, DueLevel.OK)

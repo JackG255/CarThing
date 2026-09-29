@@ -169,6 +169,10 @@ private fun ScheduleSection(title: String, fields: ScheduleFields) {
         DateInput(date, { fields.lastDate.value = it }, "Last ${title.lowercase()}")
     }
     DecimalInput(fields.lastKm, { fields.lastKm = it }, "Odometer at last ${title.lowercase()} (km)", fields.lastKmError)
+    if (fields.km.isNotBlank() && fields.lastDate.value != null && fields.lastKm.isBlank()) {
+        Text("Without the odometer reading, only the time limit is checked. Enter 0 for a part that's original from new.",
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
+    }
 }
 
 @Composable

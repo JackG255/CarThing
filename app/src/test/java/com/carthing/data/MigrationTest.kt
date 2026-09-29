@@ -21,7 +21,7 @@ class MigrationTest {
     val helper = MigrationTestHelper(InstrumentationRegistry.getInstrumentation(), CarThingDatabase::class.java)
 
     private fun openRoom() = Room.databaseBuilder(ApplicationProvider.getApplicationContext(), CarThingDatabase::class.java, dbName)
-        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).allowMainThreadQueries().build()
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).allowMainThreadQueries().build()
 
     @Test fun migrate1To4KeepsDataAndSeedsSplitSchedule() = runTest {
         helper.createDatabase(dbName, 1).use { db ->
@@ -34,6 +34,7 @@ class MigrationTest {
         helper.runMigrationsAndValidate(dbName, 2, true, MIGRATION_1_2).close()
         helper.runMigrationsAndValidate(dbName, 3, true, MIGRATION_2_3).close()
         helper.runMigrationsAndValidate(dbName, 4, true, MIGRATION_3_4).close()
+        helper.runMigrationsAndValidate(dbName, 5, true, MIGRATION_4_5).close()
 
         val room = openRoom()
         try {
@@ -42,6 +43,7 @@ class MigrationTest {
             assertNull(service.maintenanceItemId)
             assertEquals(1, room.fuelEntryDao().getForVehicle(1).size)
             assertEquals(0, room.deadlineDao().getForVehicle(1).size)
+            assertEquals(0, room.odometerEntryDao().getForVehicle(1).size)
 
             for (vehicleId in listOf(1L, 2L)) {
                 val items = room.maintenanceItemDao().observeForVehicle(vehicleId).first().associateBy { it.name }
@@ -71,6 +73,7 @@ class MigrationTest {
         }
         helper.runMigrationsAndValidate(dbName, 3, true, MIGRATION_2_3).close()
         helper.runMigrationsAndValidate(dbName, 4, true, MIGRATION_3_4).close()
+        helper.runMigrationsAndValidate(dbName, 5, true, MIGRATION_4_5).close()
 
         val room = openRoom()
         try {

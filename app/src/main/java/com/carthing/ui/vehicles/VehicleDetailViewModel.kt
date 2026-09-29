@@ -22,6 +22,7 @@ import com.carthing.data.repository.MaintenanceRepository
 import com.carthing.data.repository.SaveResult
 import com.carthing.data.repository.ServiceRepository
 import com.carthing.data.repository.VehicleRepository
+import com.carthing.notifications.ReminderNotifications
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -46,11 +47,12 @@ sealed interface VehicleDetailUiState {
 
 class VehicleDetailViewModel(
     private val vehicleId: Long,
-    vehicles: VehicleRepository,
+    private val vehicles: VehicleRepository,
     private val fuel: FuelRepository,
     private val service: ServiceRepository,
     private val maintenance: MaintenanceRepository,
-    private val deadlines: DeadlineRepository
+    private val deadlines: DeadlineRepository,
+    private val notifications: ReminderNotifications,
 ) : ViewModel() {
     val uiState: StateFlow<VehicleDetailUiState> = combine(
         vehicles.observe(vehicleId),
@@ -76,20 +78,33 @@ class VehicleDetailViewModel(
     suspend fun deleteService(entry: ServiceEntry) = service.delete(entry)
 
     suspend fun saveMaintenanceItem(item: MaintenanceItem): Long = maintenance.save(item.copy(vehicleId = vehicleId))
-    suspend fun deleteMaintenanceItem(item: MaintenanceItem) = maintenance.delete(item)
-    suspend fun markDone(item: MaintenanceItem, kind: ScheduleKind, epochMillis: Long, odometerKm: Double, cost: Double?) =
+    suspend fun deleteMaintenanceItem(item: MaintenanceItem) {
+        maintenance.delete(item)
+        notifications.cancelItem(item.id)
+    }
+    suspend fun markDone(item: MaintenanceItem, kind: ScheduleKind, epochMillis: Long, odometerKm: Double, cost: Double?) {
         maintenance.markDone(item, kind, epochMillis, odometerKm, cost)
+        notifications.cancelItem(item.id)
+    }
+
+    suspend fun updateOdometer(epochMillis: Long, odometerKm: Double) = vehicles.addOdometerReading(vehicleId, epochMillis, odometerKm)
 
     suspend fun saveDeadline(deadline: Deadline): Long = deadlines.save(deadline.copy(vehicleId = vehicleId))
-    suspend fun deleteDeadline(deadline: Deadline) = deadlines.delete(deadline)
-    suspend fun renewDeadline(deadline: Deadline, newDueEpochMillis: Long) = deadlines.renew(deadline, newDueEpochMillis)
+    suspend fun deleteDeadline(deadline: Deadline) {
+        deadlines.delete(deadline)
+        notifications.cancelDeadline(deadline.id)
+    }
+    suspend fun renewDeadline(deadline: Deadline, newDueEpochMillis: Long) {
+        deadlines.renew(deadline, newDueEpochMillis)
+        notifications.cancelDeadline(deadline.id)
+    }
 
     companion object {
         fun factory(vehicleId: Long): ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val c = (this[APPLICATION_KEY] as CarThingApp).container
                 VehicleDetailViewModel(vehicleId, c.vehicleRepository, c.fuelRepository, c.serviceRepository,
-                    c.maintenanceRepository, c.deadlineRepository)
+                    c.maintenanceRepository, c.deadlineRepository, c.reminderNotifications)
             }
         }
     }

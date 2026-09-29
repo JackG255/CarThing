@@ -28,6 +28,7 @@ class DeadlineRepository(
         }
 
     suspend fun getById(id: Long): Deadline? = dao.getById(id)
+    suspend fun idsForVehicle(vehicleId: Long): List<Long> = dao.getForVehicle(vehicleId).map { it.id }
 
     suspend fun save(deadline: Deadline): Long {
         require(deadline.title.isNotBlank()) { "Title must not be blank" }

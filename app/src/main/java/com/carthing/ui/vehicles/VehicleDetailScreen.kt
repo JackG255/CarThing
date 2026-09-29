@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -26,11 +27,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -47,13 +50,16 @@ import com.carthing.data.entity.ServiceEntry
 import com.carthing.data.maintenance.DueLevel
 import com.carthing.data.repository.DeadlineRepository
 import com.carthing.ui.common.BackButton
+import com.carthing.ui.common.DecimalInput
 import com.carthing.ui.common.LoadingBox
+import com.carthing.ui.common.editableNumber
 import com.carthing.ui.common.formatCostPerKm
 import com.carthing.ui.common.formatDate
 import com.carthing.ui.common.formatEconomy
 import com.carthing.ui.common.formatKm
 import com.carthing.ui.common.formatLiters
 import com.carthing.ui.common.formatMoney
+import com.carthing.ui.common.parseDecimal
 import com.carthing.ui.maintenance.MaintenanceTab
 import kotlinx.coroutines.launch
 
@@ -77,6 +83,7 @@ fun VehicleDetailScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableIntStateOf(initialTab) }
     val scope = rememberCoroutineScope()
+    var updatingOdometer by rememberSaveable { mutableStateOf(false) }
 
     // The vehicle was deleted elsewhere (e.g. from the edit form): leave this screen.
     if (state == VehicleDetailUiState.NotFound) LaunchedEffect(Unit) { onBack() }
@@ -101,10 +108,14 @@ fun VehicleDetailScreen(
         }
     ) { padding ->
         val s = state as? VehicleDetailUiState.Loaded ?: return@Scaffold LoadingBox(Modifier.padding(padding))
+        if (updatingOdometer) UpdateOdometerDialog(s.currentOdometerKm, onDismiss = { updatingOdometer = false }) { date, km ->
+            updatingOdometer = false
+            scope.launch { viewModel.updateOdometer(date, km) }
+        }
         val attention = s.maintenance.count { it.item.enabled && it.status.level in setOf(DueLevel.DUE_SOON, DueLevel.OVERDUE) } +
             s.deadlines.count { DeadlineRepository.needsAttention(it.status) }
         Column(Modifier.padding(padding)) {
-            StatsCard(s.currentOdometerKm, s.stats)
+            StatsCard(s.currentOdometerKm, s.stats, onUpdateOdometer = { updatingOdometer = true })
             TabRow(selectedTabIndex = tab) {
                 Tab(selected = tab == TAB_FUEL, onClick = { tab = TAB_FUEL }, text = { Text("Fuel") })
                 Tab(selected = tab == TAB_SERVICE, onClick = { tab = TAB_SERVICE }, text = { Text("Service") })
@@ -132,10 +143,13 @@ const val TAB_SERVICE = 1
 const val TAB_MAINTENANCE = 2
 
 @Composable
-private fun StatsCard(odometerKm: Double, stats: VehicleStats) {
+private fun StatsCard(odometerKm: Double, stats: VehicleStats, onUpdateOdometer: () -> Unit) {
     Card(Modifier.fillMaxWidth().padding(16.dp)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(formatKm(odometerKm), style = MaterialTheme.typography.headlineSmall)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(formatKm(odometerKm), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
+                TextButton(onClick = onUpdateOdometer) { Text("Update") }
+            }
             Row(Modifier.fillMaxWidth()) {
                 Stat("Average", formatEconomy(stats.averageLitersPer100Km), Modifier.weight(1f))
                 Stat("Last", formatEconomy(stats.lastLitersPer100Km), Modifier.weight(1f))
@@ -204,4 +218,31 @@ private fun EmptyTab(message: String) {
     Box(Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
         Text(message, style = MaterialTheme.typography.bodyMedium)
     }
+}
+
+/** Logs today's odometer reading; it can't be lower than the current one. */
+@Composable
+private fun UpdateOdometerDialog(currentKm: Double, onDismiss: () -> Unit, onConfirm: (epochMillis: Long, km: Double) -> Unit) {
+    var text by rememberSaveable { mutableStateOf(editableNumber(currentKm)) }
+    val km = parseDecimal(text)
+    val error = when {
+        km == null -> "Enter the odometer reading"
+        km < currentKm -> "Can't be lower than ${formatKm(currentKm)}"
+        else -> null
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Update odometer") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("A current reading keeps distance-based reminders accurate between fill-ups.",
+                    style = MaterialTheme.typography.bodyMedium)
+                DecimalInput(text, { text = it }, "Odometer today (km)", error)
+            }
+        },
+        confirmButton = {
+            TextButton(enabled = error == null, onClick = { onConfirm(System.currentTimeMillis(), km!!) }) { Text("Save") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+    )
 }

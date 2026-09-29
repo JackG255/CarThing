@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import com.carthing.MainActivity
 import com.carthing.R
 import com.carthing.data.maintenance.DueLevel
+import com.carthing.data.maintenance.ScheduleKind
 import com.carthing.data.repository.DeadlineReminder
 import com.carthing.data.repository.Reminder
 import com.carthing.ui.common.formatDate
@@ -43,13 +44,13 @@ object MaintenanceNotifier {
             else -> "${reminder.item.name} ${reminder.kind.noun()} is due soon"
         }
         // One slot per component and schedule, so an inspection reminder doesn't replace a replacement one.
-        show(context, (reminder.item.id * 2 + reminder.kind.ordinal).toInt(), reminder.vehicle.id,
+        show(context, itemNotificationId(reminder.item.id, reminder.kind), reminder.vehicle.id,
             title, "${reminder.vehicle.name} · ${reminder.status.describe()}")
     }
 
     fun post(context: Context, reminder: DeadlineReminder) {
         // Negative ids keep deadlines apart from maintenance notifications.
-        show(context, -reminder.deadline.id.toInt(), reminder.vehicle.id,
+        show(context, deadlineNotificationId(reminder.deadline.id), reminder.vehicle.id,
             "${reminder.deadline.title} ${reminder.status.describeExpiry()}", reminder.vehicle.name)
     }
 
@@ -60,6 +61,9 @@ object MaintenanceNotifier {
     }
 
     private const val BACKUP_NOTIFICATION_ID = Int.MAX_VALUE
+
+    fun itemNotificationId(itemId: Long, kind: ScheduleKind) = (itemId * 2 + kind.ordinal).toInt()
+    fun deadlineNotificationId(deadlineId: Long) = -deadlineId.toInt()
 
     /** [vehicleId] null opens the vehicle list. */
     private fun show(context: Context, notificationId: Int, vehicleId: Long?, title: String, text: String) {
