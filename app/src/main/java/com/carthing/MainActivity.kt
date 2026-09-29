@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.carthing.notifications.MaintenanceCheckWorker
 import com.carthing.notifications.MaintenanceNotifier
 import com.carthing.ui.CarThingNavHost
@@ -18,6 +19,7 @@ class MainActivity : ComponentActivity() {
     private var openVehicleId by mutableStateOf<Long?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         MaintenanceNotifier.ensureChannel(this)
