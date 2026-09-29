@@ -31,8 +31,13 @@ android {
         applicationId = "com.carthing"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        // Release builds from CI take the version from the git tag (v1.2.3 -> "1.2.3", code 10203);
+        // local builds stay at 0.1.0 / 1. Codes must only ever go up for updates to install.
+        val tagVersion = System.getenv("CARTHING_VERSION")?.removePrefix("v")
+        val parts = tagVersion?.split('.')?.map { it.toIntOrNull() ?: error("Bad version tag: $tagVersion") }
+        require(parts == null || (parts.size == 3 && parts[1] < 100 && parts[2] < 100)) { "Version tags look like v1.2.3" }
+        versionCode = parts?.let { (major, minor, patch) -> major * 10_000 + minor * 100 + patch } ?: 1
+        versionName = tagVersion ?: "0.1.0"
     }
 
     signingConfigs {
