@@ -6,6 +6,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface VehicleDao {
+    @Query("SELECT * FROM vehicles")
+    suspend fun getAll(): List<Vehicle>
+
     @Query("SELECT * FROM vehicles ORDER BY name")
     fun observeAll(): Flow<List<Vehicle>>
 

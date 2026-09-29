@@ -32,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -43,6 +44,7 @@ import com.carthing.data.FuelEconomy
 import com.carthing.data.VehicleStats
 import com.carthing.data.entity.FuelEntry
 import com.carthing.data.entity.ServiceEntry
+import com.carthing.data.maintenance.DueLevel
 import com.carthing.ui.common.BackButton
 import com.carthing.ui.common.LoadingBox
 import com.carthing.ui.common.formatCostPerKm
@@ -51,6 +53,8 @@ import com.carthing.ui.common.formatEconomy
 import com.carthing.ui.common.formatKm
 import com.carthing.ui.common.formatLiters
 import com.carthing.ui.common.formatMoney
+import com.carthing.ui.maintenance.MaintenanceTab
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,10 +66,14 @@ fun VehicleDetailScreen(
     onEditFuel: (Long) -> Unit,
     onAddService: () -> Unit,
     onEditService: (Long) -> Unit,
+    onAddMaintenanceItem: () -> Unit,
+    onEditMaintenanceItem: (Long) -> Unit,
+    initialTab: Int = TAB_FUEL,
     viewModel: VehicleDetailViewModel = viewModel(factory = VehicleDetailViewModel.factory(vehicleId))
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    var tab by rememberSaveable { mutableIntStateOf(0) }
+    var tab by rememberSaveable { mutableIntStateOf(initialTab) }
+    val scope = rememberCoroutineScope()
 
     // The vehicle was deleted elsewhere (e.g. from the edit form): leave this screen.
     if (state == VehicleDetailUiState.NotFound) LaunchedEffect(Unit) { onBack() }
@@ -81,22 +89,40 @@ fun VehicleDetailScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = if (tab == 0) onAddFuel else onAddService) {
-                Icon(Icons.Default.Add, contentDescription = if (tab == 0) "Add fill-up" else "Add service")
+            val (onAdd, label) = when (tab) {
+                TAB_FUEL -> onAddFuel to "Add fill-up"
+                TAB_SERVICE -> onAddService to "Add service"
+                else -> onAddMaintenanceItem to "Add component"
             }
+            FloatingActionButton(onClick = onAdd) { Icon(Icons.Default.Add, contentDescription = label) }
         }
     ) { padding ->
         val s = state as? VehicleDetailUiState.Loaded ?: return@Scaffold LoadingBox(Modifier.padding(padding))
+        val attention = s.maintenance.count { it.item.enabled && it.status.level in setOf(DueLevel.DUE_SOON, DueLevel.OVERDUE) }
         Column(Modifier.padding(padding)) {
             StatsCard(s.currentOdometerKm, s.stats)
             TabRow(selectedTabIndex = tab) {
-                Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text("Fuel") })
-                Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text("Service") })
+                Tab(selected = tab == TAB_FUEL, onClick = { tab = TAB_FUEL }, text = { Text("Fuel") })
+                Tab(selected = tab == TAB_SERVICE, onClick = { tab = TAB_SERVICE }, text = { Text("Service") })
+                Tab(
+                    selected = tab == TAB_MAINTENANCE, onClick = { tab = TAB_MAINTENANCE },
+                    text = { Text(if (attention > 0) "Maintenance ($attention)" else "Maintenance", maxLines = 1) }
+                )
             }
-            if (tab == 0) FuelList(s.fuelEntries, onEditFuel) else ServiceList(s.serviceEntries, onEditService)
+            when (tab) {
+                TAB_FUEL -> FuelList(s.fuelEntries, onEditFuel)
+                TAB_SERVICE -> ServiceList(s.serviceEntries, onEditService)
+                else -> MaintenanceTab(s.maintenance, s.currentOdometerKm, onEditMaintenanceItem) { item, kind, date, odo, cost ->
+                    scope.launch { viewModel.markDone(item, kind, date, odo, cost) }
+                }
+            }
         }
     }
 }
+
+const val TAB_FUEL = 0
+const val TAB_SERVICE = 1
+const val TAB_MAINTENANCE = 2
 
 @Composable
 private fun StatsCard(odometerKm: Double, stats: VehicleStats) {

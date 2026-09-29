@@ -9,6 +9,9 @@ interface ServiceEntryDao {
     @Query("SELECT * FROM service_entries WHERE vehicleId = :vehicleId ORDER BY dateEpochMillis DESC")
     fun observeForVehicle(vehicleId: Long): Flow<List<ServiceEntry>>
 
+    @Query("SELECT * FROM service_entries WHERE vehicleId = :vehicleId")
+    suspend fun getForVehicle(vehicleId: Long): List<ServiceEntry>
+
     @Upsert suspend fun upsert(entry: ServiceEntry): Long
     @Delete suspend fun delete(entry: ServiceEntry)
 }

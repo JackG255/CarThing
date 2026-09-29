@@ -26,9 +26,9 @@ class RepositoryTest {
     @Before fun setUp() {
         db = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), CarThingDatabase::class.java)
             .allowMainThreadQueries().build()
-        vehicles = VehicleRepository(db.vehicleDao())
+        vehicles = VehicleRepository(db)
         fuel = FuelRepository(db.fuelEntryDao(), db.vehicleDao())
-        service = ServiceRepository(db.serviceEntryDao())
+        service = ServiceRepository(db)
     }
 
     @After fun tearDown() = db.close()

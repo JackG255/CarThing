@@ -1,13 +1,17 @@
 package com.carthing.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.carthing.ui.fuel.FuelFormScreen
+import com.carthing.ui.maintenance.MaintenanceItemFormScreen
 import com.carthing.ui.service.ServiceFormScreen
 import com.carthing.ui.vehicles.VehicleDetailScreen
+import com.carthing.ui.vehicles.TAB_FUEL
+import com.carthing.ui.vehicles.TAB_MAINTENANCE
 import com.carthing.ui.vehicles.VehicleFormScreen
 import com.carthing.ui.vehicles.VehicleListScreen
 import kotlinx.serialization.Serializable
@@ -15,14 +19,22 @@ import kotlinx.serialization.Serializable
 @Serializable object VehicleListRoute
 /** [vehicleId] of 0 adds a new vehicle. */
 @Serializable data class VehicleFormRoute(val vehicleId: Long = 0)
-@Serializable data class VehicleDetailRoute(val vehicleId: Long)
+@Serializable data class VehicleDetailRoute(val vehicleId: Long, val tab: Int = TAB_FUEL)
 /** [entryId] of 0 adds a new entry. */
 @Serializable data class FuelFormRoute(val vehicleId: Long, val entryId: Long = 0)
 @Serializable data class ServiceFormRoute(val vehicleId: Long, val entryId: Long = 0)
+@Serializable data class MaintenanceItemFormRoute(val vehicleId: Long, val itemId: Long = 0)
 
 @Composable
-fun CarThingNavHost() {
+fun CarThingNavHost(openVehicleId: Long? = null, onOpenedVehicle: () -> Unit = {}) {
     val nav = rememberNavController()
+    // Opened from a maintenance notification: show that vehicle's Maintenance tab.
+    LaunchedEffect(openVehicleId) {
+        openVehicleId?.let {
+            nav.navigate(VehicleDetailRoute(it, TAB_MAINTENANCE)) { popUpTo<VehicleListRoute>() }
+            onOpenedVehicle()
+        }
+    }
     NavHost(nav, startDestination = VehicleListRoute) {
         composable<VehicleListRoute> {
             VehicleListScreen(
@@ -44,7 +56,8 @@ fun CarThingNavHost() {
             )
         }
         composable<VehicleDetailRoute> { entry ->
-            val id = entry.toRoute<VehicleDetailRoute>().vehicleId
+            val route = entry.toRoute<VehicleDetailRoute>()
+            val id = route.vehicleId
             VehicleDetailScreen(
                 vehicleId = id,
                 onBack = { nav.popBackStack() },
@@ -52,7 +65,10 @@ fun CarThingNavHost() {
                 onAddFuel = { nav.navigate(FuelFormRoute(id)) },
                 onEditFuel = { nav.navigate(FuelFormRoute(id, it)) },
                 onAddService = { nav.navigate(ServiceFormRoute(id)) },
-                onEditService = { nav.navigate(ServiceFormRoute(id, it)) }
+                onEditService = { nav.navigate(ServiceFormRoute(id, it)) },
+                onAddMaintenanceItem = { nav.navigate(MaintenanceItemFormRoute(id)) },
+                onEditMaintenanceItem = { nav.navigate(MaintenanceItemFormRoute(id, it)) },
+                initialTab = route.tab
             )
         }
         composable<FuelFormRoute> { entry ->
@@ -62,6 +78,10 @@ fun CarThingNavHost() {
         composable<ServiceFormRoute> { entry ->
             val route = entry.toRoute<ServiceFormRoute>()
             ServiceFormScreen(route.vehicleId, route.entryId, onDone = { nav.popBackStack() })
+        }
+        composable<MaintenanceItemFormRoute> { entry ->
+            val route = entry.toRoute<MaintenanceItemFormRoute>()
+            MaintenanceItemFormScreen(route.vehicleId, route.itemId, onDone = { nav.popBackStack() })
         }
     }
 }
