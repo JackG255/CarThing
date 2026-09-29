@@ -19,6 +19,7 @@ class MaintenanceCheckWorker(context: Context, params: WorkerParameters) : Corou
         container.maintenanceRepository.collectReminders().forEach { MaintenanceNotifier.post(applicationContext, it) }
         container.deadlineRepository.collectReminders().forEach { MaintenanceNotifier.post(applicationContext, it) }
         remindToBackUp(container)
+        container.attachmentRepository.sweepOrphans()
         return Result.success()
     }
 

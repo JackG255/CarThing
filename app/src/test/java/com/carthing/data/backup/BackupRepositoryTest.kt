@@ -68,7 +68,7 @@ class BackupRepositoryTest {
         populate(source)
         val repo = BackupRepository(source)
         // A version-1 file has no odometerEntries field at all.
-        val v1 = repo.export().replace("\"formatVersion\": 2", "\"formatVersion\": 1")
+        val v1 = repo.export().replace("\"formatVersion\": 3", "\"formatVersion\": 1")
             .replace(Regex(""",\s*"odometerEntries":\s*\[[^\]]*\]"""), "")
         assertTrue(!v1.contains("odometerEntries"))
         val file = repo.read(v1)
@@ -97,7 +97,7 @@ class BackupRepositoryTest {
         }
         assertRejected("not json at all")
         assertRejected("""{"hello": "world"}""")
-        assertRejected(good.replace("\"formatVersion\": 2", "\"formatVersion\": 99"))
+        assertRejected(good.replace("\"formatVersion\": 3", "\"formatVersion\": 99"))
         // A fill-up pointing at a vehicle that isn't in the file.
         val vehicleId = source.vehicleDao().getAll().single().id
         assertRejected(good.replaceFirst("\"vehicleId\": $vehicleId", "\"vehicleId\": 12345"))

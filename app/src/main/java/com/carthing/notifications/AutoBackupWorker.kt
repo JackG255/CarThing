@@ -17,7 +17,7 @@ class AutoBackupWorker(context: Context, params: WorkerParameters) : CoroutineWo
         val c = (applicationContext as CarThingApp).container
         val folder = c.backupSettings.state.value.autoFolder ?: return Result.success()
         return try {
-            c.folderBackup.write(folder, c.backupRepository.export())
+            c.folderBackup.write(folder, c.backupArchive)
             c.backupSettings.recordBackup(System.currentTimeMillis())
             Result.success()
         } catch (e: Exception) {

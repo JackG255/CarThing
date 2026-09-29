@@ -9,13 +9,14 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.carthing.CarThingApp
-import com.carthing.data.backup.BackupFile
+import com.carthing.data.backup.BackupArchive
 import com.carthing.data.backup.BackupRepository
 import com.carthing.data.backup.BackupSettings
 import com.carthing.data.backup.FolderBackup
 import com.carthing.notifications.AutoBackupWorker
 import com.carthing.data.backup.BackupSummary
 import com.carthing.data.backup.InvalidBackupException
+import com.carthing.data.backup.ParsedBackup
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,13 +29,14 @@ import java.time.LocalDate
 class BackupViewModel(
     app: Application,
     private val backups: BackupRepository,
+    private val archive: BackupArchive,
     private val settings: BackupSettings,
     private val folders: FolderBackup,
 ) : AndroidViewModel(app) {
     val settingsState: StateFlow<BackupSettings.State> = settings.state
 
     /** A validated file waiting for the user to confirm replacing all data. */
-    data class PendingImport(val file: BackupFile, val summary: BackupSummary)
+    data class PendingImport(val parsed: ParsedBackup, val summary: BackupSummary)
 
     private val _pending = MutableStateFlow<PendingImport?>(null)
     val pending: StateFlow<PendingImport?> = _pending
@@ -43,13 +45,12 @@ class BackupViewModel(
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message
 
-    fun suggestedFileName() = "carthing-backup-${LocalDate.now()}.json"
+    fun suggestedFileName() = "carthing-backup-${LocalDate.now()}.zip"
 
     fun exportTo(uri: Uri) = viewModelScope.launch {
         _message.value = try {
-            val text = backups.export()
             withContext(Dispatchers.IO) {
-                resolver().openOutputStream(uri, "wt")?.use { it.write(text.toByteArray()) } ?: throw IOException("Can't open file")
+                resolver().openOutputStream(uri, "wt")?.use { archive.writeTo(it) } ?: throw IOException("Can't open file")
             }
             settings.recordBackup(System.currentTimeMillis())
             "Backup saved"
@@ -58,14 +59,14 @@ class BackupViewModel(
         }
     }
 
-    /** Reads and validates [uri]; on success asks for confirmation via [pending]. */
+    /** Reads and validates [uri] (zip, or a JSON backup from before photos); on success asks for confirmation via [pending]. */
     fun prepareImport(uri: Uri) = viewModelScope.launch {
         try {
-            val text = withContext(Dispatchers.IO) {
-                resolver().openInputStream(uri)?.use { it.readBytes().decodeToString() } ?: throw IOException("Can't open file")
+            val parsed = withContext(Dispatchers.IO) {
+                val bytes = resolver().openInputStream(uri)?.use { it.readBytes() } ?: throw IOException("Can't open file")
+                archive.read(bytes)
             }
-            val file = backups.read(text)
-            _pending.value = PendingImport(file, backups.summarize(file))
+            _pending.value = PendingImport(parsed, backups.summarize(parsed.file))
         } catch (e: InvalidBackupException) {
             _message.value = e.message
         } catch (e: IOException) {
@@ -76,7 +77,7 @@ class BackupViewModel(
     fun confirmImport() = viewModelScope.launch {
         val p = _pending.value ?: return@launch
         _pending.value = null
-        backups.replaceAll(p.file)
+        withContext(Dispatchers.IO) { archive.restore(p.parsed) }
         _message.value = "Backup restored"
     }
 
@@ -121,7 +122,8 @@ class BackupViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY] as CarThingApp
-                BackupViewModel(app, app.container.backupRepository, app.container.backupSettings, app.container.folderBackup)
+                val c = app.container
+                BackupViewModel(app, c.backupRepository, c.backupArchive, c.backupSettings, c.folderBackup)
             }
         }
     }

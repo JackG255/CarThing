@@ -39,5 +39,8 @@ class BackupPolicyTest {
             BackupPolicy.autoBackupsToDelete(names)
         )
         assertTrue(BackupPolicy.autoBackupsToDelete(names.take(3)).isEmpty())
+        // Older .json and newer .zip auto backups are ranked together by their timestamp.
+        val mixed = listOf("carthing-auto-2026-09-01-080000.json", "carthing-auto-2026-10-01-080000.zip", "carthing-auto-2026-11-01-080000.zip")
+        assertEquals(listOf("carthing-auto-2026-09-01-080000.json"), BackupPolicy.autoBackupsToDelete(mixed, keep = 2))
     }
 }

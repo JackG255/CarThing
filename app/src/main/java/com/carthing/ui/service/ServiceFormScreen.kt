@@ -32,8 +32,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.carthing.data.attachments.AttachmentOwner
 import com.carthing.data.entity.MaintenanceItem
 import com.carthing.data.entity.ServiceEntry
+import com.carthing.ui.attachments.EntryPhotos
+import com.carthing.ui.attachments.rememberPendingPhotos
 import com.carthing.ui.common.BackButton
 import com.carthing.ui.common.DateInput
 import com.carthing.ui.common.DecimalInput
@@ -77,6 +80,7 @@ private fun ServiceForm(
     onDone: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val photos = rememberPendingPhotos()
     var type by rememberSaveable { mutableStateOf(existing?.type.orEmpty()) }
     var date by rememberSaveable { mutableLongStateOf(existing?.dateEpochMillis ?: System.currentTimeMillis()) }
     var odometer by rememberSaveable { mutableStateOf(editableNumber(existing?.odometerKm ?: suggestedOdometerKm)) }
@@ -122,6 +126,7 @@ private fun ServiceForm(
             DecimalInput(cost, { cost = it }, "Cost", costError)
             TextInput(shop, { shop = it }, "Shop")
             TextInput(note, { note = it }, "Note", singleLine = false)
+            EntryPhotos(existing?.let { AttachmentOwner.Service(it.id) }, photos, viewModel)
             Button(
                 onClick = {
                     submitted = true
@@ -133,7 +138,11 @@ private fun ServiceForm(
                         shop = shop.trim().ifEmpty { null }, note = note.trim().ifEmpty { null },
                         maintenanceItemId = componentId
                     )
-                    scope.launch { viewModel.saveService(entry); onDone() }
+                    scope.launch {
+                        val id = viewModel.saveService(entry)
+                        viewModel.attachPhotos(AttachmentOwner.Service(id), photos.toList())
+                        onDone()
+                    }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) { Text("Save") }

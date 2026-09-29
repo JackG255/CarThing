@@ -32,9 +32,12 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.carthing.data.attachments.AttachmentOwner
 import com.carthing.data.entity.FuelEntry
 import com.carthing.data.repository.FuelIssue
 import com.carthing.data.repository.SaveResult
+import com.carthing.ui.attachments.EntryPhotos
+import com.carthing.ui.attachments.rememberPendingPhotos
 import com.carthing.ui.common.BackButton
 import com.carthing.ui.common.DateInput
 import com.carthing.ui.common.DecimalInput
@@ -69,6 +72,7 @@ fun FuelFormScreen(
 @Composable
 private fun FuelForm(existing: FuelEntry?, suggestedOdometerKm: Double, viewModel: VehicleDetailViewModel, onDone: () -> Unit) {
     val scope = rememberCoroutineScope()
+    val photos = rememberPendingPhotos()
     var date by rememberSaveable { mutableLongStateOf(existing?.dateEpochMillis ?: System.currentTimeMillis()) }
     var odometer by rememberSaveable { mutableStateOf(editableNumber(existing?.odometerKm ?: suggestedOdometerKm)) }
     var liters by rememberSaveable { mutableStateOf(editableNumber(existing?.liters)) }
@@ -84,7 +88,10 @@ private fun FuelForm(existing: FuelEntry?, suggestedOdometerKm: Double, viewMode
 
     fun save(entry: FuelEntry, acceptWarnings: Boolean) = scope.launch {
         when (val result = viewModel.saveFuel(entry, acceptWarnings)) {
-            is SaveResult.Saved -> onDone()
+            is SaveResult.Saved -> {
+                viewModel.attachPhotos(AttachmentOwner.Fuel(result.id), photos.toList())
+                onDone()
+            }
             is SaveResult.Rejected ->
                 if (result.issues.none { it.isError }) pendingWarnings = entry else issues = result.issues.filter { it.isError }
         }
@@ -121,6 +128,7 @@ private fun FuelForm(existing: FuelEntry?, suggestedOdometerKm: Double, viewMode
             SwitchRow("Missed recording the previous fill-up", missedPrevious) { missedPrevious = it }
             TextInput(station, { station = it }, "Station")
             TextInput(note, { note = it }, "Note", singleLine = false)
+            EntryPhotos(existing?.let { AttachmentOwner.Fuel(it.id) }, photos, viewModel)
             Button(
                 onClick = {
                     val odo = parseDecimal(odometer)

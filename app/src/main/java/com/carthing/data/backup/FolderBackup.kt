@@ -10,13 +10,13 @@ import java.time.format.DateTimeFormatter
 /** Writes backups into a user-chosen folder (a Storage Access Framework document tree). */
 class FolderBackup(private val resolver: ContentResolver) {
 
-    /** Writes [json] as a new timestamped file in [tree] and prunes old automatic backups. */
-    fun write(tree: Uri, json: String, now: LocalDateTime = LocalDateTime.now()) {
+    /** Writes [archive] as a new timestamped zip in [tree] and prunes old automatic backups. */
+    suspend fun write(tree: Uri, archive: BackupArchive, now: LocalDateTime = LocalDateTime.now()) {
         val folder = DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
-        val name = BackupPolicy.AUTO_PREFIX + now.format(STAMP) + ".json"
-        val file = DocumentsContract.createDocument(resolver, folder, "application/json", name)
+        val name = BackupPolicy.AUTO_PREFIX + now.format(STAMP) + ".zip"
+        val file = DocumentsContract.createDocument(resolver, folder, "application/zip", name)
             ?: throw IOException("The folder doesn't accept new files")
-        resolver.openOutputStream(file, "wt")?.use { it.write(json.toByteArray()) }
+        resolver.openOutputStream(file, "wt")?.use { archive.writeTo(it) }
             ?: throw IOException("Can't write to the folder")
         prune(tree)
     }

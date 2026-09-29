@@ -1,5 +1,6 @@
 package com.carthing.ui.vehicles
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -8,6 +9,10 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.carthing.CarThingApp
 import com.carthing.data.VehicleStats
+import com.carthing.data.attachments.AttachmentOwner
+import com.carthing.data.attachments.AttachmentRepository
+import com.carthing.data.attachments.PhotoStore
+import com.carthing.data.entity.Attachment
 import com.carthing.data.entity.Deadline
 import com.carthing.data.entity.FuelEntry
 import com.carthing.data.entity.MaintenanceItem
@@ -23,10 +28,14 @@ import com.carthing.data.repository.SaveResult
 import com.carthing.data.repository.ServiceRepository
 import com.carthing.data.repository.VehicleRepository
 import com.carthing.notifications.ReminderNotifications
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.withContext
+import java.io.File
 
 sealed interface VehicleDetailUiState {
     data object Loading : VehicleDetailUiState
@@ -41,9 +50,19 @@ sealed interface VehicleDetailUiState {
         /** Most urgent first. */
         val maintenance: List<ItemWithStatus>,
         /** Soonest first. */
-        val deadlines: List<DeadlineWithStatus>
+        val deadlines: List<DeadlineWithStatus>,
+        /** Entries with at least one photo, for the paperclip marker. */
+        val fuelWithPhotos: Set<Long> = emptySet(),
+        val serviceWithPhotos: Set<Long> = emptySet(),
     ) : VehicleDetailUiState
 }
+
+private data class Extras(
+    val items: List<ItemWithStatus>,
+    val deadlines: List<DeadlineWithStatus>,
+    val fuelWithPhotos: Set<Long>,
+    val serviceWithPhotos: Set<Long>,
+)
 
 class VehicleDetailViewModel(
     private val vehicleId: Long,
@@ -53,18 +72,23 @@ class VehicleDetailViewModel(
     private val maintenance: MaintenanceRepository,
     private val deadlines: DeadlineRepository,
     private val notifications: ReminderNotifications,
+    private val attachments: AttachmentRepository,
+    private val photos: PhotoStore,
 ) : ViewModel() {
     val uiState: StateFlow<VehicleDetailUiState> = combine(
         vehicles.observe(vehicleId),
         vehicles.observeCurrentOdometer(vehicleId),
         fuel.observeForVehicle(vehicleId),
         service.observeForVehicle(vehicleId),
-        combine(maintenance.observeWithStatus(vehicleId), deadlines.observeWithStatus(vehicleId), ::Pair)
-    ) { vehicle, odometer, fuelEntries, serviceEntries, (items, deadlineList) ->
+        combine(
+            maintenance.observeWithStatus(vehicleId), deadlines.observeWithStatus(vehicleId),
+            attachments.observeFuelEntriesWithAttachments(), attachments.observeServiceEntriesWithAttachments()
+        ) { items, deadlineList, fuelIds, serviceIds -> Extras(items, deadlineList, fuelIds.toSet(), serviceIds.toSet()) }
+    ) { vehicle, odometer, fuelEntries, serviceEntries, extras ->
         if (vehicle == null) VehicleDetailUiState.NotFound
         else VehicleDetailUiState.Loaded(
             vehicle, odometer ?: vehicle.initialOdometerKm, fuelEntries, serviceEntries,
-            VehicleStats.from(fuelEntries, serviceEntries), items, deadlineList
+            VehicleStats.from(fuelEntries, serviceEntries), extras.items, extras.deadlines, extras.fuelWithPhotos, extras.serviceWithPhotos
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), VehicleDetailUiState.Loading)
 
@@ -89,6 +113,15 @@ class VehicleDetailViewModel(
 
     suspend fun updateOdometer(epochMillis: Long, odometerKm: Double) = vehicles.addOdometerReading(vehicleId, epochMillis, odometerKm)
 
+    fun observeAttachments(owner: AttachmentOwner): Flow<List<Attachment>> = attachments.observe(owner)
+    fun photoFile(fileName: String): File = photos.file(fileName)
+    fun newCameraUri(): Uri = photos.newCameraUri()
+    suspend fun importPhoto(uri: Uri): String = withContext(Dispatchers.IO) { photos.import(uri) }
+    suspend fun attachPhotos(owner: AttachmentOwner, fileNames: List<String>) = attachments.attach(owner, fileNames)
+    suspend fun deleteAttachment(attachment: Attachment) = withContext(Dispatchers.IO) { attachments.delete(attachment) }
+    /** A photo added in a form that is being discarded before saving. */
+    fun discardPhoto(fileName: String) = photos.delete(fileName)
+
     suspend fun saveDeadline(deadline: Deadline): Long = deadlines.save(deadline.copy(vehicleId = vehicleId))
     suspend fun deleteDeadline(deadline: Deadline) {
         deadlines.delete(deadline)
@@ -104,7 +137,7 @@ class VehicleDetailViewModel(
             initializer {
                 val c = (this[APPLICATION_KEY] as CarThingApp).container
                 VehicleDetailViewModel(vehicleId, c.vehicleRepository, c.fuelRepository, c.serviceRepository,
-                    c.maintenanceRepository, c.deadlineRepository, c.reminderNotifications)
+                    c.maintenanceRepository, c.deadlineRepository, c.reminderNotifications, c.attachmentRepository, c.photoStore)
             }
         }
     }

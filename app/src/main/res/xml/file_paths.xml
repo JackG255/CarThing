@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shared with the camera app for full-size captures, and for sharing a photo. -->
+<paths>
+    <cache-path name="camera" path="camera/" />
+    <files-path name="attachments" path="attachments/" />
+</paths>
