@@ -27,7 +27,7 @@ data class BackupFile(
     /** Added in format 3; the photos themselves travel next to the JSON in the zip. */
     val attachments: List<AttachmentDto> = emptyList(),
 ) {
-    companion object { const val FORMAT_VERSION = 3 }
+    companion object { const val FORMAT_VERSION = 4 }
 }
 
 @Serializable
@@ -107,9 +107,11 @@ data class OdometerEntryDto(val id: Long, val vehicleId: Long, val dateEpochMill
 data class AttachmentDto(
     val id: Long, val fuelEntryId: Long? = null, val serviceEntryId: Long? = null,
     val fileName: String, val addedEpochMillis: Long,
+    /** Added in format 4: service book photos belong to a vehicle. */
+    val vehicleId: Long? = null,
 ) {
-    fun toEntity() = Attachment(id, fuelEntryId, serviceEntryId, fileName, addedEpochMillis)
+    fun toEntity() = Attachment(id, fuelEntryId, serviceEntryId, fileName, addedEpochMillis, vehicleId)
     companion object {
-        fun of(a: Attachment) = AttachmentDto(a.id, a.fuelEntryId, a.serviceEntryId, a.fileName, a.addedEpochMillis)
+        fun of(a: Attachment) = AttachmentDto(a.id, a.fuelEntryId, a.serviceEntryId, a.fileName, a.addedEpochMillis, a.vehicleId)
     }
 }

@@ -52,3 +52,22 @@ fun EntryPhotos(
         }
     )
 }
+
+/**
+ * The vehicle's service book: photos of stamp pages that aren't tied to one service record.
+ * Photos are saved as soon as they're added; nothing is read from them.
+ */
+@Composable
+fun ServiceBookPhotos(viewModel: VehicleDetailViewModel) {
+    val scope = rememberCoroutineScope()
+    val owner = remember { viewModel.serviceBookOwner }
+    val saved by remember { viewModel.observeAttachments(owner) }.collectAsStateWithLifecycle(emptyList())
+    AttachmentsSection(
+        photos = saved.map { PhotoItem(viewModel.photoFile(it.fileName), it.id) },
+        newCameraUri = viewModel::newCameraUri,
+        importPhoto = viewModel::importPhoto,
+        onAdded = { name -> scope.launch { viewModel.attachPhotos(owner, listOf(name)) } },
+        onDelete = { item -> saved.firstOrNull { it.id == item.savedId }?.let { scope.launch { viewModel.deleteAttachment(it) } } },
+        title = "Service book",
+    )
+}

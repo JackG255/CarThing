@@ -12,6 +12,9 @@ interface AttachmentDao {
     @Query("SELECT * FROM attachments WHERE serviceEntryId = :serviceEntryId ORDER BY addedEpochMillis")
     fun observeForService(serviceEntryId: Long): Flow<List<Attachment>>
 
+    @Query("SELECT * FROM attachments WHERE vehicleId = :vehicleId ORDER BY addedEpochMillis")
+    fun observeForVehicle(vehicleId: Long): Flow<List<Attachment>>
+
     /** Entry ids that have at least one attachment, for the paperclip marker in lists. */
     @Query("SELECT fuelEntryId FROM attachments WHERE fuelEntryId IS NOT NULL")
     fun observeFuelEntryIdsWithAttachments(): Flow<List<Long>>

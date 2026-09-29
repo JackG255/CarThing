@@ -4,10 +4,11 @@ import com.carthing.data.CarThingDatabase
 import com.carthing.data.entity.Attachment
 import kotlinx.coroutines.flow.Flow
 
-/** Which entry an attachment belongs to. */
+/** What an attachment belongs to: an entry, or a vehicle (its service book). */
 sealed interface AttachmentOwner {
     data class Fuel(val entryId: Long) : AttachmentOwner
     data class Service(val entryId: Long) : AttachmentOwner
+    data class ServiceBook(val vehicleId: Long) : AttachmentOwner
 }
 
 class AttachmentRepository(
@@ -20,6 +21,7 @@ class AttachmentRepository(
     fun observe(owner: AttachmentOwner): Flow<List<Attachment>> = when (owner) {
         is AttachmentOwner.Fuel -> dao.observeForFuel(owner.entryId)
         is AttachmentOwner.Service -> dao.observeForService(owner.entryId)
+        is AttachmentOwner.ServiceBook -> dao.observeForVehicle(owner.vehicleId)
     }
 
     fun observeFuelEntriesWithAttachments(): Flow<List<Long>> = dao.observeFuelEntryIdsWithAttachments()
@@ -32,6 +34,7 @@ class AttachmentRepository(
             Attachment(
                 fuelEntryId = (owner as? AttachmentOwner.Fuel)?.entryId,
                 serviceEntryId = (owner as? AttachmentOwner.Service)?.entryId,
+                vehicleId = (owner as? AttachmentOwner.ServiceBook)?.vehicleId,
                 fileName = name, addedEpochMillis = now + i // keeps the order they were added in
             )
         })

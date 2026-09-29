@@ -91,6 +91,21 @@ class BackupArchiveTest {
         assertEquals(listOf(fuelId), db.attachmentDao().getAll().mapNotNull { it.fuelEntryId })
     }
 
+    @Test fun serviceBookPhotosRoundTrip() = runTest {
+        populate()
+        val v = db.vehicleDao().getAll().single().id
+        photos.write("book-1.jpg", byteArrayOf(9, 8, 7))
+        attachments.attach(AttachmentOwner.ServiceBook(v), listOf("book-1.jpg"))
+        val bytes = archive.writeBytes()
+        db.vehicleDao().getAll().forEach { db.vehicleDao().delete(it) }
+        photos.dir.listFiles()?.forEach { it.delete() }
+
+        archive.restore(archive.read(bytes))
+        val restored = db.vehicleDao().getAll().single().id
+        assertEquals(listOf("book-1.jpg"), db.attachmentDao().getAll().filter { it.vehicleId == restored }.map { it.fileName })
+        assertTrue(photos.file("book-1.jpg").exists())
+    }
+
     @Test fun restoreRemovesPhotosNotInTheBackup() = runTest {
         populate()
         val bytes = archive.writeBytes()

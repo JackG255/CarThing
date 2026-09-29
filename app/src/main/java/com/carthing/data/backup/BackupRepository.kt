@@ -89,7 +89,8 @@ class BackupRepository(
         val fuelIds = file.fuelEntries.map { it.id }.toSet()
         val serviceIds = file.serviceEntries.map { it.id }.toSet()
         for (a in file.attachments) {
-            if ((a.fuelEntryId == null) == (a.serviceEntryId == null)) fail("photo without exactly one entry")
+            if (listOfNotNull(a.fuelEntryId, a.serviceEntryId, a.vehicleId).size != 1) fail("photo without exactly one owner")
+            if (a.vehicleId != null && a.vehicleId !in vehicleIds) fail("service book photo for a missing vehicle")
             if (a.fuelEntryId != null && a.fuelEntryId !in fuelIds) fail("photo for a missing fill-up")
             if (a.serviceEntryId != null && a.serviceEntryId !in serviceIds) fail("photo for a missing service")
             // Names become file paths on restore; allow only the app's own generated names.

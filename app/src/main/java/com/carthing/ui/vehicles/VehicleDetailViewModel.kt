@@ -119,6 +119,7 @@ class VehicleDetailViewModel(
     suspend fun updateOdometer(epochMillis: Long, odometerKm: Double) = vehicles.addOdometerReading(vehicleId, epochMillis, odometerKm)
 
     fun observeAttachments(owner: AttachmentOwner): Flow<List<Attachment>> = attachments.observe(owner)
+    val serviceBookOwner get() = AttachmentOwner.ServiceBook(vehicleId)
     fun photoFile(fileName: String): File = photos.file(fileName)
     fun newCameraUri(): Uri = photos.newCameraUri()
     suspend fun importPhoto(uri: Uri): String = withContext(Dispatchers.IO) { photos.import(uri) }

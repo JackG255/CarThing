@@ -43,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.carthing.ui.attachments.ServiceBookPhotos
 import com.carthing.data.FuelEconomy
 import com.carthing.data.VehicleStats
 import com.carthing.data.entity.FuelEntry
@@ -126,7 +127,7 @@ fun VehicleDetailScreen(
             }
             when (tab) {
                 TAB_FUEL -> FuelList(s.fuelEntries, s.fuelWithPhotos, onEditFuel)
-                TAB_SERVICE -> ServiceList(s.serviceEntries, s.serviceWithPhotos, onEditService)
+                TAB_SERVICE -> ServiceList(s.serviceEntries, s.serviceWithPhotos, onEditService) { ServiceBookPhotos(viewModel) }
                 else -> MaintenanceTab(
                     s.maintenance, s.currentOdometerKm, onEditMaintenanceItem,
                     onRecord = { item, kind, date, odo, cost -> scope.launch { viewModel.markDone(item, kind, date, odo, cost) } },
@@ -199,9 +200,13 @@ private fun FuelList(entries: List<FuelEntry>, withPhotos: Set<Long>, onEdit: (L
 }
 
 @Composable
-private fun ServiceList(entries: List<ServiceEntry>, withPhotos: Set<Long>, onEdit: (Long) -> Unit) {
-    if (entries.isEmpty()) return EmptyTab("No service records yet")
+private fun ServiceList(entries: List<ServiceEntry>, withPhotos: Set<Long>, onEdit: (Long) -> Unit, serviceBook: @Composable () -> Unit) {
     LazyColumn(contentPadding = PaddingValues(bottom = 88.dp)) {
+        item(key = "book") {
+            Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) { serviceBook() }
+            HorizontalDivider()
+        }
+        if (entries.isEmpty()) item { Text("No service records yet", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(32.dp)) }
         items(entries, key = { it.id }) { e ->
             ListItem(
                 headlineContent = { Text(e.type) },
