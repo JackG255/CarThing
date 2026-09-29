@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 sealed interface VehicleDetailUiState {
     data object Loading : VehicleDetailUiState
@@ -57,9 +56,10 @@ class VehicleDetailViewModel(
     suspend fun saveFuel(entry: FuelEntry, acceptWarnings: Boolean = false): SaveResult =
         fuel.save(entry.copy(vehicleId = vehicleId), acceptWarnings)
 
-    fun deleteFuel(entry: FuelEntry) { viewModelScope.launch { fuel.delete(entry) } }
-    fun saveService(entry: ServiceEntry) { viewModelScope.launch { service.save(entry.copy(vehicleId = vehicleId)) } }
-    fun deleteService(entry: ServiceEntry) { viewModelScope.launch { service.delete(entry) } }
+    // Suspending so forms can navigate away only after the write has finished.
+    suspend fun deleteFuel(entry: FuelEntry) = fuel.delete(entry)
+    suspend fun saveService(entry: ServiceEntry): Long = service.save(entry.copy(vehicleId = vehicleId))
+    suspend fun deleteService(entry: ServiceEntry) = service.delete(entry)
 
     companion object {
         fun factory(vehicleId: Long): ViewModelProvider.Factory = viewModelFactory {
