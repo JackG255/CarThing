@@ -37,6 +37,7 @@ import com.carthing.data.entity.FuelEntry
 import com.carthing.data.repository.FuelIssue
 import com.carthing.data.repository.SaveResult
 import com.carthing.ui.attachments.EntryPhotos
+import com.carthing.ui.attachments.OdometerInput
 import com.carthing.ui.attachments.ReadOffer
 import com.carthing.ui.attachments.ReceiptBanner
 import com.carthing.ui.attachments.rememberPendingPhotos
@@ -163,7 +164,7 @@ private fun FuelForm(existing: FuelEntry?, suggestedOdometerKm: Double, viewMode
             if (readingReceipt) Text("Reading the receipt…", style = MaterialTheme.typography.bodySmall)
             receiptMessage?.let { ReceiptBanner(it) { receiptMessage = null } }
             DateInput(date, { date = it; issues = emptyList(); touch("date") }, if ("date" in fromReceipt) "Date (from receipt)" else "Date")
-            DecimalInput(odometer, { odometer = it; issues = emptyList(); parseErrors -= "odometer" }, "Odometer (km)", odometerError)
+            OdometerInput(odometer, { odometer = it; issues = emptyList(); parseErrors -= "odometer" }, odometerError, existing?.odometerKm ?: suggestedOdometerKm, viewModel, onPhotoAdded = { photos += it })
             DecimalInput(liters, { liters = it; issues = emptyList(); parseErrors -= "liters"; touch("liters") }, "Liters", litersError, hint("liters"))
             DecimalInput(price, { price = it; parseErrors -= "price"; touch("price") }, "Total price", priceError, hint("price"))
             SwitchRow("Filled the tank completely", fullTank) { fullTank = it; issues = emptyList() }

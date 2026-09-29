@@ -38,11 +38,13 @@ fun TextInput(
     singleLine: Boolean = true,
     /** Shown under the field when there's no error, e.g. "From receipt". */
     hint: String? = null,
+    trailingIcon: (@Composable () -> Unit)? = null,
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
+        trailingIcon = trailingIcon,
         isError = error != null,
         supportingText = (error ?: hint)?.let { { Text(it) } },
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
@@ -52,8 +54,10 @@ fun TextInput(
 }
 
 @Composable
-fun DecimalInput(value: String, onValueChange: (String) -> Unit, label: String, error: String? = null, hint: String? = null) =
-    TextInput(value, onValueChange, label, error = error, keyboardType = KeyboardType.Decimal, hint = hint)
+fun DecimalInput(
+    value: String, onValueChange: (String) -> Unit, label: String, error: String? = null, hint: String? = null,
+    trailingIcon: (@Composable () -> Unit)? = null,
+) = TextInput(value, onValueChange, label, error = error, keyboardType = KeyboardType.Decimal, hint = hint, trailingIcon = trailingIcon)
 
 /** Read-only date field with a picker; changing the date keeps the time of day of [epochMillis]. With [onClear], also offers a clear button. */
 @OptIn(ExperimentalMaterial3Api::class)

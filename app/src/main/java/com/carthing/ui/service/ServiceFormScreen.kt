@@ -37,6 +37,7 @@ import com.carthing.data.attachments.AttachmentOwner
 import com.carthing.data.entity.MaintenanceItem
 import com.carthing.data.entity.ServiceEntry
 import com.carthing.ui.attachments.EntryPhotos
+import com.carthing.ui.attachments.OdometerInput
 import com.carthing.ui.attachments.ReadOffer
 import com.carthing.ui.attachments.ReceiptBanner
 import com.carthing.ui.attachments.rememberPendingPhotos
@@ -165,7 +166,7 @@ private fun ServiceForm(
                 componentId = picked?.id
             }
             DateInput(date, { date = it; touch("date") }, if ("date" in fromInvoice) "Date (from invoice)" else "Date")
-            DecimalInput(odometer, { odometer = it; touch("odometer") }, "Odometer (km)", odometerError, hint("odometer"))
+            OdometerInput(odometer, { odometer = it; touch("odometer") }, odometerError, existing?.odometerKm ?: suggestedOdometerKm, viewModel, onPhotoAdded = { photos += it }, hint = hint("odometer"))
             DecimalInput(cost, { cost = it; touch("cost") }, "Cost", costError, hint("cost"))
             TextInput(shop, { shop = it; touch("shop") }, "Shop", hint = hint("shop"))
             TextInput(note, { note = it; touch("note") }, "Note", singleLine = false, hint = hint("note"))
