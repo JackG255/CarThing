@@ -31,7 +31,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.carthing.data.dao.VehicleWithOdometer
+import com.carthing.data.backup.BackupPolicy
+import com.carthing.ui.backup.BackupBanner
 import com.carthing.ui.backup.BackupMenu
+import com.carthing.ui.backup.BackupViewModel
 import com.carthing.ui.common.LoadingBox
 import com.carthing.ui.common.formatKm
 
@@ -44,8 +47,11 @@ fun VehicleListScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
+    val backupViewModel: BackupViewModel = viewModel(factory = BackupViewModel.Factory)
+    val backupSettings by backupViewModel.settingsState.collectAsStateWithLifecycle()
+    val backupStale = BackupPolicy.isStale(backupSettings.lastBackupEpochMillis, System.currentTimeMillis())
     Scaffold(
-        topBar = { TopAppBar(title = { Text("CarThing") }, actions = { BackupMenu(snackbar) }) },
+        topBar = { TopAppBar(title = { Text("CarThing") }, actions = { BackupMenu(snackbar, backupViewModel) }) },
         snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddVehicle) { Icon(Icons.Default.Add, contentDescription = "Add vehicle") }
@@ -60,6 +66,7 @@ fun VehicleListScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.padding(padding)
                 ) {
+                    if (backupStale) item(key = "backup-banner") { BackupBanner(backupViewModel) }
                     items(s.vehicles, key = { it.vehicle.id }) { VehicleCard(it) { onOpenVehicle(it.vehicle.id) } }
                 }
         }

@@ -8,15 +8,28 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.carthing.CarThingApp
+import com.carthing.data.AppContainer
+import com.carthing.data.backup.BackupPolicy
 import java.util.concurrent.TimeUnit
 
-/** Daily check that posts a reminder when a component or deadline becomes due soon or overdue. */
+/** Daily check: reminders for components and deadlines that are due soon or overdue, and for stale backups. */
 class MaintenanceCheckWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         val container = (applicationContext as CarThingApp).container
         container.maintenanceRepository.collectReminders().forEach { MaintenanceNotifier.post(applicationContext, it) }
         container.deadlineRepository.collectReminders().forEach { MaintenanceNotifier.post(applicationContext, it) }
+        remindToBackUp(container)
         return Result.success()
+    }
+
+    private suspend fun remindToBackUp(c: AppContainer) {
+        val now = System.currentTimeMillis()
+        val s = c.backupSettings.state.value
+        val hasData = c.vehicleRepository.count() > 0
+        if (BackupPolicy.shouldRemind(hasData, s.lastBackupEpochMillis, s.lastReminderEpochMillis, now)) {
+            MaintenanceNotifier.postBackupReminder(applicationContext, s.lastBackupEpochMillis)
+            c.backupSettings.recordReminder(now)
+        }
     }
 
     companion object {
