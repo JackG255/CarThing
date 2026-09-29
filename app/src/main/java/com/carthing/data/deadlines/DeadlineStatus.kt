@@ -2,6 +2,7 @@ package com.carthing.data.deadlines
 
 import com.carthing.data.entity.Deadline
 import com.carthing.data.maintenance.DueLevel
+import com.carthing.data.maintenance.MaintenanceStatus
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -9,7 +10,9 @@ import java.time.ZoneId
 data class DeadlineStatus(
     val level: DueLevel,
     /** Days until the due date: 0 on the day itself, negative once expired. */
-    val daysLeft: Long
+    val daysLeft: Long,
+    /** Share of the repeat period still left; null for one-off deadlines. */
+    val fractionRemaining: Double? = null,
 ) {
     companion object {
         const val SOON_DAYS = 30L
@@ -23,7 +26,8 @@ data class DeadlineStatus(
                 days <= SOON_DAYS -> DueLevel.DUE_SOON
                 else -> DueLevel.OK
             }
-            return DeadlineStatus(level, days)
+            val fraction = deadline.repeatMonths?.let { days / (it * MaintenanceStatus.DAYS_PER_MONTH) }
+            return DeadlineStatus(level, days, fraction)
         }
 
         /** The suggested next due date when renewing: the current one plus the repeat interval. */
