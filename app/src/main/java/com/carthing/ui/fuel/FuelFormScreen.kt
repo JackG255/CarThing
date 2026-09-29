@@ -93,6 +93,8 @@ private fun FuelForm(existing: FuelEntry?, suggestedOdometerKm: Double, viewMode
     var fromReceipt by rememberSaveable { mutableStateOf(listOf<String>()) }
     var readingReceipt by remember { mutableStateOf(false) }
     var receiptMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    // Reading is opt-in: a new photo only offers it, since not every photo is a fuel receipt.
+    var offerRead by rememberSaveable { mutableStateOf<String?>(null) }
     fun touch(field: String) { touched = touched + field; fromReceipt = fromReceipt - field }
 
     fun readReceipt(fileName: String) = scope.launch {
@@ -150,7 +152,14 @@ private fun FuelForm(existing: FuelEntry?, suggestedOdometerKm: Double, viewMode
             Modifier.padding(padding).imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            EntryPhotos(existing?.let { AttachmentOwner.Fuel(it.id) }, photos, viewModel, onPhotoAdded = ::readReceipt)
+            EntryPhotos(
+                existing?.let { AttachmentOwner.Fuel(it.id) }, photos, viewModel,
+                onPhotoAdded = { offerRead = it; receiptMessage = null },
+                onRead = { offerRead = null; readReceipt(it) },
+            )
+            offerRead?.let { name ->
+                ReadOffer(onRead = { offerRead = null; readReceipt(name) }, onDismiss = { offerRead = null })
+            }
             if (readingReceipt) Text("Reading the receipt…", style = MaterialTheme.typography.bodySmall)
             receiptMessage?.let { ReceiptBanner(it) { receiptMessage = null } }
             DateInput(date, { date = it; issues = emptyList(); touch("date") }, if ("date" in fromReceipt) "Date (from receipt)" else "Date")
@@ -228,6 +237,20 @@ private fun ReceiptBanner(message: String, onDismiss: () -> Unit) {
         Row(Modifier.padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(message, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
             TextButton(onClick = onDismiss) { Text("OK") }
+        }
+    }
+}
+
+@Composable
+private fun ReadOffer(onRead: () -> Unit, onDismiss: () -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(Modifier.padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("Fill in the form from this receipt?", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            TextButton(onClick = onDismiss) { Text("No") }
+            TextButton(onClick = onRead) { Text("Read") }
         }
     }
 }
