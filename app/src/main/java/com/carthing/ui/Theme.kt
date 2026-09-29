@@ -1,6 +1,5 @@
 package com.carthing.ui
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -10,6 +9,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.carthing.CarThingApp
 
 // Petrol teal palette (Material 3 tonal roles from seed #0E6A73), used where wallpaper colours aren't available.
 private val Light = lightColorScheme(
@@ -44,13 +44,14 @@ private val Dark = darkColorScheme(
     surfaceContainerHighest = Color(0xFF303636),
 )
 
-/** Material You (colours from the wallpaper) on Android 12+, the teal palette before that. */
+/** Material You (colours from the wallpaper) on Android 12+ unless turned off; the teal palette otherwise. */
 @Composable
 fun CarThingTheme(content: @Composable () -> Unit) {
     val dark = isSystemInDarkTheme()
     val context = LocalContext.current
+    val appearance = (context.applicationContext as CarThingApp).container.appearance
     val colors = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        appearance.wallpaperColorsAvailable && appearance.useWallpaperColors -> if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         dark -> Dark
         else -> Light
     }

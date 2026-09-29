@@ -38,7 +38,12 @@ import com.carthing.ui.common.formatDate
 
 /** Overflow menu with backup export/import, plus the import confirmation and result snackbar. */
 @Composable
-fun BackupMenu(snackbar: SnackbarHostState, viewModel: BackupViewModel = viewModel(factory = BackupViewModel.Factory)) {
+fun BackupMenu(
+    snackbar: SnackbarHostState,
+    viewModel: BackupViewModel = viewModel(factory = BackupViewModel.Factory),
+    /** More items after the backup ones; called with a function that closes the menu. */
+    extraItems: @Composable (close: () -> Unit) -> Unit = {},
+) {
     var open by remember { mutableStateOf(false) }
     val pending by viewModel.pending.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
@@ -68,6 +73,7 @@ fun BackupMenu(snackbar: SnackbarHostState, viewModel: BackupViewModel = viewMod
                 importLauncher.launch(arrayOf("application/zip", "application/json", "text/plain", "application/octet-stream"))
             })
             DropdownMenuItem(text = { Text("Automatic backups…") }, onClick = { open = false; showAuto = true })
+            extraItems { open = false }
         }
     }
 

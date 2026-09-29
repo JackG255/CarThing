@@ -14,6 +14,7 @@ import com.carthing.data.repository.MaintenanceRepository
 import com.carthing.data.repository.ServiceRepository
 import com.carthing.data.repository.VehicleRepository
 import com.carthing.notifications.ReminderNotifications
+import com.carthing.ui.AppearanceSettings
 
 /** Manual dependency container; one instance per process, owned by [com.carthing.CarThingApp]. */
 class AppContainer(context: Context, db: CarThingDatabase = CarThingDatabase.get(context)) {
@@ -23,6 +24,7 @@ class AppContainer(context: Context, db: CarThingDatabase = CarThingDatabase.get
     val maintenanceRepository = MaintenanceRepository(db)
     val deadlineRepository = DeadlineRepository(db)
 
+    val appearance = AppearanceSettings(context)
     val photoStore = PhotoStore(context)
     val attachmentRepository = AttachmentRepository(db, photoStore)
     val receiptReader = ReceiptTextReader(context)

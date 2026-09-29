@@ -9,6 +9,23 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.automirrored.filled.FactCheck
+import androidx.compose.material.icons.filled.BatteryChargingFull
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.LocalCarWash
+import androidx.compose.material.icons.filled.LocalGasStation
+import androidx.compose.material.icons.filled.OilBarrel
+import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material.icons.filled.Route
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.TireRepair
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.carthing.ui.common.EmptyState
+import com.carthing.ui.common.IconBadge
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -148,47 +165,58 @@ private const val PHOTO_MARK = "📎"
 
 @Composable
 private fun StatsCard(odometerKm: Double, stats: VehicleStats, onUpdateOdometer: () -> Unit) {
-    Card(Modifier.fillMaxWidth().padding(16.dp)) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Card(
+        Modifier.fillMaxWidth().padding(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(formatKm(odometerKm), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
-                TextButton(onClick = onUpdateOdometer) { Text("Update") }
+                Icon(Icons.Default.Speed, contentDescription = null, modifier = Modifier.size(28.dp))
+                Column(Modifier.weight(1f).padding(start = 12.dp)) {
+                    Text("Odometer", style = MaterialTheme.typography.labelMedium)
+                    Text(formatKm(odometerKm), style = MaterialTheme.typography.headlineSmall)
+                }
+                FilledTonalButton(onClick = onUpdateOdometer) { Text("Update") }
             }
             Row(Modifier.fillMaxWidth()) {
-                Stat("Average", formatEconomy(stats.averageLitersPer100Km), Modifier.weight(1f))
-                Stat("Last", formatEconomy(stats.lastLitersPer100Km), Modifier.weight(1f))
+                Stat(Icons.Default.LocalGasStation, "Average", formatEconomy(stats.averageLitersPer100Km), Modifier.weight(1f))
+                Stat(Icons.Default.History, "Last fill-up", formatEconomy(stats.lastLitersPer100Km), Modifier.weight(1f))
             }
             Row(Modifier.fillMaxWidth()) {
-                Stat("Total spent", formatMoney(stats.totalFuelCost + stats.totalServiceCost), Modifier.weight(1f))
-                Stat("Cost", formatCostPerKm(stats.costPerKm), Modifier.weight(1f))
+                Stat(Icons.Default.Payments, "Total spent", formatMoney(stats.totalFuelCost + stats.totalServiceCost), Modifier.weight(1f))
+                Stat(Icons.Default.Route, "Cost per km", formatCostPerKm(stats.costPerKm), Modifier.weight(1f))
             }
         }
     }
 }
 
 @Composable
-private fun Stat(label: String, value: String, modifier: Modifier) {
-    Column(modifier) {
-        Text(label, style = MaterialTheme.typography.labelMedium)
-        Text(value, style = MaterialTheme.typography.titleMedium)
+private fun Stat(icon: ImageVector, label: String, value: String, modifier: Modifier) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+        Column(Modifier.padding(start = 8.dp)) {
+            Text(label, style = MaterialTheme.typography.labelMedium)
+            Text(value, style = MaterialTheme.typography.titleMedium)
+        }
     }
 }
 
 @Composable
 private fun FuelList(entries: List<FuelEntry>, withPhotos: Set<Long>, onEdit: (Long) -> Unit) {
-    if (entries.isEmpty()) return EmptyTab("No fill-ups yet")
+    if (entries.isEmpty()) return EmptyTab(Icons.Default.LocalGasStation, "No fill-ups yet", "Log fill-ups to see your fuel economy and costs. Tip: snap the receipt and let the app read it.")
     val economyByEntry = remember(entries) { FuelEconomy.segments(entries).associate { it.endEntryId to it.litersPer100Km } }
     LazyColumn(contentPadding = PaddingValues(bottom = 88.dp)) {
         items(entries, key = { it.id }) { e ->
             val flags = listOfNotNull("partial".takeIf { !e.isFullTank }, "missed previous".takeIf { e.missedPrevious }, PHOTO_MARK.takeIf { e.id in withPhotos })
             ListItem(
+                leadingContent = { IconBadge(Icons.Default.LocalGasStation) },
                 headlineContent = { Text("${formatLiters(e.liters)} · ${formatKm(e.odometerKm)}") },
                 supportingContent = {
                     Text((listOf(formatDate(e.dateEpochMillis)) + listOfNotNull(e.station) + flags).joinToString(" · "))
                 },
                 trailingContent = {
                     Column(horizontalAlignment = Alignment.End) {
-                        economyByEntry[e.id]?.let { Text(formatEconomy(it)) }
+                        economyByEntry[e.id]?.let { Text(formatEconomy(it), style = MaterialTheme.typography.titleSmall) }
                         e.totalPrice?.let { Text(formatMoney(it), style = MaterialTheme.typography.bodySmall) }
                     }
                 },
@@ -206,14 +234,17 @@ private fun ServiceList(entries: List<ServiceEntry>, withPhotos: Set<Long>, onEd
             Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) { serviceBook() }
             HorizontalDivider()
         }
-        if (entries.isEmpty()) item { Text("No service records yet", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(32.dp)) }
+        if (entries.isEmpty()) item {
+            EmptyState(Icons.Default.Build, "No service records yet", "Add oil changes, repairs and inspections. Photos of invoices can fill in the form for you.")
+        }
         items(entries, key = { it.id }) { e ->
             ListItem(
+                leadingContent = { IconBadge(serviceIcon(e.type)) },
                 headlineContent = { Text(e.type) },
                 supportingContent = {
                     Text((listOf(formatDate(e.dateEpochMillis), formatKm(e.odometerKm)) + listOfNotNull(e.shop, PHOTO_MARK.takeIf { e.id in withPhotos })).joinToString(" · "))
                 },
-                trailingContent = { e.cost?.let { Text(formatMoney(it)) } },
+                trailingContent = { e.cost?.let { Text(formatMoney(it), style = MaterialTheme.typography.titleSmall) } },
                 modifier = Modifier.clickable { onEdit(e.id) }
             )
             HorizontalDivider()
@@ -221,11 +252,22 @@ private fun ServiceList(entries: List<ServiceEntry>, withPhotos: Set<Long>, onEd
     }
 }
 
-@Composable
-private fun EmptyTab(message: String) {
-    Box(Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
-        Text(message, style = MaterialTheme.typography.bodyMedium)
+/** An icon hinting at the kind of work, from the service type's wording. */
+private fun serviceIcon(type: String): ImageVector {
+    val t = type.lowercase()
+    return when {
+        listOf("oil", "olej").any { it in t } -> Icons.Default.OilBarrel
+        listOf("tire", "tyre", "pneu", "wheel").any { it in t } -> Icons.Default.TireRepair
+        listOf("inspection", "stk", "emission").any { it in t } -> Icons.AutoMirrored.Filled.FactCheck
+        listOf("battery", "akumul").any { it in t } -> Icons.Default.BatteryChargingFull
+        listOf("wash", "clean").any { it in t } -> Icons.Default.LocalCarWash
+        else -> Icons.Default.Build
     }
+}
+
+@Composable
+private fun EmptyTab(icon: ImageVector, title: String, message: String) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) { EmptyState(icon, title, message) }
 }
 
 /** Logs today's odometer reading; it can't be lower than the current one. */
