@@ -9,6 +9,9 @@ interface FuelEntryDao {
     @Query("SELECT * FROM fuel_entries WHERE vehicleId = :vehicleId ORDER BY odometerKm DESC")
     fun observeForVehicle(vehicleId: Long): Flow<List<FuelEntry>>
 
+    @Query("SELECT * FROM fuel_entries WHERE vehicleId = :vehicleId")
+    suspend fun getForVehicle(vehicleId: Long): List<FuelEntry>
+
     @Upsert suspend fun upsert(entry: FuelEntry): Long
     @Delete suspend fun delete(entry: FuelEntry)
 }
