@@ -31,6 +31,8 @@ android {
     kotlinOptions { jvmTarget = "17" }
     buildFeatures { compose = true }
     testOptions { unitTests.isIncludeAndroidResources = true }
+    // Exported Room schemas for migration tests; Robolectric reads them from the app's debug assets.
+    sourceSets["debug"].assets.srcDir("$projectDir/schemas")
 }
 
 ksp { arg("room.schemaLocation", "$projectDir/schemas") }
@@ -55,4 +57,5 @@ dependencies {
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.room.testing)
 }

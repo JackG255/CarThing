@@ -33,7 +33,7 @@ class VehicleDetailViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         db = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), CarThingDatabase::class.java)
             .allowMainThreadQueries().build()
-        vehicles = VehicleRepository(db.vehicleDao())
+        vehicles = VehicleRepository(db)
         fuel = FuelRepository(db.fuelEntryDao(), db.vehicleDao())
     }
 
@@ -42,7 +42,7 @@ class VehicleDetailViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun viewModel(id: Long) = VehicleDetailViewModel(id, vehicles, fuel, ServiceRepository(db.serviceEntryDao()))
+    private fun viewModel(id: Long) = VehicleDetailViewModel(id, vehicles, fuel, ServiceRepository(db))
 
     @Test fun loadedStateCombinesVehicleEntriesAndStats() = runTest {
         val id = vehicles.save(Vehicle(name = "Car", initialOdometerKm = 900.0))
