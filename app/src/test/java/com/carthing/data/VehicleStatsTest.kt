@@ -28,6 +28,12 @@ class VehicleStatsTest {
         assertEquals(105.0, s.totalFuelCost, 1e-9)
         assertEquals(35.0, s.totalServiceCost, 1e-9)
         assertEquals(700.0, s.trackedDistanceKm, 1e-9)
-        assertEquals(140.0 / 700.0, s.costPerKm!!, 1e-9)
+        // The first fill (60) is excluded: that fuel was burned before tracking started.
+        assertEquals((45.0 + 35.0) / 700.0, s.costPerKm!!, 1e-9)
+    }
+
+    @Test fun costPerKmExcludesFirstFillEvenWhenUnsorted() {
+        val fuel = listOf(fill(2, 1650.0, 40.5, 1500.0), fill(1, 1000.0, 45.0, 1650.0))
+        assertEquals(1500.0 / 650.0, VehicleStats.from(fuel, emptyList()).costPerKm!!, 1e-9)
     }
 }

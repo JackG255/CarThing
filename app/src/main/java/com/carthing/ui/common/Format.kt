@@ -6,12 +6,13 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-private fun decimals(max: Int) = NumberFormat.getNumberInstance().apply { maximumFractionDigits = max }
+private fun decimals(max: Int, min: Int = 0) =
+    NumberFormat.getNumberInstance().apply { maximumFractionDigits = max; minimumFractionDigits = min }
 
 fun formatKm(km: Double): String = "${decimals(0).format(km)} km"
 fun formatLiters(liters: Double): String = "${decimals(2).format(liters)} L"
 fun formatEconomy(litersPer100Km: Double?): String =
-    litersPer100Km?.let { "${decimals(1).format(it)} L/100km" } ?: "—"
+    litersPer100Km?.let { "${decimals(1, min = 1).format(it)} L/100km" } ?: "—"
 fun formatMoney(amount: Double?): String = amount?.let { decimals(2).format(it) } ?: "—"
 fun formatCostPerKm(amount: Double?): String = amount?.let { "${decimals(3).format(it)} /km" } ?: "—"
 

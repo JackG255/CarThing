@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FuelEntryDao {
-    @Query("SELECT * FROM fuel_entries WHERE vehicleId = :vehicleId ORDER BY odometerKm DESC")
+    @Query("SELECT * FROM fuel_entries WHERE vehicleId = :vehicleId ORDER BY odometerKm DESC, dateEpochMillis DESC, id DESC")
     fun observeForVehicle(vehicleId: Long): Flow<List<FuelEntry>>
 
     @Query("SELECT * FROM fuel_entries WHERE vehicleId = :vehicleId")
