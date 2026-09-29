@@ -38,6 +38,9 @@ data class MaintenanceItem(
     val lastReplacedOdometerKm: Double? = null,
     /** Highest replacement reminder already sent: 0 none, 1 due soon, 2 overdue. */
     val replaceNotifiedLevel: Int = 0,
+
+    /** Chosen icon key (see ComponentIcons); null picks one from the name. */
+    val icon: String? = null,
 ) {
     /** Null when the component has no inspection schedule. */
     val inspection: Schedule?

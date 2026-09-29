@@ -168,3 +168,10 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
         db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_attachments_fileName` ON `attachments` (`fileName`)")
     }
 }
+
+/** Components can have a chosen icon; null keeps picking one from the name. */
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `maintenance_items` ADD COLUMN `icon` TEXT")
+    }
+}

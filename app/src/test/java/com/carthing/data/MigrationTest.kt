@@ -21,7 +21,7 @@ class MigrationTest {
     val helper = MigrationTestHelper(InstrumentationRegistry.getInstrumentation(), CarThingDatabase::class.java)
 
     private fun openRoom() = Room.databaseBuilder(ApplicationProvider.getApplicationContext(), CarThingDatabase::class.java, dbName)
-        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7).allowMainThreadQueries().build()
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8).allowMainThreadQueries().build()
 
     @Test fun migrate1To4KeepsDataAndSeedsSplitSchedule() = runTest {
         helper.createDatabase(dbName, 1).use { db ->
@@ -35,7 +35,7 @@ class MigrationTest {
         helper.runMigrationsAndValidate(dbName, 3, true, MIGRATION_2_3).close()
         helper.runMigrationsAndValidate(dbName, 4, true, MIGRATION_3_4).close()
         helper.runMigrationsAndValidate(dbName, 5, true, MIGRATION_4_5).close()
-        helper.runMigrationsAndValidate(dbName, 7, true, MIGRATION_5_6, MIGRATION_6_7).close()
+        helper.runMigrationsAndValidate(dbName, 8, true, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8).close()
 
         val room = openRoom()
         try {
@@ -75,7 +75,7 @@ class MigrationTest {
         helper.runMigrationsAndValidate(dbName, 3, true, MIGRATION_2_3).close()
         helper.runMigrationsAndValidate(dbName, 4, true, MIGRATION_3_4).close()
         helper.runMigrationsAndValidate(dbName, 5, true, MIGRATION_4_5).close()
-        helper.runMigrationsAndValidate(dbName, 7, true, MIGRATION_5_6, MIGRATION_6_7).close()
+        helper.runMigrationsAndValidate(dbName, 8, true, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8).close()
 
         val room = openRoom()
         try {
@@ -106,7 +106,7 @@ class MigrationTest {
             db.execSQL("INSERT INTO service_entries (id, vehicleId, dateEpochMillis, odometerKm, type) VALUES (5, 1, 500, 50000.0, 'Oil')")
             db.execSQL("INSERT INTO attachments (id, serviceEntryId, fileName, addedEpochMillis) VALUES (3, 5, 'a.jpg', 700)")
         }
-        helper.runMigrationsAndValidate(dbName, 7, true, MIGRATION_6_7).close()
+        helper.runMigrationsAndValidate(dbName, 8, true, MIGRATION_6_7, MIGRATION_7_8).close()
 
         val room = openRoom()
         try {
@@ -117,6 +117,28 @@ class MigrationTest {
             // Service book photos go away with their vehicle.
             room.vehicleDao().delete(room.vehicleDao().getById(1)!!)
             assertEquals(emptyList<String>(), dao.allFileNames())
+        } finally {
+            room.close()
+        }
+    }
+
+    @Test fun migrate7To8AddsIconWithoutTouchingComponents() = runTest {
+        helper.createDatabase(dbName, 7).use { db ->
+            db.execSQL("INSERT INTO vehicles (id, name, initialOdometerKm) VALUES (1, 'Car', 0.0)")
+            db.execSQL(
+                "INSERT INTO maintenance_items (id, vehicleId, name, enabled, replaceKm, replaceMonths, inspectNotifiedLevel, replaceNotifiedLevel) " +
+                    "VALUES (10, 1, 'Brake pads', 1, 40000.0, 36, 0, 1)"
+            )
+        }
+        helper.runMigrationsAndValidate(dbName, 8, true, MIGRATION_7_8).close()
+
+        val room = openRoom()
+        try {
+            val pads = room.maintenanceItemDao().getById(10)!!
+            assertEquals("Brake pads", pads.name)
+            assertEquals(40_000.0, pads.replaceKm!!, 1e-9)
+            assertEquals(1, pads.replaceNotifiedLevel)
+            assertNull(pads.icon)
         } finally {
             room.close()
         }

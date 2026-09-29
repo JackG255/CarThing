@@ -1,14 +1,20 @@
 package com.carthing.ui.maintenance
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +22,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -27,7 +34,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,6 +50,7 @@ import com.carthing.ui.common.BackButton
 import com.carthing.ui.common.DateInput
 import com.carthing.ui.common.DecimalInput
 import com.carthing.ui.common.DeleteAction
+import com.carthing.ui.common.IconBadge
 import com.carthing.ui.common.LoadingBox
 import com.carthing.ui.common.TextInput
 import com.carthing.ui.common.editableNumber
@@ -95,6 +109,7 @@ private fun MaintenanceItemForm(existing: MaintenanceItem?, viewModel: VehicleDe
     val scope = rememberCoroutineScope()
     var name by rememberSaveable { mutableStateOf(existing?.name.orEmpty()) }
     var enabled by rememberSaveable { mutableStateOf(existing?.enabled ?: true) }
+    var icon by rememberSaveable { mutableStateOf(existing?.icon) }
     var submitted by rememberSaveable { mutableStateOf(false) }
     val inspect = rememberScheduleFields(existing?.inspectKm, existing?.inspectMonths, existing?.lastInspectedEpochMillis, existing?.lastInspectedOdometerKm)
     val replace = rememberScheduleFields(existing?.replaceKm, existing?.replaceMonths, existing?.lastReplacedEpochMillis, existing?.lastReplacedOdometerKm)
@@ -121,6 +136,7 @@ private fun MaintenanceItemForm(existing: MaintenanceItem?, viewModel: VehicleDe
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             TextInput(name, { name = it }, "Name *", error = nameError)
+            IconField(icon, name) { icon = it }
             SwitchRow("Track and remind", enabled) { enabled = it }
             Text("Each schedule is due after whichever of its limits comes first. Leave a section empty if it doesn't apply.",
                 style = MaterialTheme.typography.bodySmall)
@@ -136,7 +152,7 @@ private fun MaintenanceItemForm(existing: MaintenanceItem?, viewModel: VehicleDe
                     if (name.isBlank() || inspect.hasError || replace.hasError || (!inspect.isSet && !replace.isSet)) return@Button
                     val base = existing ?: MaintenanceItem(vehicleId = 0, name = "")
                     val item = base.copy(
-                        name = name, enabled = enabled,
+                        name = name, enabled = enabled, icon = icon,
                         inspectKm = inspect.kmValue, inspectMonths = inspect.monthsValue,
                         lastInspectedEpochMillis = inspect.lastDate.value, lastInspectedOdometerKm = inspect.lastKmValue,
                         replaceKm = replace.kmValue, replaceMonths = replace.monthsValue,
@@ -183,5 +199,52 @@ private fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Un
     ) {
         Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
         Switch(checked = checked, onCheckedChange = null)
+    }
+}
+
+/** Shows the component's icon; tapping opens a grid to pick one, or "Automatic" (from the name). */
+@Composable
+private fun IconField(key: String?, name: String, onPick: (String?) -> Unit) {
+    var picking by rememberSaveable { mutableStateOf(false) }
+    val chosen = ComponentIcons.byKey(key)
+    val shown = chosen ?: ComponentIcons.guess(name)
+    Row(
+        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium).clickable { picking = true }.padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconBadge(shown.vector, size = 48.dp, container = MaterialTheme.colorScheme.primaryContainer, content = MaterialTheme.colorScheme.onPrimaryContainer)
+        Column(Modifier.weight(1f).padding(start = 16.dp)) {
+            Text("Icon", style = MaterialTheme.typography.labelMedium)
+            Text(if (chosen == null) "Automatic (${shown.label})" else shown.label, style = MaterialTheme.typography.bodyLarge)
+        }
+        TextButton(onClick = { picking = true }) { Text("Change") }
+    }
+    if (picking) AlertDialog(
+        onDismissRequest = { picking = false },
+        title = { Text("Choose an icon") },
+        text = {
+            LazyVerticalGrid(columns = GridCells.Adaptive(76.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                item { IconCell(ComponentIcons.guess(name).vector, "Automatic", selected = key == null) { onPick(null); picking = false } }
+                items(ComponentIcons.all, key = { it.key }) { option ->
+                    IconCell(option.vector, option.label, selected = option.key == key) { onPick(option.key); picking = false }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = { picking = false }) { Text("Cancel") } },
+    )
+}
+
+@Composable
+private fun IconCell(icon: ImageVector, label: String, selected: Boolean, onClick: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    Column(
+        Modifier.clip(MaterialTheme.shapes.medium)
+            .background(if (selected) colors.secondaryContainer else Color.Transparent)
+            .clickable(onClick = onClick).padding(vertical = 8.dp, horizontal = 4.dp)
+            .semantics { this.selected = selected },
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        IconBadge(icon, container = if (selected) colors.primary else colors.surfaceVariant, content = if (selected) colors.onPrimary else colors.onSurfaceVariant)
+        Text(label, style = MaterialTheme.typography.labelSmall, textAlign = TextAlign.Center, maxLines = 2, modifier = Modifier.padding(top = 4.dp))
     }
 }

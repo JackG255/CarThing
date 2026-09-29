@@ -45,6 +45,7 @@ import com.carthing.ui.deadlines.RenewDialog
 import com.carthing.ui.deadlines.deadlinesSection
 import com.carthing.ui.common.DateInput
 import com.carthing.ui.common.DecimalInput
+import com.carthing.ui.common.IconBadge
 import com.carthing.ui.common.editableNumber
 import com.carthing.ui.common.parseDecimal
 import com.carthing.ui.common.urgencyColor
@@ -68,6 +69,12 @@ fun MaintenanceTab(
         deadlinesSection(deadlines, onAddDeadline, onEditDeadline, onRenew = { renewing = it })
         items(items, key = { it.item.id }) { (item, status) ->
             ListItem(
+                leadingContent = {
+                    // Tinted by urgency, so an overdue part stands out before reading anything.
+                    val tint = if (item.enabled) urgencyColor(UrgencyBand.of(status.level, status.primary?.fractionRemaining))
+                        else MaterialTheme.colorScheme.onSurfaceVariant
+                    IconBadge(ComponentIcons.forItem(item).vector, container = tint.copy(alpha = 0.16f), content = tint)
+                },
                 headlineContent = { Text(item.name) },
                 supportingContent = {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
