@@ -36,7 +36,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.carthing.data.entity.Deadline
 import com.carthing.data.entity.MaintenanceItem
-import com.carthing.data.maintenance.DueLevel
+import com.carthing.data.maintenance.UrgencyBand
 import com.carthing.data.maintenance.ScheduleKind
 import com.carthing.data.repository.DeadlineWithStatus
 import com.carthing.data.repository.ItemWithStatus
@@ -47,6 +47,7 @@ import com.carthing.ui.common.DateInput
 import com.carthing.ui.common.DecimalInput
 import com.carthing.ui.common.editableNumber
 import com.carthing.ui.common.parseDecimal
+import com.carthing.ui.common.urgencyColor
 
 @Composable
 fun MaintenanceTab(
@@ -72,7 +73,8 @@ fun MaintenanceTab(
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         item.inspection?.let { Text(it.describe(ScheduleKind.INSPECTION), style = MaterialTheme.typography.bodySmall) }
                         item.replacement?.let { Text(it.describe(ScheduleKind.REPLACEMENT), style = MaterialTheme.typography.bodySmall) }
-                        if (item.enabled) StatusChip(status.level, status.describe()) else Text("Not tracked")
+                        if (item.enabled) StatusChip(UrgencyBand.of(status.level, status.primary?.fractionRemaining), status.describe())
+                        else Text("Not tracked")
                     }
                 },
                 trailingContent = {
@@ -102,13 +104,8 @@ private fun recordLabel(item: MaintenanceItem) = when {
 }
 
 @Composable
-private fun StatusChip(level: DueLevel, text: String) {
-    val color = when (level) {
-        DueLevel.OVERDUE -> MaterialTheme.colorScheme.error
-        DueLevel.DUE_SOON -> MaterialTheme.colorScheme.tertiary
-        DueLevel.OK -> MaterialTheme.colorScheme.primary
-        DueLevel.UNKNOWN -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
+private fun StatusChip(band: UrgencyBand, text: String) {
+    val color = urgencyColor(band)
     AssistChip(
         onClick = {},
         label = { Text(text) },

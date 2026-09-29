@@ -166,7 +166,7 @@ private fun ScheduleSection(title: String, fields: ScheduleFields) {
             Text("Set last ${title.lowercase()} date")
         }
     } else {
-        DateInput(date, { fields.lastDate.value = it }, "Last ${title.lowercase()}")
+        DateInput(date, { fields.lastDate.value = it }, "Last ${title.lowercase()}", onClear = { fields.lastDate.value = null })
     }
     DecimalInput(fields.lastKm, { fields.lastKm = it }, "Odometer at last ${title.lowercase()} (km)", fields.lastKmError)
     if (fields.km.isNotBlank() && fields.lastDate.value != null && fields.lastKm.isBlank()) {

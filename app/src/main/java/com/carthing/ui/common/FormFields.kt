@@ -1,8 +1,10 @@
 package com.carthing.ui.common
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -51,10 +53,10 @@ fun TextInput(
 fun DecimalInput(value: String, onValueChange: (String) -> Unit, label: String, error: String? = null) =
     TextInput(value, onValueChange, label, error = error, keyboardType = KeyboardType.Decimal)
 
-/** Read-only date field with a picker; changing the date keeps the time of day of [epochMillis]. */
+/** Read-only date field with a picker; changing the date keeps the time of day of [epochMillis]. With [onClear], also offers a clear button. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DateInput(epochMillis: Long, onChange: (Long) -> Unit, label: String) {
+fun DateInput(epochMillis: Long, onChange: (Long) -> Unit, label: String, onClear: (() -> Unit)? = null) {
     var showPicker by rememberSaveable { mutableStateOf(false) }
     val zone = ZoneId.systemDefault()
     val current = Instant.ofEpochMilli(epochMillis).atZone(zone)
@@ -65,7 +67,10 @@ fun DateInput(epochMillis: Long, onChange: (Long) -> Unit, label: String) {
         readOnly = true,
         label = { Text(label) },
         trailingIcon = {
-            IconButton(onClick = { showPicker = true }) { Icon(Icons.Default.DateRange, contentDescription = "Pick date") }
+            Row {
+                if (onClear != null) IconButton(onClick = onClear) { Icon(Icons.Default.Clear, contentDescription = "Clear date") }
+                IconButton(onClick = { showPicker = true }) { Icon(Icons.Default.DateRange, contentDescription = "Pick date") }
+            }
         },
         modifier = Modifier.fillMaxWidth()
     )

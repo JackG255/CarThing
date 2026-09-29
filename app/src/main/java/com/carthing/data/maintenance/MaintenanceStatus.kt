@@ -16,6 +16,8 @@ data class MaintenanceStatus(
     val daysRemaining: Long?,
     /** Days until the distance limit at the current driving rate; null without a rate. */
     val predictedDaysByKm: Long?,
+    /** Share of the interval still left, by whichever limit is closer (0 or less when overdue); null when unknown. */
+    val fractionRemaining: Double? = null,
 ) {
     /** Soonest of the time limit and the predicted distance limit. */
     val daysUntilDue: Long? get() = listOfNotNull(daysRemaining, predictedDaysByKm).minOrNull()
@@ -23,6 +25,7 @@ data class MaintenanceStatus(
     companion object {
         private const val SOON_KM = 1_000.0
         private const val SOON_DAYS = 30L
+        const val DAYS_PER_MONTH = 30.44
 
         /** Status of one [schedule]; [recordedOdometerKm] is the highest known reading, used when usage can't project further. */
         fun of(
@@ -56,7 +59,10 @@ data class MaintenanceStatus(
                     (predicted ?: Long.MAX_VALUE) <= soonDays -> DueLevel.DUE_SOON
                 else -> DueLevel.OK
             }
-            return MaintenanceStatus(level, kmRemaining, daysRemaining, predicted)
+            val kmFraction = kmRemaining?.let { km -> schedule.intervalKm?.let { km / it } }
+            val timeFraction = daysRemaining?.let { days -> schedule.intervalMonths?.let { days / (it * DAYS_PER_MONTH) } }
+            val fraction = listOfNotNull(kmFraction, timeFraction).minOrNull()
+            return MaintenanceStatus(level, kmRemaining, daysRemaining, predicted, fraction)
         }
     }
 }

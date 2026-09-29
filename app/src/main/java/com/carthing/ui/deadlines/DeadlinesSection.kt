@@ -24,10 +24,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.carthing.data.deadlines.DeadlineStatus
 import com.carthing.data.entity.Deadline
-import com.carthing.data.maintenance.DueLevel
+import com.carthing.data.maintenance.UrgencyBand
 import com.carthing.data.repository.DeadlineWithStatus
 import com.carthing.ui.common.DateInput
 import com.carthing.ui.common.formatDate
+import com.carthing.ui.common.urgencyColor
 
 /** Adds a "Deadlines" header, one row per deadline and an add button to a lazy list. */
 fun LazyListScope.deadlinesSection(
@@ -70,11 +71,7 @@ fun LazyListScope.deadlinesSection(
 }
 
 @Composable
-private fun DeadlineStatus.color() = when (level) {
-    DueLevel.OVERDUE -> MaterialTheme.colorScheme.error
-    DueLevel.DUE_SOON -> MaterialTheme.colorScheme.tertiary
-    else -> MaterialTheme.colorScheme.onSurfaceVariant
-}
+private fun DeadlineStatus.color() = urgencyColor(UrgencyBand.of(level, fractionRemaining))
 
 /** Asks for the new due date, defaulting to the current one plus the repeat interval. */
 @Composable
