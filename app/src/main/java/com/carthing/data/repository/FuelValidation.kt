@@ -29,8 +29,9 @@ object FuelValidation {
                 other.odometerKm == entry.odometerKm ->
                     issues += if (entry.isFullTank && other.isFullTank) FuelIssue.DuplicateFullTank(other)
                               else FuelIssue.SameOdometer(other)
-                other.dateEpochMillis <= entry.dateEpochMillis && other.odometerKm > entry.odometerKm ||
-                other.dateEpochMillis >= entry.dateEpochMillis && other.odometerKm < entry.odometerKm ->
+                // Equal timestamps give no ordering information, so only strictly earlier/later entries count.
+                other.dateEpochMillis < entry.dateEpochMillis && other.odometerKm > entry.odometerKm ||
+                other.dateEpochMillis > entry.dateEpochMillis && other.odometerKm < entry.odometerKm ->
                     issues += FuelIssue.OdometerOutOfOrder(other)
             }
         }
