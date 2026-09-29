@@ -71,6 +71,7 @@ fun AttachmentsSection(
     onDelete: (PhotoItem) -> Unit,
     /** When set, the viewer offers reading the photo as a receipt (only ever on request). */
     onRead: ((PhotoItem) -> Unit)? = null,
+    title: String = "Receipts & photos",
 ) {
     val scope = rememberCoroutineScope()
     var menu by remember { mutableStateOf(false) }
@@ -94,7 +95,7 @@ fun AttachmentsSection(
     val gallery = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> uri?.let(::import) }
 
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text("Receipts & photos", style = MaterialTheme.typography.labelLarge)
+        Text(title, style = MaterialTheme.typography.labelLarge)
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             photos.forEach { p ->
                 AsyncImage(

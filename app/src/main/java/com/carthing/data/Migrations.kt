@@ -144,3 +144,27 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
         db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_attachments_fileName` ON `attachments` (`fileName`)")
     }
 }
+
+/** Service book photos: attachments can belong to a vehicle. SQLite can't add a foreign key in place, so the table is rebuilt. */
+val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE `attachments_new` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`fuelEntryId` INTEGER, `serviceEntryId` INTEGER, `fileName` TEXT NOT NULL, `addedEpochMillis` INTEGER NOT NULL, " +
+                "`vehicleId` INTEGER, " +
+                "FOREIGN KEY(`fuelEntryId`) REFERENCES `fuel_entries`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , " +
+                "FOREIGN KEY(`serviceEntryId`) REFERENCES `service_entries`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , " +
+                "FOREIGN KEY(`vehicleId`) REFERENCES `vehicles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+        db.execSQL(
+            "INSERT INTO `attachments_new` (`id`, `fuelEntryId`, `serviceEntryId`, `fileName`, `addedEpochMillis`) " +
+                "SELECT `id`, `fuelEntryId`, `serviceEntryId`, `fileName`, `addedEpochMillis` FROM `attachments`"
+        )
+        db.execSQL("DROP TABLE `attachments`")
+        db.execSQL("ALTER TABLE `attachments_new` RENAME TO `attachments`")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_attachments_fuelEntryId` ON `attachments` (`fuelEntryId`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_attachments_serviceEntryId` ON `attachments` (`serviceEntryId`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_attachments_vehicleId` ON `attachments` (`vehicleId`)")
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_attachments_fileName` ON `attachments` (`fileName`)")
+    }
+}
