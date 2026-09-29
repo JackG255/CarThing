@@ -41,6 +41,10 @@ class FuelValidationTest {
         assertTrue(FuelValidation.validate(fill(0, 150, 1200.0), vehicle, existing).isEmpty())
     }
 
+    @Test fun sameTimestampDifferentOdometerIsValid() {
+        assertTrue(FuelValidation.validate(fill(0, 200, 1800.0), vehicle, existing).isEmpty())
+    }
+
     @Test fun duplicateFullTankIsError() {
         val issues = FuelValidation.validate(fill(0, 300, 1500.0), vehicle, existing)
         assertEquals(listOf(FuelIssue.DuplicateFullTank(existing[1])), issues)

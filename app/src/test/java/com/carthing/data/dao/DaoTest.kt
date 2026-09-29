@@ -39,6 +39,14 @@ class DaoTest {
         assertEquals(2, dao.observeAll().first().size)
     }
 
+    @Test fun fuelEntriesWithSameOdometerNewestFirst() = runTest {
+        val v = db.vehicleDao().upsert(Vehicle(name = "A"))
+        val dao = db.fuelEntryDao()
+        dao.upsert(FuelEntry(vehicleId = v, dateEpochMillis = 100, odometerKm = 1000.0, liters = 40.0))
+        dao.upsert(FuelEntry(vehicleId = v, dateEpochMillis = 200, odometerKm = 1000.0, liters = 5.0, isFullTank = false))
+        assertEquals(listOf(200L, 100L), dao.observeForVehicle(v).first().map { it.dateEpochMillis })
+    }
+
     @Test fun fuelEntriesFilteredByVehicleAndOrderedByOdometerDesc() = runTest {
         val a = db.vehicleDao().upsert(Vehicle(name = "A"))
         val b = db.vehicleDao().upsert(Vehicle(name = "B"))

@@ -12,6 +12,14 @@ interface VehicleDao {
     @Query("SELECT * FROM vehicles WHERE id = :id")
     suspend fun getById(id: Long): Vehicle?
 
+    @Query(
+        """SELECT v.*, MAX(v.initialOdometerKm,
+               COALESCE((SELECT MAX(odometerKm) FROM fuel_entries WHERE vehicleId = v.id), 0),
+               COALESCE((SELECT MAX(odometerKm) FROM service_entries WHERE vehicleId = v.id), 0)) AS currentOdometerKm
+           FROM vehicles v ORDER BY v.name"""
+    )
+    fun observeAllWithOdometer(): Flow<List<VehicleWithOdometer>>
+
     @Query("SELECT * FROM vehicles WHERE id = :id")
     fun observeById(id: Long): Flow<Vehicle?>
 

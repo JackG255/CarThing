@@ -1,11 +1,13 @@
 package com.carthing.data.repository
 
 import com.carthing.data.dao.VehicleDao
+import com.carthing.data.dao.VehicleWithOdometer
 import com.carthing.data.entity.Vehicle
 import kotlinx.coroutines.flow.Flow
 
 class VehicleRepository(private val dao: VehicleDao) {
     fun observeAll(): Flow<List<Vehicle>> = dao.observeAll()
+    fun observeAllWithOdometer(): Flow<List<VehicleWithOdometer>> = dao.observeAllWithOdometer()
     fun observe(id: Long): Flow<Vehicle?> = dao.observeById(id)
     fun observeCurrentOdometer(id: Long): Flow<Double?> = dao.observeCurrentOdometer(id)
 
