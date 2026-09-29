@@ -40,4 +40,7 @@ class ReceiptTextReader(private val context: Context) {
 
     /** Reads [image] as a service invoice or repair-shop receipt. */
     suspend fun readServiceInvoice(image: File): ServiceInvoice = ServiceInvoiceParser.parse(readRows(image))
+
+    /** Candidate odometer readings in a dashboard photo, best first (see [OdometerParser]). */
+    suspend fun readOdometer(image: File, expectedKm: Double?): List<Double> = OdometerParser.candidates(readRows(image), expectedKm)
 }

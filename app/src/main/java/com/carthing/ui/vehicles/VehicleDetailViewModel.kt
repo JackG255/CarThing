@@ -136,6 +136,11 @@ class VehicleDetailViewModel(
         runCatching { receipts.readServiceInvoice(photos.file(fileName)) }
             .onFailure { Log.w("CarThing", "Invoice reading failed", it) }.getOrNull()
 
+    /** Candidate odometer readings from a dashboard photo; empty if none found or recognition fails. */
+    suspend fun readOdometer(fileName: String, expectedKm: Double?): List<Double> =
+        runCatching { receipts.readOdometer(photos.file(fileName), expectedKm) }
+            .onFailure { Log.w("CarThing", "Odometer reading failed", it) }.getOrDefault(emptyList())
+
     suspend fun saveDeadline(deadline: Deadline): Long = deadlines.save(deadline.copy(vehicleId = vehicleId))
     suspend fun deleteDeadline(deadline: Deadline) {
         deadlines.delete(deadline)
