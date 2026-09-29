@@ -1,6 +1,7 @@
 package com.carthing.ui.attachments
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -78,7 +79,10 @@ fun AttachmentsSection(
 
     fun import(uri: Uri) = scope.launch {
         importing = true
-        error = runCatching { onAdded(importPhoto(uri)) }.exceptionOrNull()?.let { "Couldn't add the photo" }
+        error = runCatching { onAdded(importPhoto(uri)) }.exceptionOrNull()?.let {
+            Log.w("CarThing", "Photo import failed for $uri", it)
+            "Couldn't add the photo"
+        }
         importing = false
     }
     val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { taken ->

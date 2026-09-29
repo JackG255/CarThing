@@ -30,7 +30,8 @@ class PhotoStore(private val context: Context) {
     fun import(source: Uri): String {
         val resolver = context.contentResolver
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        resolver.openInputStream(source)?.use { BitmapFactory.decodeStream(it, null, bounds) } ?: throw IOException("Can't open image")
+        // A bounds-only decode always returns null, so check the stream itself, not the result.
+        (resolver.openInputStream(source) ?: throw IOException("Can't open image")).use { BitmapFactory.decodeStream(it, null, bounds) }
         if (bounds.outWidth <= 0) throw IOException("Not an image")
 
         // Decode at the smallest power-of-two reduction that stays above MAX_SIDE, then scale exactly.
