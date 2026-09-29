@@ -11,6 +11,8 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -50,6 +52,7 @@ import com.carthing.ui.common.formatKm
 import com.carthing.ui.common.parseDecimal
 import com.carthing.ui.vehicles.VehicleDetailUiState
 import com.carthing.ui.vehicles.VehicleDetailViewModel
+import java.time.ZoneId
 import kotlinx.coroutines.launch
 
 /** Add ([entryId] = 0) or edit a fill-up. Validation issues from the repository are shown inline; warnings ask to confirm. */
@@ -85,6 +88,35 @@ private fun FuelForm(existing: FuelEntry?, suggestedOdometerKm: Double, viewMode
     var issues by remember { mutableStateOf<List<FuelIssue>>(emptyList()) }
     var parseErrors by remember { mutableStateOf(emptySet<String>()) }
     var pendingWarnings by remember { mutableStateOf<FuelEntry?>(null) }
+    // Receipt reading: fields the user typed in are never overwritten; filled ones are marked.
+    var touched by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var fromReceipt by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var readingReceipt by remember { mutableStateOf(false) }
+    var receiptMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    // Reading is opt-in: a new photo only offers it, since not every photo is a fuel receipt.
+    var offerRead by rememberSaveable { mutableStateOf<String?>(null) }
+    fun touch(field: String) { touched = touched + field; fromReceipt = fromReceipt - field }
+
+    fun readReceipt(fileName: String) = scope.launch {
+        readingReceipt = true
+        val r = viewModel.readFuelReceipt(fileName)
+        readingReceipt = false
+        val filled = mutableListOf<String>()
+        fun fill(field: String, value: Any?, apply: () -> Unit) {
+            if (value != null && field !in touched) { apply(); filled += field }
+        }
+        r?.let {
+            fill("liters", it.liters) { liters = editableNumber(it.liters) }
+            fill("price", it.total) { price = editableNumber(it.total) }
+            fill("date", it.date) { date = it.date!!.atTime(12, 0).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() }
+            fill("station", it.station) { station = it.station!! }
+            if (note.isBlank()) fill("note", it.fuelType) { note = it.fuelType!! }
+        }
+        fromReceipt = (fromReceipt + filled).distinct()
+        receiptMessage = if (filled.isEmpty()) "Couldn't read anything from this photo. It's still attached."
+            else "Filled from the receipt: ${filled.joinToString(", ") { LABELS.getValue(it) }}. Check them before saving."
+    }
+    fun hint(field: String) = "From receipt".takeIf { field in fromReceipt }
 
     fun save(entry: FuelEntry, acceptWarnings: Boolean) = scope.launch {
         when (val result = viewModel.saveFuel(entry, acceptWarnings)) {
@@ -120,15 +152,24 @@ private fun FuelForm(existing: FuelEntry?, suggestedOdometerKm: Double, viewMode
             Modifier.padding(padding).imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            DateInput(date, { date = it; issues = emptyList() }, "Date")
+            EntryPhotos(
+                existing?.let { AttachmentOwner.Fuel(it.id) }, photos, viewModel,
+                onPhotoAdded = { offerRead = it; receiptMessage = null },
+                onRead = { offerRead = null; readReceipt(it) },
+            )
+            offerRead?.let { name ->
+                ReadOffer(onRead = { offerRead = null; readReceipt(name) }, onDismiss = { offerRead = null })
+            }
+            if (readingReceipt) Text("Reading the receipt…", style = MaterialTheme.typography.bodySmall)
+            receiptMessage?.let { ReceiptBanner(it) { receiptMessage = null } }
+            DateInput(date, { date = it; issues = emptyList(); touch("date") }, if ("date" in fromReceipt) "Date (from receipt)" else "Date")
             DecimalInput(odometer, { odometer = it; issues = emptyList(); parseErrors -= "odometer" }, "Odometer (km)", odometerError)
-            DecimalInput(liters, { liters = it; issues = emptyList(); parseErrors -= "liters" }, "Liters", litersError)
-            DecimalInput(price, { price = it; parseErrors -= "price" }, "Total price", priceError)
+            DecimalInput(liters, { liters = it; issues = emptyList(); parseErrors -= "liters"; touch("liters") }, "Liters", litersError, hint("liters"))
+            DecimalInput(price, { price = it; parseErrors -= "price"; touch("price") }, "Total price", priceError, hint("price"))
             SwitchRow("Filled the tank completely", fullTank) { fullTank = it; issues = emptyList() }
             SwitchRow("Missed recording the previous fill-up", missedPrevious) { missedPrevious = it }
-            TextInput(station, { station = it }, "Station")
-            TextInput(note, { note = it }, "Note", singleLine = false)
-            EntryPhotos(existing?.let { AttachmentOwner.Fuel(it.id) }, photos, viewModel)
+            TextInput(station, { station = it; touch("station") }, "Station", hint = hint("station"))
+            TextInput(note, { note = it; touch("note") }, "Note", singleLine = false, hint = hint("note"))
             Button(
                 onClick = {
                     val odo = parseDecimal(odometer)
@@ -182,5 +223,34 @@ private fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Un
     ) {
         Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
         Switch(checked = checked, onCheckedChange = null)
+    }
+}
+
+private val LABELS = mapOf("liters" to "liters", "price" to "total price", "date" to "date", "station" to "station", "note" to "fuel type")
+
+@Composable
+private fun ReceiptBanner(message: String, onDismiss: () -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(Modifier.padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(message, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            TextButton(onClick = onDismiss) { Text("OK") }
+        }
+    }
+}
+
+@Composable
+private fun ReadOffer(onRead: () -> Unit, onDismiss: () -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(Modifier.padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("Fill in the form from this receipt?", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            TextButton(onClick = onDismiss) { Text("No") }
+            TextButton(onClick = onRead) { Text("Read") }
+        }
     }
 }

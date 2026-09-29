@@ -69,6 +69,8 @@ fun AttachmentsSection(
     importPhoto: suspend (Uri) -> String,
     onAdded: (fileName: String) -> Unit,
     onDelete: (PhotoItem) -> Unit,
+    /** When set, the viewer offers reading the photo as a receipt (only ever on request). */
+    onRead: ((PhotoItem) -> Unit)? = null,
 ) {
     val scope = rememberCoroutineScope()
     var menu by remember { mutableStateOf(false) }
@@ -122,12 +124,15 @@ fun AttachmentsSection(
         error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
     }
 
-    viewing?.let { p -> PhotoViewer(p, onClose = { viewing = null }, onDelete = { viewing = null; onDelete(p) }) }
+    viewing?.let { p ->
+        PhotoViewer(p, onClose = { viewing = null }, onDelete = { viewing = null; onDelete(p) },
+            onRead = onRead?.let { read -> { viewing = null; read(p) } })
+    }
 }
 
 /** Full-screen photo with pinch-to-zoom and pan, for reading small print on receipts. */
 @Composable
-private fun PhotoViewer(photo: PhotoItem, onClose: () -> Unit, onDelete: () -> Unit) {
+private fun PhotoViewer(photo: PhotoItem, onClose: () -> Unit, onDelete: () -> Unit, onRead: (() -> Unit)?) {
     var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
     var confirmDelete by remember { mutableStateOf(false) }
@@ -143,6 +148,7 @@ private fun PhotoViewer(photo: PhotoItem, onClose: () -> Unit, onDelete: () -> U
                     .graphicsLayer(scaleX = scale, scaleY = scale, translationX = offset.x, translationY = offset.y)
             )
             Row(Modifier.align(Alignment.TopEnd).padding(8.dp)) {
+                if (onRead != null) TextButton(onClick = onRead) { Text("Read receipt", color = Color.White) }
                 IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Default.Delete, "Delete photo", tint = Color.White) }
                 IconButton(onClick = onClose) { Icon(Icons.Default.Close, "Close", tint = Color.White) }
             }
