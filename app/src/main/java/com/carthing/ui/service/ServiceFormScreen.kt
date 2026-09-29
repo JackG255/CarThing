@@ -16,6 +16,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
@@ -36,6 +37,8 @@ import com.carthing.data.attachments.AttachmentOwner
 import com.carthing.data.entity.MaintenanceItem
 import com.carthing.data.entity.ServiceEntry
 import com.carthing.ui.attachments.EntryPhotos
+import com.carthing.ui.attachments.ReadOffer
+import com.carthing.ui.attachments.ReceiptBanner
 import com.carthing.ui.attachments.rememberPendingPhotos
 import com.carthing.ui.common.BackButton
 import com.carthing.ui.common.DateInput
@@ -47,6 +50,7 @@ import com.carthing.ui.common.editableNumber
 import com.carthing.ui.common.parseDecimal
 import com.carthing.ui.vehicles.VehicleDetailUiState
 import com.carthing.ui.vehicles.VehicleDetailViewModel
+import java.time.ZoneId
 import kotlinx.coroutines.launch
 
 private val COMMON_TYPES = listOf("Oil change", "Tires", "Brakes", "Inspection", "Battery", "Filters", "Wipers", "Repair")
@@ -89,6 +93,35 @@ private fun ServiceForm(
     var note by rememberSaveable { mutableStateOf(existing?.note.orEmpty()) }
     var componentId by rememberSaveable { mutableStateOf(existing?.maintenanceItemId) }
     var submitted by rememberSaveable { mutableStateOf(false) }
+    // Invoice reading, as on the fill-up form: opt-in per photo, never overwrites what the user typed.
+    var touched by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var fromInvoice by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var reading by remember { mutableStateOf(false) }
+    var readMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    var offerRead by rememberSaveable { mutableStateOf<String?>(null) }
+    fun touch(field: String) { touched = touched + field; fromInvoice = fromInvoice - field }
+    fun hint(field: String) = "From invoice".takeIf { field in fromInvoice }
+
+    fun readInvoice(fileName: String) = scope.launch {
+        reading = true
+        val r = viewModel.readServiceInvoice(fileName)
+        reading = false
+        val filled = mutableListOf<String>()
+        fun fill(field: String, value: Any?, apply: () -> Unit) {
+            if (value != null && field !in touched) { apply(); filled += field }
+        }
+        r?.let {
+            if (type.isBlank()) fill("type", it.services.firstOrNull()) { type = it.services.first() }
+            fill("date", it.date) { date = it.date!!.atTime(12, 0).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() }
+            fill("odometer", it.odometerKm) { odometer = editableNumber(it.odometerKm) }
+            fill("cost", it.total) { cost = editableNumber(it.total) }
+            fill("shop", it.shop) { shop = it.shop!! }
+            if (note.isBlank() && it.services.size > 1) fill("note", it.services) { note = "Work: " + it.services.joinToString(", ") }
+        }
+        fromInvoice = (fromInvoice + filled).distinct()
+        readMessage = if (filled.isEmpty()) "Couldn't read anything from this photo. It's still attached."
+            else "Filled from the invoice: ${filled.joinToString(", ") { LABELS.getValue(it) }}. Check them before saving."
+    }
 
     val typeError = if (submitted && type.isBlank()) "Service type is required" else null
     val odometerError = if (submitted && (parseDecimal(odometer) ?: -1.0) < 0) "Enter the odometer reading" else null
@@ -111,9 +144,19 @@ private fun ServiceForm(
             Modifier.padding(padding).imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            TextInput(type, { type = it }, "Type *", error = typeError)
+            EntryPhotos(
+                existing?.let { AttachmentOwner.Service(it.id) }, photos, viewModel,
+                onPhotoAdded = { offerRead = it; readMessage = null },
+                onRead = { offerRead = null; readInvoice(it) },
+            )
+            offerRead?.let { name ->
+                ReadOffer("Fill in the form from this invoice?", onRead = { offerRead = null; readInvoice(name) }, onDismiss = { offerRead = null })
+            }
+            if (reading) Text("Reading the invoice…", style = MaterialTheme.typography.bodySmall)
+            readMessage?.let { ReceiptBanner(it) { readMessage = null } }
+            TextInput(type, { type = it; touch("type") }, "Type *", error = typeError, hint = hint("type"))
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                suggestions.forEach { SuggestionChip(onClick = { type = it }, label = { Text(it) }) }
+                suggestions.forEach { SuggestionChip(onClick = { type = it; touch("type") }, label = { Text(it) }) }
             }
             ComponentPicker(components, componentId) { picked ->
                 // Fill the type from the component unless the user typed something of their own.
@@ -121,12 +164,11 @@ private fun ServiceForm(
                 if (picked != null && (type.isBlank() || type == previous)) type = picked.name
                 componentId = picked?.id
             }
-            DateInput(date, { date = it }, "Date")
-            DecimalInput(odometer, { odometer = it }, "Odometer (km)", odometerError)
-            DecimalInput(cost, { cost = it }, "Cost", costError)
-            TextInput(shop, { shop = it }, "Shop")
-            TextInput(note, { note = it }, "Note", singleLine = false)
-            EntryPhotos(existing?.let { AttachmentOwner.Service(it.id) }, photos, viewModel)
+            DateInput(date, { date = it; touch("date") }, if ("date" in fromInvoice) "Date (from invoice)" else "Date")
+            DecimalInput(odometer, { odometer = it; touch("odometer") }, "Odometer (km)", odometerError, hint("odometer"))
+            DecimalInput(cost, { cost = it; touch("cost") }, "Cost", costError, hint("cost"))
+            TextInput(shop, { shop = it; touch("shop") }, "Shop", hint = hint("shop"))
+            TextInput(note, { note = it; touch("note") }, "Note", singleLine = false, hint = hint("note"))
             Button(
                 onClick = {
                     submitted = true
@@ -172,3 +214,7 @@ private fun ComponentPicker(components: List<MaintenanceItem>, selectedId: Long?
         }
     }
 }
+
+private val LABELS = mapOf(
+    "type" to "type", "date" to "date", "odometer" to "odometer", "cost" to "cost", "shop" to "shop", "note" to "work done",
+)

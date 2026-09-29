@@ -42,7 +42,6 @@ object FuelReceiptParser {
     private val PER_LITER = Regex("""^\s*(kc|czk)?\s*/\s*l\b""", RegexOption.IGNORE_CASE)
     /** Money, but not a price per litre ("Kč/l"). */
     private val CURRENCY = Regex("""^\s*(kc|czk)\b(?!\s*/)""", RegexOption.IGNORE_CASE)
-    private val DATE = Regex("""\b(\d{1,2})\s*[./]\s*(\d{1,2})\s*[./]\s*(\d{2}|\d{4})\b|\b(\d{4})-(\d{2})-(\d{2})\b""")
 
     fun parse(rows: List<String>, today: LocalDate = LocalDate.now()): FuelReceipt {
         val plain = rows.map { repair(fold(it)) }
@@ -60,7 +59,7 @@ object FuelReceiptParser {
             liters == null && unitPrice != null && total != null -> litersOut = round2(total / unitPrice)
         }
         return FuelReceipt(
-            date = findDate(plain, today),
+            date = ReceiptDates.find(plain, today),
             liters = litersOut?.takeIf { it in 0.5..300.0 },
             pricePerLiter = unitPrice,
             total = total,
@@ -129,22 +128,6 @@ object FuelReceiptParser {
             .flatMap { i -> amounts(i).filter { CURRENCY.containsMatchIn(plain[i].substring(it.end)) } }
             .maxByOrNull { it.value }?.value
     }
-
-    private fun findDate(plain: List<String>, today: LocalDate): LocalDate? {
-        val candidates = plain.withIndex().flatMap { (i, row) ->
-            DATE.findAll(row).mapNotNull { toDate(it) }.map { it to ("DATUM" in row || "DATE" in row) }.toList()
-        }.filter { (d, _) -> !d.isAfter(today) && d.isAfter(today.minusYears(5)) }
-        return (candidates.firstOrNull { it.second } ?: candidates.firstOrNull())?.first
-    }
-
-    private fun toDate(m: MatchResult): LocalDate? = runCatching {
-        val g = m.groupValues
-        if (g[4].isNotEmpty()) LocalDate.of(g[4].toInt(), g[5].toInt(), g[6].toInt())
-        else {
-            val year = g[3].toInt().let { if (it < 100) 2000 + it else it }
-            LocalDate.of(year, g[2].toInt(), g[1].toInt())
-        }
-    }.getOrNull()
 
     private fun findStation(rows: List<String>, plain: List<String>): String? {
         BRANDS.firstOrNull { brand -> plain.any { brand in it } }?.let { brand ->

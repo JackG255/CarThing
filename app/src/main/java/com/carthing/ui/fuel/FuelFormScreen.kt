@@ -11,8 +11,6 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -39,6 +37,8 @@ import com.carthing.data.entity.FuelEntry
 import com.carthing.data.repository.FuelIssue
 import com.carthing.data.repository.SaveResult
 import com.carthing.ui.attachments.EntryPhotos
+import com.carthing.ui.attachments.ReadOffer
+import com.carthing.ui.attachments.ReceiptBanner
 import com.carthing.ui.attachments.rememberPendingPhotos
 import com.carthing.ui.common.BackButton
 import com.carthing.ui.common.DateInput
@@ -158,7 +158,7 @@ private fun FuelForm(existing: FuelEntry?, suggestedOdometerKm: Double, viewMode
                 onRead = { offerRead = null; readReceipt(it) },
             )
             offerRead?.let { name ->
-                ReadOffer(onRead = { offerRead = null; readReceipt(name) }, onDismiss = { offerRead = null })
+                ReadOffer("Fill in the form from this receipt?", onRead = { offerRead = null; readReceipt(name) }, onDismiss = { offerRead = null })
             }
             if (readingReceipt) Text("Reading the receipt…", style = MaterialTheme.typography.bodySmall)
             receiptMessage?.let { ReceiptBanner(it) { receiptMessage = null } }
@@ -227,30 +227,3 @@ private fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Un
 }
 
 private val LABELS = mapOf("liters" to "liters", "price" to "total price", "date" to "date", "station" to "station", "note" to "fuel type")
-
-@Composable
-private fun ReceiptBanner(message: String, onDismiss: () -> Unit) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(Modifier.padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(message, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-            TextButton(onClick = onDismiss) { Text("OK") }
-        }
-    }
-}
-
-@Composable
-private fun ReadOffer(onRead: () -> Unit, onDismiss: () -> Unit) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(Modifier.padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("Fill in the form from this receipt?", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-            TextButton(onClick = onDismiss) { Text("No") }
-            TextButton(onClick = onRead) { Text("Read") }
-        }
-    }
-}
