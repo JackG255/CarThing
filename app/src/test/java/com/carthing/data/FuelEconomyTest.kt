@@ -57,10 +57,19 @@ class FuelEconomyTest {
         assertEquals(35.0, s.liters, 1e-9)
     }
 
-    @Test fun zeroDistanceSegmentIsSkipped() {
-        // Documents current behavior: a duplicate odometer reading yields no segment and
-        // its liters are dropped rather than carried into the next segment.
-        val s = FuelEconomy.segments(listOf(fill(1000.0, 40.0), fill(1000.0, 5.0), fill(1500.0, 30.0)))
-        assertEquals(30.0, s.single().liters, 1e-9)
+    @Test fun duplicateOdometerCarriesLitersForward() {
+        val s = FuelEconomy.segments(listOf(fill(1000.0, 40.0), fill(1000.0, 5.0), fill(1500.0, 30.0))).single()
+        assertEquals(500.0, s.distanceKm, 1e-9)
+        assertEquals(35.0, s.liters, 1e-9)
+        assertEquals(7.0, s.litersPer100Km, 1e-9)
+    }
+
+    @Test fun equalOdometerTiesAreOrderedByDate() {
+        val later = fill(1000.0, 5.0).copy(dateEpochMillis = 200)
+        val earlier = fill(1000.0, 40.0).copy(dateEpochMillis = 100)
+        val end = fill(1500.0, 30.0).copy(dateEpochMillis = 300)
+        val s = FuelEconomy.segments(listOf(end, later, earlier)).single()
+        assertEquals(end.id, s.endEntryId)
+        assertEquals(35.0, s.liters, 1e-9)
     }
 }
