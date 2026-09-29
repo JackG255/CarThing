@@ -37,4 +37,7 @@ class ReceiptTextReader(private val context: Context) {
 
     /** Reads [image] as a fuel receipt; fields that can't be read reliably are left null. */
     suspend fun readFuelReceipt(image: File): FuelReceipt = FuelReceiptParser.parse(readRows(image))
+
+    /** Reads [image] as a service invoice or repair-shop receipt. */
+    suspend fun readServiceInvoice(image: File): ServiceInvoice = ServiceInvoiceParser.parse(readRows(image))
 }

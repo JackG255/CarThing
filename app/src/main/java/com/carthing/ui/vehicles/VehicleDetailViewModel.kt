@@ -15,6 +15,7 @@ import com.carthing.data.attachments.AttachmentRepository
 import com.carthing.data.attachments.PhotoStore
 import com.carthing.data.entity.Attachment
 import com.carthing.data.ocr.FuelReceipt
+import com.carthing.data.ocr.ServiceInvoice
 import com.carthing.data.ocr.ReceiptTextReader
 import com.carthing.data.entity.Deadline
 import com.carthing.data.entity.FuelEntry
@@ -130,6 +131,10 @@ class VehicleDetailViewModel(
     suspend fun readFuelReceipt(fileName: String): FuelReceipt? =
         runCatching { receipts.readFuelReceipt(photos.file(fileName)) }
             .onFailure { Log.w("CarThing", "Receipt reading failed", it) }.getOrNull()
+
+    suspend fun readServiceInvoice(fileName: String): ServiceInvoice? =
+        runCatching { receipts.readServiceInvoice(photos.file(fileName)) }
+            .onFailure { Log.w("CarThing", "Invoice reading failed", it) }.getOrNull()
 
     suspend fun saveDeadline(deadline: Deadline): Long = deadlines.save(deadline.copy(vehicleId = vehicleId))
     suspend fun deleteDeadline(deadline: Deadline) {
