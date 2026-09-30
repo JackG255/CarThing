@@ -1,59 +1,63 @@
 # CarThing
 
-Android app for tracking vehicle data: odometer, fueling history, fuel economy, and service history.
+Android app for keeping a car's service book on your phone: odometer, fill-ups and fuel economy,
+service history, maintenance reminders, deadlines (STK, vignette, insurance), receipt photos and
+backups. Everything stays on the device; receipts are read offline.
+
+**Download:** [latest release](https://github.com/JackG255/CarThing/releases/latest)
+
+## Features
+- **Vehicles** with odometer readings from fill-ups, services or plain updates, including one read from a dashboard photo.
+- **Fuel:** fill-ups with full-to-full L/100km economy, cost totals and cost per km.
+- **Service history** linked to tracked components, so logging a service restarts that component's schedule.
+- **Maintenance:** each component has its own inspection and replacement intervals (km and/or months). The app predicts when each is due from how much you drive and sends reminders when one is due soon or overdue.
+- **Deadlines:** date-based obligations (technical inspection, vignette, insurance) with renewal.
+- **Photos:** receipts and invoices on entries, plus a service book gallery per vehicle.
+- **Receipt reading:** on-device OCR fills in the fuel and service forms from a receipt or invoice photo.
+- **Backups:** zip export/restore, weekly automatic backups to a folder you choose, and a reminder when the last backup is stale.
 
 ## Stack
-Kotlin 2.0 · Jetpack Compose (Material 3) · Room · KSP · minSdk 26 / targetSdk 35
+Kotlin 2.0 · Jetpack Compose (Material 3) · Room · KSP · WorkManager · ML Kit text recognition ·
+Coil · kotlinx.serialization · minSdk 26 / targetSdk 35
 
 ## Structure
 ```
 app/src/main/java/com/carthing/
-├── MainActivity.kt
+├── CarThingApp.kt / MainActivity.kt
 ├── data/
-│   ├── CarThingDatabase.kt
+│   ├── AppContainer.kt       # manual dependency container
+│   ├── CarThingDatabase.kt   # Room database (schema v8), Migrations.kt
 │   ├── FuelEconomy.kt        # full-to-full L/100km calculation
-│   ├── entity/               # Vehicle, FuelEntry, ServiceEntry
-│   └── dao/
-└── ui/
+│   ├── entity/  dao/  repository/
+│   ├── maintenance/          # schedules, due status, reminder rules
+│   ├── deadlines/            # deadline status and templates
+│   ├── attachments/          # photo storage
+│   ├── ocr/                  # receipt, invoice and odometer parsing
+│   └── backup/               # backup format, archive, automatic backups
+├── notifications/            # daily check and weekly backup workers
+└── ui/                       # Compose screens by feature
 ```
+
+## Docs
+| | |
+|---|---|
+| [Architecture](docs/ARCHITECTURE.md) | Layers, dependency wiring, navigation, background work |
+| [Data model](docs/DATA_MODEL.md) | Entities, relations, migrations, schema-bump checklist |
+| [Maintenance](docs/MAINTENANCE.md) | How due status, predictions and reminders work |
+| [OCR](docs/OCR.md) | Receipt, invoice and odometer reading |
+| [Backup](docs/BACKUP.md) | Backup file format, automatic backups, restore |
+| [Testing](docs/TESTING.md) | Test setup and patterns |
+| [Releasing](docs/RELEASING.md) | Signing and publishing releases |
+| [Contributing](CONTRIBUTING.md) | Build, branches, PRs, conventions |
+| [Changelog](CHANGELOG.md) | What changed in each release |
 
 ## Build
-Open the folder in Android Studio and let Gradle sync.
-
-- **Debug** (`./gradlew assembleDebug`) installs as `com.carthing.debug` ("CarThing Debug"), next to
-  the release app, so testing never touches real data.
-- **Release** (`./gradlew assembleRelease`) is shrunk with R8 and split per CPU type; phones use
-  `app/build/outputs/apk/release/app-arm64-v8a-release.apk`.
-- CI (GitHub Actions) runs the unit tests and builds both on every push to `main` and every PR.
-
-### Release signing
-Release builds are signed when `keystore.properties` exists in the project root (git-ignored):
-
-```properties
-storeFile=C:/Users/<you>/.carthing/carthing-release.jks
-storePassword=...
-keyAlias=carthing
-keyPassword=...
-```
-
-or when the `CARTHING_KEYSTORE`, `CARTHING_KEYSTORE_PASSWORD`, `CARTHING_KEY_ALIAS` and
-`CARTHING_KEY_PASSWORD` environment variables are set. Without them the release APK is unsigned.
-
-**Keep the keystore and its password backed up.** Updates must be signed with the same key;
-losing it means uninstalling the app (restore data from a CarThing backup) to install a new build.
-
-### Publishing a release
-Tag a commit on `main` and push the tag:
+Open the folder in Android Studio and let Gradle sync, or use the command line (JDK 17):
 
 ```
-git tag v0.2.0
-git push origin v0.2.0
+./gradlew testDebugUnitTest   # unit tests
+./gradlew assembleDebug       # debug APK, installs as com.carthing.debug next to the release app
+./gradlew assembleRelease     # R8-shrunk release APKs, one per CPU type
 ```
 
-The Release workflow runs the tests, builds a signed APK (version name and code come from the tag:
-`v1.2.3` → `1.2.3` / `10203`, so each tag must be higher than the last) and publishes it on
-[Releases](https://github.com/JackG255/CarThing/releases/latest). Share that link: it always points
-to the newest build. Signing uses the `CARTHING_*` repository secrets.
-
-Trigger the daily maintenance check on a debug build:
-`adb shell am broadcast -n com.carthing.debug/com.carthing.debug.RunMaintenanceCheckReceiver`
+See [RELEASING.md](docs/RELEASING.md) for signing and publishing.
