@@ -9,6 +9,7 @@ import com.carthing.data.backup.BackupRepository
 import com.carthing.data.backup.BackupSettings
 import com.carthing.data.backup.FolderBackup
 import com.carthing.data.repository.DeadlineRepository
+import com.carthing.data.repository.DefaultNameRelabeler
 import com.carthing.data.repository.FuelRepository
 import com.carthing.data.repository.MaintenanceRepository
 import com.carthing.data.repository.ServiceRepository
@@ -36,6 +37,8 @@ class AppContainer(context: Context, db: CarThingDatabase = CarThingDatabase.get
     val backupArchive = BackupArchive(db, backupRepository, photoStore)
     val backupSettings = BackupSettings(context)
     val folderBackup = FolderBackup(context.contentResolver)
+
+    val relabeler = DefaultNameRelabeler(db, context.getSharedPreferences("language", Context.MODE_PRIVATE), language)
 
     val reminderNotifications = ReminderNotifications(context)
 }

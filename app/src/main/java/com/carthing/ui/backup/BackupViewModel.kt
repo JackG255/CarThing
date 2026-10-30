@@ -13,6 +13,7 @@ import com.carthing.data.backup.BackupArchive
 import com.carthing.data.backup.BackupRepository
 import com.carthing.data.backup.BackupSettings
 import com.carthing.data.backup.FolderBackup
+import com.carthing.data.repository.DefaultNameRelabeler
 import com.carthing.notifications.AutoBackupWorker
 import com.carthing.data.backup.BackupSummary
 import com.carthing.data.backup.InvalidBackupException
@@ -32,6 +33,7 @@ class BackupViewModel(
     private val archive: BackupArchive,
     private val settings: BackupSettings,
     private val folders: FolderBackup,
+    private val relabeler: DefaultNameRelabeler,
 ) : AndroidViewModel(app) {
     val settingsState: StateFlow<BackupSettings.State> = settings.state
 
@@ -77,7 +79,10 @@ class BackupViewModel(
     fun confirmImport() = viewModelScope.launch {
         val p = _pending.value ?: return@launch
         _pending.value = null
-        withContext(Dispatchers.IO) { archive.restore(p.parsed) }
+        withContext(Dispatchers.IO) {
+            archive.restore(p.parsed)
+            relabeler.relabel() // a backup may hold names in another language
+        }
         _message.value = "Backup restored"
     }
 
@@ -123,7 +128,7 @@ class BackupViewModel(
             initializer {
                 val app = this[APPLICATION_KEY] as CarThingApp
                 val c = app.container
-                BackupViewModel(app, c.backupRepository, c.backupArchive, c.backupSettings, c.folderBackup)
+                BackupViewModel(app, c.backupRepository, c.backupArchive, c.backupSettings, c.folderBackup, c.relabeler)
             }
         }
     }

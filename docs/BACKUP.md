@@ -32,6 +32,8 @@ older app can read fields added later within the same format.
 2. The user confirms after seeing a `BackupSummary`.
 3. `restore` writes the photos first. It then replaces all data in one transaction (`BackupRepository.replaceAll`) and finally deletes photos that are no longer referenced.
 
+4. The ViewModel then runs `DefaultNameRelabeler.relabel()`: component names, service types and deadline titles that equal a default name in any language become the current language's name. Names typed by hand are untouched. The backup format is unchanged; the files keep the names as stored.
+
 Errors are reported as `InvalidBackupException`, with a message the user can read.
 
 ## Automatic backups

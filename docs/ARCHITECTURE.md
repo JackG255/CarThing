@@ -37,7 +37,7 @@ An id of `0` means "new". Tapping a notification opens `MainActivity` with
 ## Background work (`notifications/`)
 | Worker | Schedule | Does |
 |---|---|---|
-| `MaintenanceCheckWorker` | daily; `MainActivity` schedules it with `KEEP` | Posts maintenance and deadline reminders, a stale-backup reminder, and sweeps orphaned photos |
+| `MaintenanceCheckWorker` | daily; `MainActivity` schedules it with `KEEP` | Relabels default names if the language changed, posts maintenance and deadline reminders, a stale-backup reminder, and sweeps orphaned photos |
 | `AutoBackupWorker` | weekly when a folder is set; `runOnce` for "Back up now" | Writes a zip into the chosen folder and prunes old automatic backups |
 
 `MaintenanceNotifier` posts on one channel (`maintenance`). Notification ids are stable per
@@ -49,10 +49,24 @@ Debug builds include `RunMaintenanceCheckReceiver`, which triggers the check imm
 adb shell am broadcast -n com.carthing.debug/com.carthing.debug.RunMaintenanceCheckReceiver
 ```
 
+## Languages
+The app is in English (default, and the fallback for every other language), Czech and Slovak.
+`AppContainer.language` follows the per-app locale. Pure-logic objects never read the locale; the
+language is passed in.
+
+Names the app supplies (default components, service quick picks, deadline presets) are `DefaultName`
+entries with a label per language. They are stored as plain text, so `DefaultNameRelabeler` rewrites
+them when the language changes:
+- A stored name is relabelled only if its **trimmed** text **exactly** equals (case-sensitive) a default in any of the three languages. Anything else, and all free-text notes, is left alone.
+- It covers component names, service entry types and deadline titles, in one transaction.
+- The last language it relabelled to is kept in the `language` preferences. Nothing is written to the database when it is unchanged.
+- On the first run, with no language stored, only the English labels count as defaults: data from 0.3.0 can only hold English defaults, so a Czech or Slovak one was typed by hand.
+- Triggers: `MainActivity.onCreate` (a per-app language change recreates the activity), the daily `MaintenanceCheckWorker`, and right after a backup is restored (always a full relabel).
+
 ## Storage
 - Room database `carthing.db`.
 - Photos: `filesDir/attachments/<uuid>.jpg`, see [BACKUP.md](BACKUP.md#photos).
-- SharedPreferences: `backup_settings` (backup bookkeeping and folder URI) and `ui_settings` (wallpaper colours).
+- SharedPreferences: `backup_settings` (backup bookkeeping and folder URI), `ui_settings` (wallpaper colours) and `language` (the language default names were last relabelled to).
 - Android's own backup (`res/xml/data_extraction_rules.xml`, `backup_rules.xml`) includes the database and preferences. It leaves out `backup_settings.xml`, because a folder permission only works on the same device, and it doesn't include photos.
 
 ## Build variants

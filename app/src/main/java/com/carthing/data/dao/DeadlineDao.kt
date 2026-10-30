@@ -18,6 +18,10 @@ interface DeadlineDao {
     @Query("UPDATE deadlines SET notifiedLevel = :level WHERE id = :id")
     suspend fun setNotifiedLevel(id: Long, level: Int)
 
+    /** Retitles deadlines whose trimmed title is in [from] to [to]; returns the rows changed. */
+    @Query("UPDATE deadlines SET title = :to WHERE trim(title) IN (:from) AND title != :to")
+    suspend fun relabelTitle(from: List<String>, to: String): Int
+
     @Upsert suspend fun upsert(deadline: Deadline): Long
     @Delete suspend fun delete(deadline: Deadline)
 }
