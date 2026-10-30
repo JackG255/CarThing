@@ -54,6 +54,11 @@ The app is in English (default, and the fallback for every other language), Czec
 `AppContainer.language` follows the per-app locale. Pure-logic objects never read the locale; the
 language is passed in.
 
+The language can be picked in the app (⋮ menu → Language) or, on Android 13+, in system settings.
+`ui/LanguageSettings` holds the choice (null follows the phone):
+- Android 13+: it is the per-app locale (`LocaleManager`), the same value system settings show, and Android applies it to the whole app and recreates open screens.
+- Android 8–12: there is no per-app locale, so the choice is saved in the `ui_settings` preferences and applied by `LanguageSettings.wrap`: `MainActivity.attachBaseContext` wraps the screen, `AppContainer.language` and `MaintenanceCheckWorker` wrap the application context, so names, relabelling and notifications all use it. The picker recreates the screen itself.
+
 Names the app supplies (default components, service quick picks, deadline presets) are `DefaultName`
 entries with a label per language. They are stored as plain text, so `DefaultNameRelabeler` rewrites
 them when the language changes:

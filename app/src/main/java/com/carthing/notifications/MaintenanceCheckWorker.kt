@@ -17,19 +17,21 @@ class MaintenanceCheckWorker(context: Context, params: WorkerParameters) : Corou
     override suspend fun doWork(): Result {
         val container = (applicationContext as CarThingApp).container
         container.relabeler.relabelIfLanguageChangedSafely() // a failure here must not block the reminders
-        container.maintenanceRepository.collectReminders().forEach { MaintenanceNotifier.post(applicationContext, it) }
-        container.deadlineRepository.collectReminders().forEach { MaintenanceNotifier.post(applicationContext, it) }
-        remindToBackUp(container)
+        // In the app's language: on Android 12 and older the in-app choice isn't applied to the application context.
+        val text = container.languageSettings.wrap(applicationContext)
+        container.maintenanceRepository.collectReminders().forEach { MaintenanceNotifier.post(text, it) }
+        container.deadlineRepository.collectReminders().forEach { MaintenanceNotifier.post(text, it) }
+        remindToBackUp(container, text)
         container.attachmentRepository.sweepOrphans()
         return Result.success()
     }
 
-    private suspend fun remindToBackUp(c: AppContainer) {
+    private suspend fun remindToBackUp(c: AppContainer, text: Context) {
         val now = System.currentTimeMillis()
         val s = c.backupSettings.state.value
         val hasData = c.vehicleRepository.count() > 0
         if (BackupPolicy.shouldRemind(hasData, s.lastBackupEpochMillis, s.lastReminderEpochMillis, now)) {
-            MaintenanceNotifier.postBackupReminder(applicationContext, s.lastBackupEpochMillis)
+            MaintenanceNotifier.postBackupReminder(text, s.lastBackupEpochMillis)
             c.backupSettings.recordReminder(now)
         }
     }
