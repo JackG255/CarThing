@@ -1,5 +1,6 @@
 package com.carthing
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -14,11 +15,15 @@ import com.carthing.notifications.MaintenanceCheckWorker
 import com.carthing.notifications.MaintenanceNotifier
 import com.carthing.ui.CarThingNavHost
 import com.carthing.ui.CarThingTheme
+import com.carthing.ui.LanguageSettings
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     /** Vehicle to open from a tapped notification; cleared once navigated. */
     private var openVehicleId by mutableStateOf<Long?>(null)
+
+    // Android 13+ applies the per-app language itself; older phones get the in-app choice here.
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(LanguageSettings(newBase).wrap(newBase))
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()

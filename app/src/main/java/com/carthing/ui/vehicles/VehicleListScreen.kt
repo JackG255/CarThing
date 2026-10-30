@@ -37,7 +37,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -47,6 +49,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.carthing.CarThingApp
 import com.carthing.data.dao.VehicleWithOdometer
 import com.carthing.data.backup.BackupPolicy
+import com.carthing.ui.LanguageDialog
 import com.carthing.ui.backup.BackupBanner
 import com.carthing.ui.backup.BackupMenu
 import com.carthing.ui.backup.BackupViewModel
@@ -65,8 +68,13 @@ fun VehicleListScreen(
     val backupViewModel: BackupViewModel = viewModel(factory = BackupViewModel.Factory)
     val backupSettings by backupViewModel.settingsState.collectAsStateWithLifecycle()
     val backupStale = BackupPolicy.isStale(backupSettings.lastBackupEpochMillis, System.currentTimeMillis())
+    var choosingLanguage by remember { mutableStateOf(false) }
     Scaffold(
-        topBar = { TopAppBar(title = { Text("CarThing") }, actions = { BackupMenu(snackbar, backupViewModel) { close -> AppearanceMenuItems(close) } }) },
+        topBar = {
+            TopAppBar(title = { Text("CarThing") }, actions = {
+                BackupMenu(snackbar, backupViewModel) { close -> AppearanceMenuItems(close, onLanguage = { choosingLanguage = true }) }
+            })
+        },
         snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddVehicle) { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.vehicle_add)) }
@@ -86,6 +94,7 @@ fun VehicleListScreen(
                 }
         }
     }
+    if (choosingLanguage) LanguageDialog(onDismiss = { choosingLanguage = false })
 }
 
 @Composable
@@ -133,12 +142,13 @@ private fun PlateBadge(plate: String) {
     )
 }
 
-/** Colour choice: the phone's wallpaper colours (Android 12+) or the app's own teal. */
+/** Language, and the colour choice: the phone's wallpaper colours (Android 12+) or the app's own teal. */
 @Composable
-private fun AppearanceMenuItems(close: () -> Unit) {
+private fun AppearanceMenuItems(close: () -> Unit, onLanguage: () -> Unit) {
+    HorizontalDivider()
+    DropdownMenuItem(text = { Text(stringResource(R.string.language_title)) }, onClick = { close(); onLanguage() })
     val appearance = (LocalContext.current.applicationContext as CarThingApp).container.appearance
     if (!appearance.wallpaperColorsAvailable) return
-    HorizontalDivider()
     DropdownMenuItem(
         text = { Text(stringResource(R.string.appearance_wallpaper_colors)) },
         trailingIcon = { Checkbox(checked = appearance.useWallpaperColors, onCheckedChange = null) },
