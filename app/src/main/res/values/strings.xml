@@ -60,10 +60,6 @@
     <!-- %1$s: a date; %2$s: the odometer reading -->
     <string name="schedule_last_at">last %1$s at %2$s</string>
     <string name="schedule_km_not_recorded">km not recorded</string>
-    <string name="kind_inspect">Inspect</string>
-    <string name="kind_replace">Replace</string>
-    <string name="kind_inspection">inspection</string>
-    <string name="kind_replacement">replacement</string>
 
     <!-- Deadlines (ui/deadlines/DeadlineText.kt) -->
     <string name="deadline_expires_today">expires today</string>
@@ -186,7 +182,7 @@
     <string name="vehicle_list_empty_title">No vehicles yet</string>
     <string name="vehicle_list_empty_message">Tap + to add your car, then log fill-ups and services.</string>
     <string name="appearance_wallpaper_colors">Wallpaper colours</string>
-    <!-- %1$s: the vehicle name -->
+    <!-- %1$s: the name of the item being deleted (vehicle, component or deadline) -->
     <string name="form_delete_title">Delete %1$s?</string>
     <string name="vehicle_form_delete_message">All fuel and service entries for this vehicle will be deleted too.</string>
     <string name="form_name">Name *</string>

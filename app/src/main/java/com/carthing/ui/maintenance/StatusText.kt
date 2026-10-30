@@ -83,12 +83,6 @@ fun Schedule.describe(res: Resources, kind: ScheduleKind): String {
     return listOfNotNull(first, last, kmMissing).joinToString(" · ")
 }
 
-fun ScheduleKind.verb(res: Resources): String =
-    res.getString(if (this == ScheduleKind.INSPECTION) R.string.kind_inspect else R.string.kind_replace)
-/** Lower case, e.g. "replacement". */
-fun ScheduleKind.noun(res: Resources): String =
-    res.getString(if (this == ScheduleKind.INSPECTION) R.string.kind_inspection else R.string.kind_replacement)
-
 /** Status line for a component, naming the schedule when it has both, e.g. "Inspection: Due in 3 weeks". */
 fun ComponentStatus.describe(res: Resources): String {
     val kind = primaryKind ?: return res.getString(R.string.status_no_schedule)
@@ -100,6 +94,4 @@ fun ComponentStatus.describe(res: Resources): String {
 @Composable fun MaintenanceStatus.describe(): String = describe(LocalContext.current.resources)
 @Composable fun formatDays(days: Long): String = formatDays(LocalContext.current.resources, days)
 @Composable fun Schedule.describe(kind: ScheduleKind): String = describe(LocalContext.current.resources, kind)
-@Composable fun ScheduleKind.verb(): String = verb(LocalContext.current.resources)
-@Composable fun ScheduleKind.noun(): String = noun(LocalContext.current.resources)
 @Composable fun ComponentStatus.describe(): String = describe(LocalContext.current.resources)

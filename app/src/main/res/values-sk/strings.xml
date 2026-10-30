@@ -58,10 +58,6 @@
     <string name="schedule_last">naposledy %1$s</string>
     <string name="schedule_last_at">naposledy %1$s pri %2$s</string>
     <string name="schedule_km_not_recorded">chýba stav km</string>
-    <string name="kind_inspect">Skontrolovať</string>
-    <string name="kind_replace">Vymeniť</string>
-    <string name="kind_inspection">kontrola</string>
-    <string name="kind_replacement">výmena</string>
 
     <string name="deadline_expires_today">platnosť končí dnes</string>
     <string name="deadline_expires_in">platnosť končí o %1$s</string>
