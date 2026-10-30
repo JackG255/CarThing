@@ -325,4 +325,99 @@
     <string name="odometer_pick">Pick the reading shown on the odometer:</string>
     <string name="odometer_photo_attached">The photo is attached to this entry.</string>
     <string name="odometer_none_of_these">None of these</string>
+
+    <!-- Maintenance tab and record dialog (ui/maintenance/MaintenanceTab.kt) -->
+    <string name="maintenance_not_tracked">Not tracked</string>
+    <string name="maintenance_record">Record</string>
+    <string name="maintenance_inspected">Inspected</string>
+    <string name="maintenance_replaced">Replaced</string>
+    <string name="maintenance_record_inspected_note">Only the inspection schedule restarts. Nothing is added to the service history.</string>
+    <string name="maintenance_record_replaced_note">Added to the service history. Both schedules restart, since a new part needs no inspection yet.</string>
+
+    <!-- Component form (ui/maintenance/MaintenanceItemFormScreen.kt) -->
+    <string name="maintenance_form_edit">Edit component</string>
+    <!-- %1$s: the component name -->
+    <string name="maintenance_delete_title">Stop tracking %1$s?</string>
+    <string name="maintenance_delete_message">Its schedule is removed. Service history is kept.</string>
+    <string name="maintenance_form_name">Name *</string>
+    <string name="maintenance_error_name_required">Name is required</string>
+    <string name="maintenance_track">Track and remind</string>
+    <string name="maintenance_form_hint">Each schedule is due after whichever of its limits comes first. Leave a section empty if it doesn\'t apply.</string>
+    <string name="maintenance_error_no_schedule">Set at least one inspection or replacement interval</string>
+    <string name="maintenance_section_inspection">Inspection</string>
+    <string name="maintenance_section_replacement">Replacement</string>
+    <string name="maintenance_every_km">Every (km)</string>
+    <string name="maintenance_every_months">Every (months)</string>
+    <string name="maintenance_set_last_inspection">Set last inspection date</string>
+    <string name="maintenance_set_last_replacement">Set last replacement date</string>
+    <string name="maintenance_last_inspection">Last inspection</string>
+    <string name="maintenance_last_replacement">Last replacement</string>
+    <string name="maintenance_odometer_last_inspection">Odometer at last inspection (km)</string>
+    <string name="maintenance_odometer_last_replacement">Odometer at last replacement (km)</string>
+    <string name="maintenance_km_missing_note">Without the odometer reading, only the time limit is checked. Enter 0 for a part that\'s original from new.</string>
+    <string name="maintenance_error_distance">Enter a distance above 0</string>
+    <string name="maintenance_error_reading">Enter a valid reading</string>
+    <!-- Also used by the deadline form -->
+    <string name="form_error_whole_months">Enter a whole number of months</string>
+
+    <!-- Component icon picker -->
+    <string name="maintenance_icon">Icon</string>
+    <!-- %1$s: the icon picked from the name, e.g. "Brakes" -->
+    <string name="maintenance_icon_automatic_named">Automatic (%1$s)</string>
+    <string name="maintenance_icon_automatic">Automatic</string>
+    <string name="maintenance_icon_change">Change</string>
+    <string name="maintenance_icon_choose">Choose an icon</string>
+
+    <!-- Names of the icons in the picker (ComponentIcons.kt) -->
+    <string name="icon_oil">Oil</string>
+    <string name="icon_filter">Filter</string>
+    <string name="icon_air_cabin">Air / cabin</string>
+    <string name="icon_brakes">Brakes</string>
+    <string name="icon_fluid">Fluid</string>
+    <string name="icon_coolant">Coolant</string>
+    <string name="icon_ignition">Ignition</string>
+    <string name="icon_belt_engine">Belt / engine</string>
+    <string name="icon_tires">Tires</string>
+    <string name="icon_pressure">Pressure</string>
+    <string name="icon_battery">Battery</string>
+    <string name="icon_wipers">Wipers</string>
+    <string name="icon_lights">Lights</string>
+    <string name="icon_air_con">Air con</string>
+    <string name="icon_gearbox">Gearbox</string>
+    <string name="icon_inspection">Inspection</string>
+    <string name="icon_safety_kit">Safety kit</string>
+    <string name="icon_fuel">Fuel</string>
+    <string name="icon_wash">Wash</string>
+    <string name="icon_key">Key</string>
+    <string name="icon_warning">Warning</string>
+    <string name="icon_car">Car</string>
+    <string name="icon_general">General</string>
+
+    <!-- Deadlines list on the Maintenance tab (ui/deadlines/DeadlinesSection.kt) -->
+    <string name="deadlines_title">Deadlines</string>
+    <string name="deadlines_add">Add</string>
+    <string name="deadlines_empty">Add your technical inspection, vignette or insurance to be reminded before they expire.</string>
+    <!-- %1$s: a date -->
+    <string name="deadline_due">Due %1$s</string>
+    <!-- %1$s: a date; %2$d: the repeat interval in months -->
+    <plurals name="deadline_due_repeating">
+        <item quantity="one">Due %1$s · every month</item>
+        <item quantity="other">Due %1$s · every %2$d months</item>
+    </plurals>
+    <string name="deadlines_renew">Renew</string>
+    <!-- %1$s: the deadline title -->
+    <string name="deadlines_renew_title">Renew %1$s</string>
+    <string name="deadlines_renew_hint">Enter the new expiry date, e.g. from the inspection sticker or the new policy.</string>
+    <string name="deadlines_new_due_date">New due date</string>
+
+    <!-- Deadline form (ui/deadlines/DeadlineFormScreen.kt) -->
+    <string name="deadline_form_add">Add deadline</string>
+    <string name="deadline_form_edit">Edit deadline</string>
+    <!-- %1$s: the deadline title -->
+    <string name="deadline_delete_title">Delete %1$s?</string>
+    <string name="deadline_delete_message">You won\'t be reminded about it any more.</string>
+    <string name="deadline_form_title">Title *</string>
+    <string name="deadline_error_title_required">Title is required</string>
+    <string name="deadline_form_due">Due date (last valid day)</string>
+    <string name="deadline_form_repeat">Repeats every (months)</string>
 </resources>

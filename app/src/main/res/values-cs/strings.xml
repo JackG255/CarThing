@@ -315,4 +315,94 @@
     <string name="odometer_pick">Vyberte hodnotu zobrazenou na tachometru:</string>
     <string name="odometer_photo_attached">Fotka je připojena k tomuto záznamu.</string>
     <string name="odometer_none_of_these">Žádná z nich</string>
+
+    <!-- Karta údržby a dialog záznamu (ui/maintenance/MaintenanceTab.kt) -->
+    <string name="maintenance_not_tracked">Nesledováno</string>
+    <string name="maintenance_record">Zapsat</string>
+    <string name="maintenance_inspected">Zkontrolováno</string>
+    <string name="maintenance_replaced">Vyměněno</string>
+    <string name="maintenance_record_inspected_note">Restartuje se jen plán kontroly. Do servisní historie se nic nepřidá.</string>
+    <string name="maintenance_record_replaced_note">Přidá se do servisní historie. Restartují se oba plány, protože nový díl zatím kontrolu nepotřebuje.</string>
+
+    <!-- Formulář součásti (ui/maintenance/MaintenanceItemFormScreen.kt) -->
+    <string name="maintenance_form_edit">Upravit součást</string>
+    <string name="maintenance_delete_title">Přestat sledovat %1$s?</string>
+    <string name="maintenance_delete_message">Plán se odstraní. Servisní historie zůstane zachována.</string>
+    <string name="maintenance_form_name">Název *</string>
+    <string name="maintenance_error_name_required">Zadejte název</string>
+    <string name="maintenance_track">Sledovat a připomínat</string>
+    <string name="maintenance_form_hint">Termín každého plánu nastane podle toho, který z jeho limitů přijde dřív. Pokud se sekce netýká, nechte ji prázdnou.</string>
+    <string name="maintenance_error_no_schedule">Zadejte alespoň jeden interval kontroly nebo výměny</string>
+    <string name="maintenance_section_inspection">Kontrola</string>
+    <string name="maintenance_section_replacement">Výměna</string>
+    <string name="maintenance_every_km">Interval (km)</string>
+    <string name="maintenance_every_months">Interval (v měsících)</string>
+    <string name="maintenance_set_last_inspection">Nastavit datum poslední kontroly</string>
+    <string name="maintenance_set_last_replacement">Nastavit datum poslední výměny</string>
+    <string name="maintenance_last_inspection">Poslední kontrola</string>
+    <string name="maintenance_last_replacement">Poslední výměna</string>
+    <string name="maintenance_odometer_last_inspection">Stav tachometru při poslední kontrole (km)</string>
+    <string name="maintenance_odometer_last_replacement">Stav tachometru při poslední výměně (km)</string>
+    <string name="maintenance_km_missing_note">Bez stavu tachometru se kontroluje jen časový limit. U dílu původního z výroby zadejte 0.</string>
+    <string name="maintenance_error_distance">Zadejte vzdálenost větší než 0</string>
+    <string name="maintenance_error_reading">Zadejte platný stav tachometru</string>
+    <string name="form_error_whole_months">Zadejte celý počet měsíců</string>
+
+    <!-- Výběr ikony součásti -->
+    <string name="maintenance_icon">Ikona</string>
+    <string name="maintenance_icon_automatic_named">Automaticky (%1$s)</string>
+    <string name="maintenance_icon_automatic">Automaticky</string>
+    <string name="maintenance_icon_change">Změnit</string>
+    <string name="maintenance_icon_choose">Vyberte ikonu</string>
+
+    <!-- Názvy ikon ve výběru (ComponentIcons.kt) -->
+    <string name="icon_oil">Olej</string>
+    <string name="icon_filter">Filtr</string>
+    <string name="icon_air_cabin">Vzduch / kabina</string>
+    <string name="icon_brakes">Brzdy</string>
+    <string name="icon_fluid">Kapalina</string>
+    <string name="icon_coolant">Chladicí kapalina</string>
+    <string name="icon_ignition">Zapalování</string>
+    <string name="icon_belt_engine">Řemen / motor</string>
+    <string name="icon_tires">Pneumatiky</string>
+    <string name="icon_pressure">Tlak</string>
+    <string name="icon_battery">Baterie</string>
+    <string name="icon_wipers">Stěrače</string>
+    <string name="icon_lights">Světla</string>
+    <string name="icon_air_con">Klimatizace</string>
+    <string name="icon_gearbox">Převodovka</string>
+    <string name="icon_inspection">Kontrola</string>
+    <string name="icon_safety_kit">Povinná výbava</string>
+    <string name="icon_fuel">Palivo</string>
+    <string name="icon_wash">Mytí</string>
+    <string name="icon_key">Klíč</string>
+    <string name="icon_warning">Varování</string>
+    <string name="icon_car">Auto</string>
+    <string name="icon_general">Obecné</string>
+
+    <!-- Termíny na kartě údržby (ui/deadlines/DeadlinesSection.kt) -->
+    <string name="deadlines_title">Termíny</string>
+    <string name="deadlines_add">Přidat</string>
+    <string name="deadlines_empty">Přidejte technickou kontrolu, dálniční známku nebo pojištění a připomeneme vám je před koncem platnosti.</string>
+    <string name="deadline_due">Platnost do %1$s</string>
+    <plurals name="deadline_due_repeating">
+        <item quantity="one">Platnost do %1$s · každý měsíc</item>
+        <item quantity="few">Platnost do %1$s · každé %2$d měsíce</item>
+        <item quantity="many">Platnost do %1$s · každých %2$d měsíce</item>
+        <item quantity="other">Platnost do %1$s · každých %2$d měsíců</item>
+    </plurals>
+    <string name="deadlines_renew">Obnovit</string>
+    <string name="deadlines_renew_title">Obnovit: %1$s</string>
+    <string name="deadlines_renew_hint">Zadejte nové datum konce platnosti, např. z nálepky STK nebo z nové pojistné smlouvy.</string>
+    <string name="deadlines_new_due_date">Nová platnost do</string>
+
+    <!-- Formulář termínu (ui/deadlines/DeadlineFormScreen.kt) -->
+    <string name="deadline_form_add">Přidat termín</string>
+    <string name="deadline_form_edit">Upravit termín</string>
+    <string name="deadline_delete_title">Smazat %1$s?</string>
+    <string name="deadline_delete_message">Už se k němu nebudou zobrazovat připomínky.</string>
+    <string name="deadline_form_title">Název *</string>
+    <string name="deadline_error_title_required">Zadejte název</string>
+    <string name="deadline_form_due">Platnost do (poslední platný den)</string>
+    <string name="deadline_form_repeat">Opakování (v měsících)</string>
 </resources>
