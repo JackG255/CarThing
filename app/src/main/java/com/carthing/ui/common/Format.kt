@@ -29,9 +29,10 @@ fun formatCostPerKm(res: Resources, amount: Double?): String =
 @Composable fun formatEconomy(litersPer100Km: Double?): String = formatEconomy(LocalContext.current.resources, litersPer100Km)
 @Composable fun formatCostPerKm(amount: Double?): String = formatCostPerKm(LocalContext.current.resources, amount)
 
-private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+// Built per call: a per-app language change keeps the process, so a cached formatter would keep the old locale.
 fun formatDate(epochMillis: Long): String =
-    Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
+    Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+        .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
 
 /** Parses user input, accepting both '.' and ',' as the decimal separator. Blank → null. */
 fun parseDecimal(text: String): Double? = text.trim().replace(',', '.').takeIf { it.isNotEmpty() }?.toDoubleOrNull()
