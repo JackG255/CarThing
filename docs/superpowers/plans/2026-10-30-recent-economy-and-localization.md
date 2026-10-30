@@ -28,7 +28,8 @@
 2. **Switching EN → CS → EN** must give back exactly the original English names, and a second run with no language change must write nothing. Test in Task 4.
 3. **Restoring a backup made in Czech on an English phone** must relabel even though the stored "last language" didn't change. Test in Task 4.
 4. **Czech/Slovak plurals:** cs 1 den / 2 dny / 5 dní, sk 1 deň / 2 dni / 5 dní. Test in Task 5.
-5. **The English auto-backup error sentence already saved on the owner's phone** must show as the generic localized message, not as English text and not as a crash. Test in Task 6.
+5. **The first launch after upgrading from 0.3.0** must not rewrite Czech/Slovak names the owner typed by hand ("Oprava", "Pojištění"), because 0.3.0 only generated English defaults. Test in Task 4.
+6. **The English auto-backup error sentence already saved on the owner's phone** must show as the generic localized message, not as English text and not as a crash. Test in Task 6.
 
 ---
 
@@ -161,6 +162,7 @@
   - `class DefaultNameRelabeler(db: CarThingDatabase, prefs: SharedPreferences, language: () -> Language)` with:
     - `suspend fun relabel(): Int`: for every `DefaultName`, relabel all three tables from `entry.all` to `entry.label(language())` in one `withTransaction`, store `language().name` under `KEY_LANGUAGE`, and return the number of rows changed.
     - `suspend fun relabelIfLanguageChanged(): Int`: return 0 without touching the DB when the stored language equals `language()`; otherwise call `relabel()`.
+    - **First run (nothing stored under `KEY_LANGUAGE`):** relabel from `listOf(entry.label(Language.EN))` only, never `entry.all`. Data from 0.3.0 can only contain app-generated defaults in English, so a Czech/Slovak default there (e.g. "Oprava", "Pojištění") was typed by hand. Every later run, and the forced `relabel()` after a restore, uses `entry.all`.
   - `AppContainer.relabeler`, using prefs `context.getSharedPreferences("language", MODE_PRIVATE)`.
 
 - [ ] **Step 1: Write the failing tests** in `DefaultNameRelabelerTest`. Use a `var lang = Language.EN` captured by the lambda and seed one vehicle with:
@@ -173,6 +175,9 @@
   - `roundTripRestoresEnglish`: CS, then EN gives exactly "Brake fluid", "Coolant", "Oil change", "Engine oil & filter" and "Motorway vignette". The trimmed one comes back without its spaces, which is accepted.
   - `secondRunWithSameLanguageWritesNothing`: `relabelIfLanguageChanged()` with CS returns > 0, then returns 0 when called again.
   - `slovakFromCzech`: CS then SK gives "Brzdová kvapalina".
+  - `firstRunOnlyTouchesEnglishDefaults`: with fresh prefs, seed a service type "Oprava", a deadline "Pojištění" and an item "Brake fluid".
+    - `relabelIfLanguageChanged()` under EN leaves "Oprava" and "Pojištění" unchanged.
+    - On another set of fresh prefs, the first run under CS turns "Brake fluid" into "Brzdová kapalina" and leaves "Oprava" unchanged.
   - `forcedRelabelAfterRestore`: run `relabel()` under EN, insert a Czech-named item directly via the DAO (simulating `replaceAll`), then call `relabel()` under EN. Expected: the item is English. This is the restore path.
 - [ ] **Step 2: Run** `./gradlew testDebugUnitTest --tests com.carthing.data.repository.DefaultNameRelabelerTest`. Expected: FAIL.
 - [ ] **Step 3: Implement** the DAOs and the relabeler.
