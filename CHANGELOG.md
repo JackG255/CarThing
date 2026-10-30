@@ -3,10 +3,12 @@
 Each release is published on [GitHub Releases](https://github.com/JackG255/CarThing/releases).
 
 ## [Unreleased]
-- Documentation: architecture, data model, maintenance, OCR, backup, testing and release guides.
-- Fuel economy: the "Last fill-up" figure is now "Recent", averaged over the last 3 full-to-full fills, so one over- or under-filled tank no longer causes a spike. The fuel list still shows each fill's own figure.
-- Czech and Slovak. The app follows the phone's language, or the per-app language in Android 13+ settings. Default component names, service types and deadline presets you haven't renamed switch language too, including after a backup is restored. A name you typed yourself is left alone unless it exactly matches a built-in name.
-- Language can be picked inside the app (⋮ menu → Language): System default, English, Čeština or Slovenčina. On Android 13+ it is the same setting as the system's per-app language.
+
+## [0.4.0] - 2026-10-30
+- Fuel economy: the "Last fill-up" figure is now "Recent", averaged over the last 3 full-to-full fills, so one over- or under-filled tank no longer causes a spike. The fuel list still shows each fill's own figure (#19).
+- Czech and Slovak. The app follows the phone's language, or the per-app language in Android 13+ settings. Default component names, service types and deadline presets you haven't renamed switch language too, including after a backup is restored. A name you typed yourself is left alone unless it exactly matches a built-in name (#19).
+- Language can be picked inside the app (⋮ menu → Language): System default, English, Čeština or Slovenčina. On Android 13+ it is the same setting as the system's per-app language (#21).
+- Documentation: architecture, data model, maintenance, OCR, backup, testing and release guides (#18).
 
 ## [0.3.0] - 2026-09-29
 - Icons for maintenance components, picked from the name or chosen by hand (#17). Database v8, backup format 4.
@@ -25,6 +27,7 @@ First public release.
 - Signed APKs published as GitHub Releases on version tags (#16).
 - Build upgrade and first tests (#1).
 
-[Unreleased]: https://github.com/JackG255/CarThing/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/JackG255/CarThing/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/JackG255/CarThing/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/JackG255/CarThing/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/JackG255/CarThing/releases/tag/v0.2.0
