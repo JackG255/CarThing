@@ -1,5 +1,6 @@
 package com.carthing.ui.fuel
 
+import android.content.res.Resources
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -130,8 +132,9 @@ private fun FuelForm(existing: FuelEntry?, suggestedOdometerKm: Double, viewMode
         }
     }
 
+    val res = LocalContext.current.resources
     val odometerError = "odometer".takeIf { it in parseErrors }?.let { "Enter the odometer reading" }
-        ?: issues.firstNotNullOfOrNull { it.odometerMessage() }
+        ?: issues.firstNotNullOfOrNull { it.odometerMessage(res) }
     val litersError = "liters".takeIf { it in parseErrors }?.let { "Enter the amount of fuel" }
         ?: issues.firstNotNullOfOrNull { (it as? FuelIssue.NonPositiveLiters)?.let { "Must be more than 0" } }
     val priceError = "price".takeIf { it in parseErrors }?.let { "Enter a valid price" }
@@ -206,10 +209,10 @@ private fun FuelForm(existing: FuelEntry?, suggestedOdometerKm: Double, viewMode
     }
 }
 
-private fun FuelIssue.odometerMessage(): String? = when (this) {
-    is FuelIssue.BelowInitialOdometer -> "Lower than the vehicle's starting odometer (${formatKm(initialOdometerKm)})"
+private fun FuelIssue.odometerMessage(res: Resources): String? = when (this) {
+    is FuelIssue.BelowInitialOdometer -> "Lower than the vehicle's starting odometer (${formatKm(res, initialOdometerKm)})"
     is FuelIssue.OdometerOutOfOrder ->
-        "Conflicts with the fill-up on ${formatDate(other.dateEpochMillis)} at ${formatKm(other.odometerKm)}"
+        "Conflicts with the fill-up on ${formatDate(other.dateEpochMillis)} at ${formatKm(res, other.odometerKm)}"
     is FuelIssue.DuplicateFullTank ->
         "There's already a full-tank fill-up at this reading (${formatDate(other.dateEpochMillis)})"
     else -> null

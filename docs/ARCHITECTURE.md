@@ -63,6 +63,15 @@ them when the language changes:
 - On the first run, with no language stored, only the English labels count as defaults: data from 0.3.0 can only hold English defaults, so a Czech or Slovak one was typed by hand.
 - Triggers: `MainActivity.onCreate` (a per-app language change recreates the activity), the daily `MaintenanceCheckWorker`, and right after a backup is restored (always a full relabel).
 
+Everything else the app shows is a string resource:
+- `res/values/strings.xml` is English, `values-cs/` Czech and `values-sk/` Slovak. `res/resources.properties` marks `values/` as English, and `generateLocaleConfig` in `app/build.gradle.kts` turns the folders into the per-app language list in Android 13+ settings.
+- Text helpers (`formatKm`, `formatDays`, `MaintenanceStatus.describe`, `DeadlineStatus.describeExpiry`, …) take `Resources` first. Each has a `@Composable` overload without it for screens; workers and notifications pass `context.resources`.
+- A ViewModel that picks a message returns a `UiText` (resource id plus args), and the screen calls `resolve()`.
+- Sentences are whole format strings with numbered args (`%1$s`, `%2$s`), never glued fragments, so a translation can reorder words. Counts use `<plurals>`. Czech and Slovak need `one` (1), `few` (2–4), `many` (fractions only, so never hit by whole numbers) and `other` (0, 5+). When a phrase puts the count in another case, it gets its own plurals, e.g. `deadline_expired_days_ago` ("před 5 dny") next to `days` ("5 dní").
+- Units: English uses `L` and `L/100km`; Czech and Slovak use `l` and `l/100 km`.
+
+To add a string, put it in all three `strings.xml` files; `TranslationsTest` fails when a name is missing or extra in `cs` or `sk`, or a Czech or Slovak plural lacks a quantity. Mark brand names `translatable="false"`. To add a language, add a `values-xx/strings.xml` with every string, a `Language` entry and its `DefaultName` labels, and add the folder to `TranslationsTest`.
+
 ## Storage
 - Room database `carthing.db`.
 - Photos: `filesDir/attachments/<uuid>.jpg`, see [BACKUP.md](BACKUP.md#photos).

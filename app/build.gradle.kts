@@ -79,6 +79,8 @@ android {
     }
     kotlinOptions { jvmTarget = "17" }
     buildFeatures { compose = true; buildConfig = true }
+    // Lists en, cs and sk for the per-app language setting (Android 13+); English is the unqualified values/.
+    androidResources { generateLocaleConfig = true }
     testOptions { unitTests.isIncludeAndroidResources = true }
     // Exported Room schemas for migration tests; Robolectric reads them from the app's debug assets.
     sourceSets["debug"].assets.srcDir("$projectDir/schemas")

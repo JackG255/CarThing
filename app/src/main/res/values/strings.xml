@@ -1,3 +1,103 @@
 <resources>
-    <string name="app_name">CarThing</string>
+    <string name="app_name" translatable="false">CarThing</string>
+
+    <!-- Units (ui/common/Format.kt) -->
+    <string name="format_km">%1$s km</string>
+    <string name="format_liters">%1$s L</string>
+    <string name="format_economy">%1$s L/100km</string>
+    <string name="format_cost_per_km">%1$s /km</string>
+
+    <!-- Time spans (formatDays); thresholds are in the code -->
+    <plurals name="days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <plurals name="weeks">
+        <item quantity="one">%d week</item>
+        <item quantity="other">%d weeks</item>
+    </plurals>
+    <plurals name="months">
+        <item quantity="one">%d month</item>
+        <item quantity="other">%d months</item>
+    </plurals>
+    <plurals name="years">
+        <item quantity="one">%d year</item>
+        <item quantity="other">%d years</item>
+    </plurals>
+
+    <!-- Maintenance status (ui/maintenance/StatusText.kt) -->
+    <string name="status_not_recorded">Not recorded yet</string>
+    <string name="status_overdue">Overdue</string>
+    <!-- %1$s: a distance ("500 km") or a time span ("3 weeks") -->
+    <string name="status_overdue_by">Overdue by %1$s</string>
+    <string name="status_due_today">Due today</string>
+    <!-- %1$s: distance left, e.g. "800 km" -->
+    <string name="status_due_in_km">Due in ~%1$s</string>
+    <!-- %1$s: time left, e.g. "3 weeks" -->
+    <string name="status_due_in_time">Due in %1$s</string>
+    <string name="status_due_in_km_and_time">Due in ~%1$s · %2$s</string>
+    <string name="status_no_schedule">No schedule</string>
+    <!-- A component with both schedules names the one shown; %1$s is the status, e.g. "Due in 3 weeks" -->
+    <string name="status_inspection">Inspection: %1$s</string>
+    <string name="status_replacement">Replacement: %1$s</string>
+
+    <!-- Schedules, e.g. "Replace every 15,000 km or 12 months · last 12 Mar 2026 at 50,000 km" -->
+    <string name="schedule_inspect">Inspect %1$s</string>
+    <string name="schedule_replace">Replace %1$s</string>
+    <!-- %1$s: a distance, e.g. "15,000 km" -->
+    <string name="schedule_every_km">every %1$s</string>
+    <plurals name="schedule_every_months">
+        <item quantity="one">every month</item>
+        <item quantity="other">every %d months</item>
+    </plurals>
+    <!-- %1$s: a distance; %2$d: months -->
+    <plurals name="schedule_every_km_or_months">
+        <item quantity="one">every %1$s or %2$d month</item>
+        <item quantity="other">every %1$s or %2$d months</item>
+    </plurals>
+    <!-- %1$s: a date -->
+    <string name="schedule_last">last %1$s</string>
+    <!-- %1$s: a date; %2$s: the odometer reading -->
+    <string name="schedule_last_at">last %1$s at %2$s</string>
+    <string name="schedule_km_not_recorded">km not recorded</string>
+    <string name="kind_inspect">Inspect</string>
+    <string name="kind_replace">Replace</string>
+    <string name="kind_inspection">inspection</string>
+    <string name="kind_replacement">replacement</string>
+
+    <!-- Deadlines (ui/deadlines/DeadlineText.kt) -->
+    <string name="deadline_expires_today">expires today</string>
+    <!-- %1$s: a time span, e.g. "12 days" -->
+    <string name="deadline_expires_in">expires in %1$s</string>
+    <plurals name="deadline_expired_days_ago">
+        <item quantity="one">expired %d day ago</item>
+        <item quantity="other">expired %d days ago</item>
+    </plurals>
+    <plurals name="deadline_expired_weeks_ago">
+        <item quantity="one">expired %d week ago</item>
+        <item quantity="other">expired %d weeks ago</item>
+    </plurals>
+    <plurals name="deadline_expired_months_ago">
+        <item quantity="one">expired %d month ago</item>
+        <item quantity="other">expired %d months ago</item>
+    </plurals>
+    <plurals name="deadline_expired_years_ago">
+        <item quantity="one">expired %d year ago</item>
+        <item quantity="other">expired %d years ago</item>
+    </plurals>
+
+    <!-- Notifications (notifications/MaintenanceNotifier.kt) -->
+    <string name="notification_channel_name">Maintenance reminders</string>
+    <string name="notification_channel_description">When a component or deadline is due soon or overdue</string>
+    <!-- %1$s: the component name -->
+    <string name="reminder_inspection_overdue">%1$s inspection is overdue</string>
+    <string name="reminder_replacement_overdue">%1$s replacement is overdue</string>
+    <string name="reminder_inspection_due_soon">%1$s inspection is due soon</string>
+    <string name="reminder_replacement_due_soon">%1$s replacement is due soon</string>
+    <!-- %1$s: the deadline title; %2$s: e.g. "expires in 12 days" -->
+    <string name="reminder_deadline">%1$s %2$s</string>
+    <string name="backup_reminder_title">Back up your service book</string>
+    <!-- %1$s: the date of the last backup -->
+    <string name="backup_reminder_last">Last backup: %1$s. Export one, or turn on automatic backups.</string>
+    <string name="backup_reminder_never">You haven\'t backed up yet. Export one, or turn on automatic backups.</string>
 </resources>

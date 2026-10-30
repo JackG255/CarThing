@@ -1,0 +1,103 @@
+<resources>
+    <string name="format_km">%1$s km</string>
+    <string name="format_liters">%1$s l</string>
+    <string name="format_economy">%1$s l/100 km</string>
+    <string name="format_cost_per_km">%1$s/km</string>
+
+    <plurals name="days">
+        <item quantity="one">%d den</item>
+        <item quantity="few">%d dny</item>
+        <item quantity="many">%d dne</item>
+        <item quantity="other">%d dní</item>
+    </plurals>
+    <plurals name="weeks">
+        <item quantity="one">%d týden</item>
+        <item quantity="few">%d týdny</item>
+        <item quantity="many">%d týdne</item>
+        <item quantity="other">%d týdnů</item>
+    </plurals>
+    <plurals name="months">
+        <item quantity="one">%d měsíc</item>
+        <item quantity="few">%d měsíce</item>
+        <item quantity="many">%d měsíce</item>
+        <item quantity="other">%d měsíců</item>
+    </plurals>
+    <plurals name="years">
+        <item quantity="one">%d rok</item>
+        <item quantity="few">%d roky</item>
+        <item quantity="many">%d roku</item>
+        <item quantity="other">%d let</item>
+    </plurals>
+
+    <string name="status_not_recorded">Zatím nezaznamenáno</string>
+    <string name="status_overdue">Po termínu</string>
+    <string name="status_overdue_by">Po termínu o %1$s</string>
+    <string name="status_due_today">Termín je dnes</string>
+    <string name="status_due_in_km">Za ~%1$s</string>
+    <string name="status_due_in_time">Za %1$s</string>
+    <string name="status_due_in_km_and_time">Za ~%1$s · %2$s</string>
+    <string name="status_no_schedule">Bez plánu</string>
+    <string name="status_inspection">Kontrola: %1$s</string>
+    <string name="status_replacement">Výměna: %1$s</string>
+
+    <string name="schedule_inspect">Kontrola %1$s</string>
+    <string name="schedule_replace">Výměna %1$s</string>
+    <string name="schedule_every_km">každých %1$s</string>
+    <plurals name="schedule_every_months">
+        <item quantity="one">každý měsíc</item>
+        <item quantity="few">každé %d měsíce</item>
+        <item quantity="many">každých %d měsíce</item>
+        <item quantity="other">každých %d měsíců</item>
+    </plurals>
+    <plurals name="schedule_every_km_or_months">
+        <item quantity="one">každých %1$s nebo %2$d měsíc</item>
+        <item quantity="few">každých %1$s nebo %2$d měsíce</item>
+        <item quantity="many">každých %1$s nebo %2$d měsíce</item>
+        <item quantity="other">každých %1$s nebo %2$d měsíců</item>
+    </plurals>
+    <string name="schedule_last">naposledy %1$s</string>
+    <string name="schedule_last_at">naposledy %1$s při %2$s</string>
+    <string name="schedule_km_not_recorded">chybí stav km</string>
+    <string name="kind_inspect">Zkontrolovat</string>
+    <string name="kind_replace">Vyměnit</string>
+    <string name="kind_inspection">kontrola</string>
+    <string name="kind_replacement">výměna</string>
+
+    <string name="deadline_expires_today">platnost končí dnes</string>
+    <string name="deadline_expires_in">platnost končí za %1$s</string>
+    <plurals name="deadline_expired_days_ago">
+        <item quantity="one">platnost skončila před %d dnem</item>
+        <item quantity="few">platnost skončila před %d dny</item>
+        <item quantity="many">platnost skončila před %d dne</item>
+        <item quantity="other">platnost skončila před %d dny</item>
+    </plurals>
+    <plurals name="deadline_expired_weeks_ago">
+        <item quantity="one">platnost skončila před %d týdnem</item>
+        <item quantity="few">platnost skončila před %d týdny</item>
+        <item quantity="many">platnost skončila před %d týdne</item>
+        <item quantity="other">platnost skončila před %d týdny</item>
+    </plurals>
+    <plurals name="deadline_expired_months_ago">
+        <item quantity="one">platnost skončila před %d měsícem</item>
+        <item quantity="few">platnost skončila před %d měsíci</item>
+        <item quantity="many">platnost skončila před %d měsíce</item>
+        <item quantity="other">platnost skončila před %d měsíci</item>
+    </plurals>
+    <plurals name="deadline_expired_years_ago">
+        <item quantity="one">platnost skončila před %d rokem</item>
+        <item quantity="few">platnost skončila před %d lety</item>
+        <item quantity="many">platnost skončila před %d roku</item>
+        <item quantity="other">platnost skončila před %d lety</item>
+    </plurals>
+
+    <string name="notification_channel_name">Připomínky údržby</string>
+    <string name="notification_channel_description">Když se blíží nebo už uplynul termín údržby či platnosti</string>
+    <string name="reminder_inspection_overdue">%1$s: kontrola je po termínu</string>
+    <string name="reminder_replacement_overdue">%1$s: výměna je po termínu</string>
+    <string name="reminder_inspection_due_soon">%1$s: blíží se kontrola</string>
+    <string name="reminder_replacement_due_soon">%1$s: blíží se výměna</string>
+    <string name="reminder_deadline">%1$s: %2$s</string>
+    <string name="backup_reminder_title">Zazálohujte servisní knížku</string>
+    <string name="backup_reminder_last">Poslední záloha: %1$s. Vytvořte novou, nebo zapněte automatické zálohování.</string>
+    <string name="backup_reminder_never">Zatím nemáte žádnou zálohu. Vytvořte ji, nebo zapněte automatické zálohování.</string>
+</resources>
