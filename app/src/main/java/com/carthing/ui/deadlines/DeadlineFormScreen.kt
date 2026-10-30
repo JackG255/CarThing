@@ -82,7 +82,7 @@ private fun DeadlineForm(existing: Deadline?, viewModel: VehicleDetailViewModel,
                 title = { Text(stringResource(if (existing == null) R.string.deadline_form_add else R.string.deadline_form_edit)) },
                 navigationIcon = { BackButton(onDone) },
                 actions = {
-                    if (existing != null) DeleteAction(stringResource(R.string.deadline_delete_title, existing.title), stringResource(R.string.deadline_delete_message)) {
+                    if (existing != null) DeleteAction(stringResource(R.string.form_delete_title, existing.title), stringResource(R.string.deadline_delete_message)) {
                         scope.launch { viewModel.deleteDeadline(existing); onDone() }
                     }
                 }

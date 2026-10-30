@@ -119,7 +119,7 @@ private fun MaintenanceItemForm(existing: MaintenanceItem?, viewModel: VehicleDe
     val inspect = rememberScheduleFields(existing?.inspectKm, existing?.inspectMonths, existing?.lastInspectedEpochMillis, existing?.lastInspectedOdometerKm)
     val replace = rememberScheduleFields(existing?.replaceKm, existing?.replaceMonths, existing?.lastReplacedEpochMillis, existing?.lastReplacedOdometerKm)
 
-    val nameError = if (submitted && name.isBlank()) stringResource(R.string.maintenance_error_name_required) else null
+    val nameError = if (submitted && name.isBlank()) stringResource(R.string.form_name_required) else null
     val noSchedule = submitted && !inspect.isSet && !replace.isSet
 
     Scaffold(
@@ -140,7 +140,7 @@ private fun MaintenanceItemForm(existing: MaintenanceItem?, viewModel: VehicleDe
             Modifier.padding(padding).imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            TextInput(name, { name = it }, stringResource(R.string.maintenance_form_name), error = nameError)
+            TextInput(name, { name = it }, stringResource(R.string.form_name), error = nameError)
             IconField(icon, name) { icon = it }
             SwitchRow(stringResource(R.string.maintenance_track), enabled) { enabled = it }
             Text(stringResource(R.string.maintenance_form_hint), style = MaterialTheme.typography.bodySmall)

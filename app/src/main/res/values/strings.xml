@@ -187,16 +187,16 @@
     <string name="vehicle_list_empty_message">Tap + to add your car, then log fill-ups and services.</string>
     <string name="appearance_wallpaper_colors">Wallpaper colours</string>
     <!-- %1$s: the vehicle name -->
-    <string name="vehicle_form_delete_title">Delete %1$s?</string>
+    <string name="form_delete_title">Delete %1$s?</string>
     <string name="vehicle_form_delete_message">All fuel and service entries for this vehicle will be deleted too.</string>
-    <string name="vehicle_form_name">Name *</string>
+    <string name="form_name">Name *</string>
     <string name="vehicle_form_make">Make</string>
     <string name="vehicle_form_model">Model</string>
     <string name="vehicle_form_year">Year</string>
     <string name="vehicle_form_plate">License plate</string>
     <string name="vehicle_form_vin">VIN</string>
     <string name="vehicle_form_odometer">Odometer when added (km)</string>
-    <string name="vehicle_form_name_required">Name is required</string>
+    <string name="form_name_required">Name is required</string>
     <string name="vehicle_form_year_invalid">Enter a valid year</string>
     <string name="vehicle_form_odometer_invalid">Enter a valid odometer reading</string>
 
@@ -339,8 +339,6 @@
     <!-- %1$s: the component name -->
     <string name="maintenance_delete_title">Stop tracking %1$s?</string>
     <string name="maintenance_delete_message">Its schedule is removed. Service history is kept.</string>
-    <string name="maintenance_form_name">Name *</string>
-    <string name="maintenance_error_name_required">Name is required</string>
     <string name="maintenance_track">Track and remind</string>
     <string name="maintenance_form_hint">Each schedule is due after whichever of its limits comes first. Leave a section empty if it doesn\'t apply.</string>
     <string name="maintenance_error_no_schedule">Set at least one inspection or replacement interval</string>
@@ -413,8 +411,6 @@
     <!-- Deadline form (ui/deadlines/DeadlineFormScreen.kt) -->
     <string name="deadline_form_add">Add deadline</string>
     <string name="deadline_form_edit">Edit deadline</string>
-    <!-- %1$s: the deadline title -->
-    <string name="deadline_delete_title">Delete %1$s?</string>
     <string name="deadline_delete_message">You won\'t be reminded about it any more.</string>
     <string name="deadline_form_title">Title *</string>
     <string name="deadline_error_title_required">Title is required</string>

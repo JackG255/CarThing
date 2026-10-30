@@ -70,7 +70,7 @@ private fun VehicleForm(
     var odometer by rememberSaveable { mutableStateOf(editableNumber(existing?.initialOdometerKm)) }
     var submitted by rememberSaveable { mutableStateOf(false) }
 
-    val nameError = if (submitted && name.isBlank()) stringResource(R.string.vehicle_form_name_required) else null
+    val nameError = if (submitted && name.isBlank()) stringResource(R.string.form_name_required) else null
     val yearError = if (year.isNotBlank() && year.trim().toIntOrNull()?.takeIf { it in 1886..2100 } == null) stringResource(R.string.vehicle_form_year_invalid) else null
     val odometerError = if (odometer.isNotBlank() && (parseDecimal(odometer) ?: -1.0) < 0) stringResource(R.string.vehicle_form_odometer_invalid) else null
 
@@ -81,7 +81,7 @@ private fun VehicleForm(
                 navigationIcon = { BackButton(onBack) },
                 actions = {
                     if (existing != null) DeleteAction(
-                        title = stringResource(R.string.vehicle_form_delete_title, existing.name),
+                        title = stringResource(R.string.form_delete_title, existing.name),
                         message = stringResource(R.string.vehicle_form_delete_message)
                     ) { scope.launch { viewModel.delete(existing); onDeleted() } }
                 }
@@ -92,7 +92,7 @@ private fun VehicleForm(
             Modifier.padding(padding).imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            TextInput(name, { name = it }, stringResource(R.string.vehicle_form_name), error = nameError)
+            TextInput(name, { name = it }, stringResource(R.string.form_name), error = nameError)
             TextInput(make, { make = it }, stringResource(R.string.vehicle_form_make))
             TextInput(model, { model = it }, stringResource(R.string.vehicle_form_model))
             TextInput(year, { year = it }, stringResource(R.string.vehicle_form_year), error = yearError, keyboardType = KeyboardType.Number)

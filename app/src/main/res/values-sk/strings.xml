@@ -189,16 +189,16 @@
     <string name="vehicle_list_empty_title">Zatiaľ žiadne vozidlá</string>
     <string name="vehicle_list_empty_message">Klepnutím na + pridajte svoje auto a potom zapisujte tankovanie a servis.</string>
     <string name="appearance_wallpaper_colors">Farby z tapety</string>
-    <string name="vehicle_form_delete_title">Zmazať %1$s?</string>
+    <string name="form_delete_title">Zmazať %1$s?</string>
     <string name="vehicle_form_delete_message">Zmažú sa aj všetky tankovania a servisné záznamy tohto vozidla.</string>
-    <string name="vehicle_form_name">Názov *</string>
+    <string name="form_name">Názov *</string>
     <string name="vehicle_form_make">Značka</string>
     <string name="vehicle_form_model">Model</string>
     <string name="vehicle_form_year">Rok výroby</string>
     <string name="vehicle_form_plate">EČV</string>
     <string name="vehicle_form_vin">VIN</string>
     <string name="vehicle_form_odometer">Stav tachometra pri pridaní (km)</string>
-    <string name="vehicle_form_name_required">Zadajte názov</string>
+    <string name="form_name_required">Zadajte názov</string>
     <string name="vehicle_form_year_invalid">Zadajte platný rok</string>
     <string name="vehicle_form_odometer_invalid">Zadajte platný stav tachometra</string>
 
@@ -328,8 +328,6 @@
     <string name="maintenance_form_edit">Upraviť súčasť</string>
     <string name="maintenance_delete_title">Prestať sledovať %1$s?</string>
     <string name="maintenance_delete_message">Plán sa odstráni. Servisná história zostane zachovaná.</string>
-    <string name="maintenance_form_name">Názov *</string>
-    <string name="maintenance_error_name_required">Zadajte názov</string>
     <string name="maintenance_track">Sledovať a pripomínať</string>
     <string name="maintenance_form_hint">Termín každého plánu nastane podľa toho, ktorý z jeho limitov príde skôr. Ak sa sekcia netýka, nechajte ju prázdnu.</string>
     <string name="maintenance_error_no_schedule">Zadajte aspoň jeden interval kontroly alebo výmeny</string>
@@ -399,7 +397,6 @@
     <!-- Formulár termínu (ui/deadlines/DeadlineFormScreen.kt) -->
     <string name="deadline_form_add">Pridať termín</string>
     <string name="deadline_form_edit">Upraviť termín</string>
-    <string name="deadline_delete_title">Zmazať %1$s?</string>
     <string name="deadline_delete_message">Už sa k nemu nebudú zobrazovať pripomienky.</string>
     <string name="deadline_form_title">Názov *</string>
     <string name="deadline_error_title_required">Zadajte názov</string>
