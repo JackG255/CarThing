@@ -129,13 +129,16 @@ class BackupArchiveTest {
     @Test fun rejectsMissingPhotosDamagedZipsAndUnsafeNames() = runTest {
         populate()
         val good = archive.writeBytes()
-        fun rejected(bytes: ByteArray) = try { archive.read(bytes); false } catch (_: InvalidBackupException) { true }
+        fun reasonOf(bytes: ByteArray) = try { archive.read(bytes); null } catch (e: InvalidBackupException) { e.reason }
+        fun rejected(bytes: ByteArray) = reasonOf(bytes) != null
 
         // Drop one photo from the zip.
         val withoutPhoto = rezip(good) { name, data -> if (name == "attachments/invoice-1.jpg") null else data }
-        assertTrue("missing photo", rejected(withoutPhoto))
+        assertEquals("missing photo", InvalidBackupException.Reason.PHOTOS_MISSING, reasonOf(withoutPhoto))
+        val ex = runCatching { archive.read(withoutPhoto) }.exceptionOrNull() as InvalidBackupException
+        assertEquals(1, ex.count)
         // Truncated file.
-        assertTrue("damaged zip", rejected(good.copyOf(good.size / 2)))
+        assertEquals("damaged zip", InvalidBackupException.Reason.DAMAGED, reasonOf(good.copyOf(good.size / 2)))
         // A name that would escape the photo folder on restore.
         val traversal = rezip(good) { name, data ->
             if (name == "backup.json") data.decodeToString().replace("receipt-1.jpg", "../../databases/x.jpg").toByteArray() else data

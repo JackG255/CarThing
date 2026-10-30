@@ -2,6 +2,7 @@ package com.carthing.data.backup
 
 import com.carthing.data.CarThingDatabase
 import com.carthing.data.attachments.PhotoStore
+import com.carthing.data.backup.InvalidBackupException.Reason
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -53,7 +54,7 @@ class BackupArchive(
                     val entry = zip.nextEntry ?: break
                     val data = zip.readBytes()
                     total += data.size
-                    if (total > MAX_TOTAL_BYTES) throw InvalidBackupException("The backup file is too large.")
+                    if (total > MAX_TOTAL_BYTES) throw InvalidBackupException(Reason.TOO_LARGE)
                     when {
                         entry.name == JSON_ENTRY -> json = data.decodeToString()
                         entry.name.startsWith(PHOTO_DIR) -> found[entry.name.removePrefix(PHOTO_DIR)] = data
@@ -62,11 +63,11 @@ class BackupArchive(
             }
         } catch (e: IOException) {
             // ZipException for garbage, EOFException for a truncated file (e.g. an interrupted copy).
-            throw InvalidBackupException("The backup file is damaged (not a readable zip).", e)
+            throw InvalidBackupException(Reason.DAMAGED, "not a readable zip", e)
         }
-        val file = backups.read(json ?: throw InvalidBackupException("This isn't a CarThing backup file."))
+        val file = backups.read(json ?: throw InvalidBackupException(Reason.NOT_A_BACKUP, "no $JSON_ENTRY"))
         val missing = file.attachments.map { it.fileName }.filterNot { it in found }
-        if (missing.isNotEmpty()) throw InvalidBackupException("The backup file is damaged (${missing.size} photo(s) missing).")
+        if (missing.isNotEmpty()) throw InvalidBackupException(Reason.PHOTOS_MISSING, "${missing.size} photo(s) missing", count = missing.size)
         return ParsedBackup(file, file.attachments.associate { it.fileName to found.getValue(it.fileName) })
     }
 

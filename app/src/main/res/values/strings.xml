@@ -100,4 +100,75 @@
     <!-- %1$s: the date of the last backup -->
     <string name="backup_reminder_last">Last backup: %1$s. Export one, or turn on automatic backups.</string>
     <string name="backup_reminder_never">You haven\'t backed up yet. Export one, or turn on automatic backups.</string>
+
+    <!-- Backup (ui/backup/BackupMenu.kt, BackupViewModel.kt) -->
+    <string name="action_cancel">Cancel</string>
+    <string name="backup_more_options">More options</string>
+    <string name="backup_menu_export">Export backup</string>
+    <string name="backup_menu_restore">Restore from backup</string>
+    <string name="backup_menu_auto">Automatic backups…</string>
+    <string name="backup_action_back_up_now">Back up now</string>
+
+    <!-- Restore confirmation -->
+    <string name="backup_restore_title">Replace all data?</string>
+    <!-- %1$s: the date of the backup; %2$s-%5$s: the counts below, e.g. "2 vehicles" -->
+    <string name="backup_restore_body">This backup from %1$s has %2$s, %3$s, %4$s and %5$s.\n\nEverything currently in the app will be replaced. Export a backup first if you might need it.</string>
+    <string name="backup_restore_confirm">Replace</string>
+    <plurals name="backup_count_vehicles">
+        <item quantity="one">%d vehicle</item>
+        <item quantity="other">%d vehicles</item>
+    </plurals>
+    <plurals name="backup_count_fuel_entries">
+        <item quantity="one">%d fill-up</item>
+        <item quantity="other">%d fill-ups</item>
+    </plurals>
+    <plurals name="backup_count_service_entries">
+        <item quantity="one">%d service record</item>
+        <item quantity="other">%d service records</item>
+    </plurals>
+    <plurals name="backup_count_deadlines">
+        <item quantity="one">%d deadline</item>
+        <item quantity="other">%d deadlines</item>
+    </plurals>
+
+    <!-- Results shown in the snackbar -->
+    <string name="backup_message_saved">Backup saved</string>
+    <string name="backup_message_save_failed">Couldn\'t save the backup.</string>
+    <string name="backup_message_read_failed">Couldn\'t read the file.</string>
+    <string name="backup_message_restored">Backup restored</string>
+    <string name="backup_message_folder_unsupported">That folder can\'t be used for automatic backups. Try a folder on the phone that a sync app uploads.</string>
+    <string name="backup_message_auto_on">Automatic backups on</string>
+    <string name="backup_message_auto_off">Automatic backups off</string>
+    <string name="backup_message_running">Backing up…</string>
+
+    <!-- Why a file can't be restored (InvalidBackupException.Reason) -->
+    <string name="backup_invalid_not_a_backup">This isn\'t a CarThing backup file.</string>
+    <string name="backup_invalid_damaged">The backup file is damaged.</string>
+    <string name="backup_invalid_too_large">The backup file is too large.</string>
+    <string name="backup_invalid_newer_version">This backup was made by a newer version of CarThing. Update the app first.</string>
+    <!-- %1$d: how many photos the file lacks -->
+    <plurals name="backup_invalid_photos_missing">
+        <item quantity="one">The backup file is damaged (%1$d photo is missing).</item>
+        <item quantity="other">The backup file is damaged (%1$d photos are missing).</item>
+    </plurals>
+
+    <!-- Automatic backups dialog and the banner on the vehicle list -->
+    <string name="backup_auto_title">Automatic backups</string>
+    <!-- %1$s: the folder name -->
+    <string name="backup_auto_on_folder">Once a week, a backup is saved to “%1$s”.</string>
+    <string name="backup_auto_on_folder_unknown">Once a week, a backup is saved to the chosen folder.</string>
+    <plurals name="backup_auto_keep">
+        <item quantity="one">The newest backup is kept.</item>
+        <item quantity="other">The newest %1$d are kept.</item>
+    </plurals>
+    <string name="backup_auto_off_hint">Choose a folder and a backup is saved there every week. Pick a folder your cloud or sync app uploads, so a copy lives off this phone.</string>
+    <!-- %1$s: a date -->
+    <string name="backup_last">Last backup: %1$s</string>
+    <string name="backup_last_never">Last backup: never</string>
+    <string name="backup_auto_failed_folder">Last automatic backup failed: the folder can\'t be written to.</string>
+    <string name="backup_auto_failed_other">Last automatic backup failed.</string>
+    <string name="backup_auto_android_note">Android also backs the app up to your Google account on its own, if backup is enabled in the phone\'s settings.</string>
+    <string name="backup_auto_change_folder">Change folder</string>
+    <string name="backup_auto_choose_folder">Choose folder</string>
+    <string name="backup_auto_turn_off">Turn off</string>
 </resources>

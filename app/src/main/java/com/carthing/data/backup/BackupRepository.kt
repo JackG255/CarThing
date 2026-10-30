@@ -3,10 +3,22 @@ package com.carthing.data.backup
 import androidx.room.withTransaction
 import com.carthing.data.CarThingDatabase
 import kotlinx.serialization.SerializationException
+import com.carthing.data.backup.InvalidBackupException.Reason
 import kotlinx.serialization.json.Json
 
-/** Thrown when a file can't be imported; nothing has been changed when it is. */
-class InvalidBackupException(message: String, cause: Throwable? = null) : Exception(message, cause)
+/**
+ * Thrown when a file can't be imported; nothing has been changed when it is. The UI words it from [reason] (and
+ * [count]); [detail] is for logs only and may name what was wrong in the file.
+ */
+class InvalidBackupException(
+    val reason: Reason,
+    detail: String? = null,
+    cause: Throwable? = null,
+    /** How many photos the zip lacks for [Reason.PHOTOS_MISSING]; 0 otherwise. */
+    val count: Int = 0,
+) : Exception(detail ?: reason.name, cause) {
+    enum class Reason { NOT_A_BACKUP, DAMAGED, TOO_LARGE, NEWER_VERSION, PHOTOS_MISSING }
+}
 
 data class BackupSummary(val vehicles: Int, val fuelEntries: Int, val serviceEntries: Int, val deadlines: Int, val exportedAtEpochMillis: Long)
 
@@ -42,13 +54,11 @@ class BackupRepository(
         val file = try {
             json.decodeFromString(BackupFile.serializer(), text)
         } catch (e: SerializationException) {
-            throw InvalidBackupException("This isn't a CarThing backup file.", e)
+            throw InvalidBackupException(Reason.NOT_A_BACKUP, cause = e)
         } catch (e: IllegalArgumentException) {
-            throw InvalidBackupException("This isn't a CarThing backup file.", e)
+            throw InvalidBackupException(Reason.NOT_A_BACKUP, cause = e)
         }
-        if (file.formatVersion > BackupFile.FORMAT_VERSION) {
-            throw InvalidBackupException("This backup was made by a newer version of CarThing. Update the app first.")
-        }
+        if (file.formatVersion > BackupFile.FORMAT_VERSION) throw InvalidBackupException(Reason.NEWER_VERSION)
         validate(file)
         return file
     }
@@ -74,7 +84,7 @@ class BackupRepository(
     }
 
     private fun validate(file: BackupFile) {
-        fun fail(what: String): Nothing = throw InvalidBackupException("The backup file is damaged ($what).")
+        fun fail(what: String): Nothing = throw InvalidBackupException(Reason.DAMAGED, what)
         val vehicleIds = file.vehicles.map { it.id }.toSet()
         if (vehicleIds.size != file.vehicles.size) fail("duplicate vehicles")
         if (file.vehicles.any { it.name.isBlank() }) fail("vehicle without a name")

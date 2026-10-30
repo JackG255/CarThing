@@ -100,4 +100,78 @@
     <string name="backup_reminder_title">Zazálohujte servisní knížku</string>
     <string name="backup_reminder_last">Poslední záloha: %1$s. Vytvořte novou, nebo zapněte automatické zálohování.</string>
     <string name="backup_reminder_never">Zatím nemáte žádnou zálohu. Vytvořte ji, nebo zapněte automatické zálohování.</string>
+
+    <string name="action_cancel">Zrušit</string>
+    <string name="backup_more_options">Další možnosti</string>
+    <string name="backup_menu_export">Exportovat zálohu</string>
+    <string name="backup_menu_restore">Obnovit ze zálohy</string>
+    <string name="backup_menu_auto">Automatické zálohy…</string>
+    <string name="backup_action_back_up_now">Zálohovat teď</string>
+
+    <string name="backup_restore_title">Nahradit všechna data?</string>
+    <string name="backup_restore_body">Záloha z %1$s obsahuje %2$s, %3$s, %4$s a %5$s.\n\nVše, co je teď v aplikaci, bude nahrazeno. Pokud byste to mohli potřebovat, nejdřív si exportujte zálohu.</string>
+    <string name="backup_restore_confirm">Nahradit</string>
+    <plurals name="backup_count_vehicles">
+        <item quantity="one">%d vozidlo</item>
+        <item quantity="few">%d vozidla</item>
+        <item quantity="many">%d vozidla</item>
+        <item quantity="other">%d vozidel</item>
+    </plurals>
+    <plurals name="backup_count_fuel_entries">
+        <item quantity="one">%d tankování</item>
+        <item quantity="few">%d tankování</item>
+        <item quantity="many">%d tankování</item>
+        <item quantity="other">%d tankování</item>
+    </plurals>
+    <plurals name="backup_count_service_entries">
+        <item quantity="one">%d servisní záznam</item>
+        <item quantity="few">%d servisní záznamy</item>
+        <item quantity="many">%d servisního záznamu</item>
+        <item quantity="other">%d servisních záznamů</item>
+    </plurals>
+    <plurals name="backup_count_deadlines">
+        <item quantity="one">%d termín</item>
+        <item quantity="few">%d termíny</item>
+        <item quantity="many">%d termínu</item>
+        <item quantity="other">%d termínů</item>
+    </plurals>
+
+    <string name="backup_message_saved">Záloha uložena</string>
+    <string name="backup_message_save_failed">Zálohu se nepodařilo uložit.</string>
+    <string name="backup_message_read_failed">Soubor se nepodařilo přečíst.</string>
+    <string name="backup_message_restored">Záloha obnovena</string>
+    <string name="backup_message_folder_unsupported">Tuto složku nelze pro automatické zálohy použít. Zkuste složku v telefonu, kterou nahrává synchronizační aplikace.</string>
+    <string name="backup_message_auto_on">Automatické zálohy zapnuty</string>
+    <string name="backup_message_auto_off">Automatické zálohy vypnuty</string>
+    <string name="backup_message_running">Zálohuji…</string>
+
+    <string name="backup_invalid_not_a_backup">Tohle není záložní soubor CarThing.</string>
+    <string name="backup_invalid_damaged">Záložní soubor je poškozený.</string>
+    <string name="backup_invalid_too_large">Záložní soubor je příliš velký.</string>
+    <string name="backup_invalid_newer_version">Tato záloha byla vytvořena novější verzí CarThing. Nejdřív aktualizujte aplikaci.</string>
+    <plurals name="backup_invalid_photos_missing">
+        <item quantity="one">Záložní soubor je poškozený (chybí %1$d fotka).</item>
+        <item quantity="few">Záložní soubor je poškozený (chybí %1$d fotky).</item>
+        <item quantity="many">Záložní soubor je poškozený (chybí %1$d fotky).</item>
+        <item quantity="other">Záložní soubor je poškozený (chybí %1$d fotek).</item>
+    </plurals>
+
+    <string name="backup_auto_title">Automatické zálohy</string>
+    <string name="backup_auto_on_folder">Jednou týdně se záloha uloží do složky „%1$s“.</string>
+    <string name="backup_auto_on_folder_unknown">Jednou týdně se záloha uloží do vybrané složky.</string>
+    <plurals name="backup_auto_keep">
+        <item quantity="one">Uchovává se nejnovější záloha.</item>
+        <item quantity="few">Uchovávají se %1$d nejnovější zálohy.</item>
+        <item quantity="many">Uchovává se %1$d nejnovější zálohy.</item>
+        <item quantity="other">Uchovává se %1$d nejnovějších záloh.</item>
+    </plurals>
+    <string name="backup_auto_off_hint">Vyberte složku a záloha se tam bude ukládat každý týden. Zvolte složku, kterou nahrává vaše cloudová nebo synchronizační aplikace, aby existovala kopie mimo tento telefon.</string>
+    <string name="backup_last">Poslední záloha: %1$s</string>
+    <string name="backup_last_never">Poslední záloha: nikdy</string>
+    <string name="backup_auto_failed_folder">Poslední automatická záloha se nezdařila: do složky nelze zapisovat.</string>
+    <string name="backup_auto_failed_other">Poslední automatická záloha se nezdařila.</string>
+    <string name="backup_auto_android_note">Android také sám zálohuje aplikaci na váš účet Google, pokud je zálohování zapnuté v nastavení telefonu.</string>
+    <string name="backup_auto_change_folder">Změnit složku</string>
+    <string name="backup_auto_choose_folder">Vybrat složku</string>
+    <string name="backup_auto_turn_off">Vypnout</string>
 </resources>

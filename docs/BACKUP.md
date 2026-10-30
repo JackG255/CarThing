@@ -34,12 +34,12 @@ older app can read fields added later within the same format.
 
 4. The ViewModel then runs `DefaultNameRelabeler.relabel()`: component names, service types and deadline titles that equal a default name in any language become the current language's name. Names typed by hand are untouched. The backup format is unchanged; the files keep the names as stored.
 
-Errors are reported as `InvalidBackupException`, with a message the user can read.
+Files that can't be restored are reported as `InvalidBackupException` carrying a `Reason` (`NOT_A_BACKUP`, `DAMAGED`, `TOO_LARGE`, `NEWER_VERSION`, `PHOTOS_MISSING`, the last with a `count`). The UI words it in the app language; the exception message holds technical detail for logs only. I/O failures are worded without the system message, which is logged in debug builds only.
 
 ## Automatic backups
 - The user picks a folder through the Storage Access Framework. The persisted tree URI is stored in `BackupSettings` (`backup_settings` preferences).
 - `AutoBackupWorker` runs **weekly**. `FolderBackup` writes `carthing-auto-yyyy-MM-dd-HHmmss.zip` and keeps the newest **5** automatic backups (`BackupPolicy`). Other files in the folder are never touched.
-- If a run fails, for example because the folder was deleted, the error is stored and shown in the backup dialog. The job itself still reports success.
+- If a run fails, for example because the folder was deleted, the error is stored and shown in the backup dialog. It is stored as an `AutoBackupError` code (`FOLDER_UNAVAILABLE` for I/O and permission failures, `OTHER` for the rest), never as text; a value from an older version that isn't a code reads as `OTHER`. The job itself still reports success.
 
 ## Reminders
 `BackupPolicy.shouldRemind` asks the daily check to post a reminder when all of these hold:

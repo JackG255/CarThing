@@ -92,15 +92,15 @@ class BackupRepositoryTest {
         populate(source)
         val repo = BackupRepository(source)
         val good = repo.export()
-        fun assertRejected(text: String) {
-            try { repo.read(text); fail("accepted: ${text.take(60)}") } catch (_: InvalidBackupException) {}
+        fun assertRejected(text: String, reason: InvalidBackupException.Reason) {
+            try { repo.read(text); fail("accepted: ${text.take(60)}") } catch (e: InvalidBackupException) { assertEquals(reason, e.reason) }
         }
-        assertRejected("not json at all")
-        assertRejected("""{"hello": "world"}""")
-        assertRejected(good.replace("\"formatVersion\": ${BackupFile.FORMAT_VERSION}", "\"formatVersion\": 99"))
+        assertRejected("not json at all", InvalidBackupException.Reason.NOT_A_BACKUP)
+        assertRejected("""{"hello": "world"}""", InvalidBackupException.Reason.NOT_A_BACKUP)
+        assertRejected(good.replace("\"formatVersion\": ${BackupFile.FORMAT_VERSION}", "\"formatVersion\": 99"), InvalidBackupException.Reason.NEWER_VERSION)
         // A fill-up pointing at a vehicle that isn't in the file.
         val vehicleId = source.vehicleDao().getAll().single().id
-        assertRejected(good.replaceFirst("\"vehicleId\": $vehicleId", "\"vehicleId\": 12345"))
+        assertRejected(good.replaceFirst("\"vehicleId\": $vehicleId", "\"vehicleId\": 12345"), InvalidBackupException.Reason.DAMAGED)
     }
 
     @Test fun failedImportLeavesDataUntouched() = runTest {
@@ -108,7 +108,8 @@ class BackupRepositoryTest {
         val before = snapshot(source)
         val repo = BackupRepository(source)
         val broken = repo.read(repo.export()).let { it.copy(fuelEntries = it.fuelEntries.map { e -> e.copy(vehicleId = 999) }) }
-        assertTrue(runCatching { repo.replaceAll(broken) }.exceptionOrNull() is InvalidBackupException)
+        val error = runCatching { repo.replaceAll(broken) }.exceptionOrNull() as InvalidBackupException
+        assertEquals(InvalidBackupException.Reason.DAMAGED, error.reason)
         assertEquals(before, snapshot(source))
     }
 }
