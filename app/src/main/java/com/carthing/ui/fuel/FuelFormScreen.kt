@@ -1,5 +1,6 @@
 package com.carthing.ui.fuel
 
+import android.content.res.Resources
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,10 +29,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.carthing.R
 import com.carthing.data.attachments.AttachmentOwner
 import com.carthing.data.entity.FuelEntry
 import com.carthing.data.repository.FuelIssue
@@ -93,7 +97,8 @@ private fun FuelForm(existing: FuelEntry?, suggestedOdometerKm: Double, viewMode
     var touched by rememberSaveable { mutableStateOf(listOf<String>()) }
     var fromReceipt by rememberSaveable { mutableStateOf(listOf<String>()) }
     var readingReceipt by remember { mutableStateOf(false) }
-    var receiptMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    // Field keys filled by the last read (empty: nothing found); null: no message. Kept as keys so the text follows the language.
+    var receiptFilled by rememberSaveable { mutableStateOf<List<String>?>(null) }
     // Reading is opt-in: a new photo only offers it, since not every photo is a fuel receipt.
     var offerRead by rememberSaveable { mutableStateOf<String?>(null) }
     fun touch(field: String) { touched = touched + field; fromReceipt = fromReceipt - field }
@@ -114,10 +119,10 @@ private fun FuelForm(existing: FuelEntry?, suggestedOdometerKm: Double, viewMode
             if (note.isBlank()) fill("note", it.fuelType) { note = it.fuelType!! }
         }
         fromReceipt = (fromReceipt + filled).distinct()
-        receiptMessage = if (filled.isEmpty()) "Couldn't read anything from this photo. It's still attached."
-            else "Filled from the receipt: ${filled.joinToString(", ") { LABELS.getValue(it) }}. Check them before saving."
+        receiptFilled = filled.toList()
     }
-    fun hint(field: String) = "From receipt".takeIf { field in fromReceipt }
+    val fromReceiptHint = stringResource(R.string.form_hint_from_receipt)
+    fun hint(field: String) = fromReceiptHint.takeIf { field in fromReceipt }
 
     fun save(entry: FuelEntry, acceptWarnings: Boolean) = scope.launch {
         when (val result = viewModel.saveFuel(entry, acceptWarnings)) {
@@ -130,19 +135,20 @@ private fun FuelForm(existing: FuelEntry?, suggestedOdometerKm: Double, viewMode
         }
     }
 
-    val odometerError = "odometer".takeIf { it in parseErrors }?.let { "Enter the odometer reading" }
-        ?: issues.firstNotNullOfOrNull { it.odometerMessage() }
-    val litersError = "liters".takeIf { it in parseErrors }?.let { "Enter the amount of fuel" }
-        ?: issues.firstNotNullOfOrNull { (it as? FuelIssue.NonPositiveLiters)?.let { "Must be more than 0" } }
-    val priceError = "price".takeIf { it in parseErrors }?.let { "Enter a valid price" }
+    val res = LocalContext.current.resources
+    val odometerError = "odometer".takeIf { it in parseErrors }?.let { res.getString(R.string.detail_odometer_required) }
+        ?: issues.firstNotNullOfOrNull { it.odometerMessage(res) }
+    val litersError = "liters".takeIf { it in parseErrors }?.let { res.getString(R.string.fuel_error_liters_required) }
+        ?: issues.firstNotNullOfOrNull { (it as? FuelIssue.NonPositiveLiters)?.let { res.getString(R.string.fuel_error_liters_positive) } }
+    val priceError = "price".takeIf { it in parseErrors }?.let { res.getString(R.string.fuel_error_price_invalid) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (existing == null) "Add fill-up" else "Edit fill-up") },
+                title = { Text(stringResource(if (existing == null) R.string.fuel_form_add else R.string.fuel_form_edit)) },
                 navigationIcon = { BackButton(onDone) },
                 actions = {
-                    if (existing != null) DeleteAction("Delete fill-up?", "This can't be undone.") {
+                    if (existing != null) DeleteAction(stringResource(R.string.fuel_delete_title), stringResource(R.string.delete_cannot_be_undone)) {
                         scope.launch { viewModel.deleteFuel(existing); onDone() }
                     }
                 }
@@ -155,22 +161,22 @@ private fun FuelForm(existing: FuelEntry?, suggestedOdometerKm: Double, viewMode
         ) {
             EntryPhotos(
                 existing?.let { AttachmentOwner.Fuel(it.id) }, photos, viewModel,
-                onPhotoAdded = { offerRead = it; receiptMessage = null },
+                onPhotoAdded = { offerRead = it; receiptFilled = null },
                 onRead = { offerRead = null; readReceipt(it) },
             )
             offerRead?.let { name ->
-                ReadOffer("Fill in the form from this receipt?", onRead = { offerRead = null; readReceipt(name) }, onDismiss = { offerRead = null })
+                ReadOffer(stringResource(R.string.fuel_offer_read), onRead = { offerRead = null; readReceipt(name) }, onDismiss = { offerRead = null })
             }
-            if (readingReceipt) Text("Reading the receipt…", style = MaterialTheme.typography.bodySmall)
-            receiptMessage?.let { ReceiptBanner(it) { receiptMessage = null } }
-            DateInput(date, { date = it; issues = emptyList(); touch("date") }, if ("date" in fromReceipt) "Date (from receipt)" else "Date")
+            if (readingReceipt) Text(stringResource(R.string.fuel_reading_receipt), style = MaterialTheme.typography.bodySmall)
+            receiptFilled?.let { ReceiptBanner(filledMessage(res, it)) { receiptFilled = null } }
+            DateInput(date, { date = it; issues = emptyList(); touch("date") }, stringResource(if ("date" in fromReceipt) R.string.form_date_from_receipt else R.string.form_date))
             OdometerInput(odometer, { odometer = it; issues = emptyList(); parseErrors -= "odometer" }, odometerError, existing?.odometerKm ?: suggestedOdometerKm, viewModel, onPhotoAdded = { photos += it })
-            DecimalInput(liters, { liters = it; issues = emptyList(); parseErrors -= "liters"; touch("liters") }, "Liters", litersError, hint("liters"))
-            DecimalInput(price, { price = it; parseErrors -= "price"; touch("price") }, "Total price", priceError, hint("price"))
-            SwitchRow("Filled the tank completely", fullTank) { fullTank = it; issues = emptyList() }
-            SwitchRow("Missed recording the previous fill-up", missedPrevious) { missedPrevious = it }
-            TextInput(station, { station = it; touch("station") }, "Station", hint = hint("station"))
-            TextInput(note, { note = it; touch("note") }, "Note", singleLine = false, hint = hint("note"))
+            DecimalInput(liters, { liters = it; issues = emptyList(); parseErrors -= "liters"; touch("liters") }, stringResource(R.string.fuel_field_liters), litersError, hint("liters"))
+            DecimalInput(price, { price = it; parseErrors -= "price"; touch("price") }, stringResource(R.string.fuel_field_total_price), priceError, hint("price"))
+            SwitchRow(stringResource(R.string.fuel_switch_full_tank), fullTank) { fullTank = it; issues = emptyList() }
+            SwitchRow(stringResource(R.string.fuel_switch_missed_previous), missedPrevious) { missedPrevious = it }
+            TextInput(station, { station = it; touch("station") }, stringResource(R.string.fuel_field_station), hint = hint("station"))
+            TextInput(note, { note = it; touch("note") }, stringResource(R.string.form_note), singleLine = false, hint = hint("note"))
             Button(
                 onClick = {
                     val odo = parseDecimal(odometer)
@@ -191,27 +197,26 @@ private fun FuelForm(existing: FuelEntry?, suggestedOdometerKm: Double, viewMode
                     save(entry, acceptWarnings = false)
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Save") }
+            ) { Text(stringResource(R.string.action_save)) }
         }
     }
 
     pendingWarnings?.let { entry ->
         AlertDialog(
             onDismissRequest = { pendingWarnings = null },
-            title = { Text("Save anyway?") },
-            text = { Text("There's already a fill-up at ${formatKm(entry.odometerKm)}. Is this a top-off at the same stop?") },
-            confirmButton = { TextButton(onClick = { pendingWarnings = null; save(entry, acceptWarnings = true) }) { Text("Save") } },
-            dismissButton = { TextButton(onClick = { pendingWarnings = null }) { Text("Cancel") } }
+            title = { Text(stringResource(R.string.fuel_save_anyway_title)) },
+            text = { Text(stringResource(R.string.fuel_save_anyway_body, formatKm(entry.odometerKm))) },
+            confirmButton = { TextButton(onClick = { pendingWarnings = null; save(entry, acceptWarnings = true) }) { Text(stringResource(R.string.action_save)) } },
+            dismissButton = { TextButton(onClick = { pendingWarnings = null }) { Text(stringResource(R.string.action_cancel)) } }
         )
     }
 }
 
-private fun FuelIssue.odometerMessage(): String? = when (this) {
-    is FuelIssue.BelowInitialOdometer -> "Lower than the vehicle's starting odometer (${formatKm(initialOdometerKm)})"
+private fun FuelIssue.odometerMessage(res: Resources): String? = when (this) {
+    is FuelIssue.BelowInitialOdometer -> res.getString(R.string.fuel_error_odometer_below_initial, formatKm(res, initialOdometerKm))
     is FuelIssue.OdometerOutOfOrder ->
-        "Conflicts with the fill-up on ${formatDate(other.dateEpochMillis)} at ${formatKm(other.odometerKm)}"
-    is FuelIssue.DuplicateFullTank ->
-        "There's already a full-tank fill-up at this reading (${formatDate(other.dateEpochMillis)})"
+        res.getString(R.string.fuel_error_odometer_out_of_order, formatDate(other.dateEpochMillis), formatKm(res, other.odometerKm))
+    is FuelIssue.DuplicateFullTank -> res.getString(R.string.fuel_error_duplicate_full_tank, formatDate(other.dateEpochMillis))
     else -> null
 }
 
@@ -227,4 +232,13 @@ private fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Un
     }
 }
 
-private val LABELS = mapOf("liters" to "liters", "price" to "total price", "date" to "date", "station" to "station", "note" to "fuel type")
+/** Names of the fields a receipt can fill, for the "Filled from the receipt: …" banner. */
+private val LABELS = mapOf(
+    "liters" to R.string.read_field_liters, "price" to R.string.read_field_total_price, "date" to R.string.read_field_date,
+    "station" to R.string.read_field_station, "note" to R.string.read_field_fuel_type,
+)
+
+/** The banner text after a read that filled [filled] (field keys); empty means nothing could be read. */
+private fun filledMessage(res: Resources, filled: List<String>): String =
+    if (filled.isEmpty()) res.getString(R.string.receipt_read_nothing)
+    else res.getString(R.string.fuel_filled_from_receipt, filled.joinToString(", ") { res.getString(LABELS.getValue(it)) })

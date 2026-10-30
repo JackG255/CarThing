@@ -1,6 +1,7 @@
 package com.carthing.data.deadlines
 
 import com.carthing.data.entity.Deadline
+import com.carthing.data.maintenance.DefaultName
 import com.carthing.data.maintenance.DueLevel
 import com.carthing.data.maintenance.MaintenanceStatus
 import java.time.Instant
@@ -40,12 +41,12 @@ data class DeadlineStatus(
 
 /** Quick-add presets; the user supplies the due date. */
 object DeadlineTemplates {
-    data class Template(val title: String, val repeatMonths: Int?)
+    data class Template(val name: DefaultName, val repeatMonths: Int?)
 
     val all = listOf(
-        Template("Technical inspection (STK)", 24),
-        Template("Emissions check", 24),
-        Template("Motorway vignette", 12),
-        Template("Insurance", 12),
+        Template(DefaultName.TECHNICAL_INSPECTION, 24),
+        Template(DefaultName.EMISSIONS, 24),
+        Template(DefaultName.VIGNETTE, 12),
+        Template(DefaultName.INSURANCE, 12),
     )
 }

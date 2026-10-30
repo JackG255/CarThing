@@ -1,3 +1,415 @@
 <resources>
-    <string name="app_name">CarThing</string>
+    <string name="app_name" translatable="false">CarThing</string>
+
+    <!-- Units (ui/common/Format.kt) -->
+    <string name="format_km">%1$s km</string>
+    <string name="format_liters">%1$s L</string>
+    <string name="format_economy">%1$s L/100km</string>
+    <string name="format_cost_per_km">%1$s /km</string>
+
+    <!-- Time spans (formatDays); thresholds are in the code -->
+    <plurals name="days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <plurals name="weeks">
+        <item quantity="one">%d week</item>
+        <item quantity="other">%d weeks</item>
+    </plurals>
+    <plurals name="months">
+        <item quantity="one">%d month</item>
+        <item quantity="other">%d months</item>
+    </plurals>
+    <plurals name="years">
+        <item quantity="one">%d year</item>
+        <item quantity="other">%d years</item>
+    </plurals>
+
+    <!-- Maintenance status (ui/maintenance/StatusText.kt) -->
+    <string name="status_not_recorded">Not recorded yet</string>
+    <string name="status_overdue">Overdue</string>
+    <!-- %1$s: a distance ("500 km") or a time span ("3 weeks") -->
+    <string name="status_overdue_by">Overdue by %1$s</string>
+    <string name="status_due_today">Due today</string>
+    <!-- %1$s: distance left, e.g. "800 km" -->
+    <string name="status_due_in_km">Due in ~%1$s</string>
+    <!-- %1$s: time left, e.g. "3 weeks" -->
+    <string name="status_due_in_time">Due in %1$s</string>
+    <string name="status_due_in_km_and_time">Due in ~%1$s · %2$s</string>
+    <string name="status_no_schedule">No schedule</string>
+    <!-- A component with both schedules names the one shown; %1$s is the status, e.g. "Due in 3 weeks" -->
+    <string name="status_inspection">Inspection: %1$s</string>
+    <string name="status_replacement">Replacement: %1$s</string>
+
+    <!-- Schedules, e.g. "Replace every 15,000 km or 12 months · last 12 Mar 2026 at 50,000 km" -->
+    <string name="schedule_inspect">Inspect %1$s</string>
+    <string name="schedule_replace">Replace %1$s</string>
+    <!-- %1$s: a distance, e.g. "15,000 km" -->
+    <string name="schedule_every_km">every %1$s</string>
+    <plurals name="schedule_every_months">
+        <item quantity="one">every month</item>
+        <item quantity="other">every %d months</item>
+    </plurals>
+    <!-- %1$s: a distance; %2$d: months -->
+    <plurals name="schedule_every_km_or_months">
+        <item quantity="one">every %1$s or %2$d month</item>
+        <item quantity="other">every %1$s or %2$d months</item>
+    </plurals>
+    <!-- %1$s: a date -->
+    <string name="schedule_last">last %1$s</string>
+    <!-- %1$s: a date; %2$s: the odometer reading -->
+    <string name="schedule_last_at">last %1$s at %2$s</string>
+    <string name="schedule_km_not_recorded">km not recorded</string>
+
+    <!-- Deadlines (ui/deadlines/DeadlineText.kt) -->
+    <string name="deadline_expires_today">expires today</string>
+    <!-- %1$s: a time span, e.g. "12 days" -->
+    <string name="deadline_expires_in">expires in %1$s</string>
+    <plurals name="deadline_expired_days_ago">
+        <item quantity="one">expired %d day ago</item>
+        <item quantity="other">expired %d days ago</item>
+    </plurals>
+    <plurals name="deadline_expired_weeks_ago">
+        <item quantity="one">expired %d week ago</item>
+        <item quantity="other">expired %d weeks ago</item>
+    </plurals>
+    <plurals name="deadline_expired_months_ago">
+        <item quantity="one">expired %d month ago</item>
+        <item quantity="other">expired %d months ago</item>
+    </plurals>
+    <plurals name="deadline_expired_years_ago">
+        <item quantity="one">expired %d year ago</item>
+        <item quantity="other">expired %d years ago</item>
+    </plurals>
+
+    <!-- Notifications (notifications/MaintenanceNotifier.kt) -->
+    <string name="notification_channel_name">Maintenance reminders</string>
+    <string name="notification_channel_description">When a component or deadline is due soon or overdue</string>
+    <!-- %1$s: the component name -->
+    <string name="reminder_inspection_overdue">%1$s inspection is overdue</string>
+    <string name="reminder_replacement_overdue">%1$s replacement is overdue</string>
+    <string name="reminder_inspection_due_soon">%1$s inspection is due soon</string>
+    <string name="reminder_replacement_due_soon">%1$s replacement is due soon</string>
+    <!-- %1$s: the deadline title; %2$s: e.g. "expires in 12 days" -->
+    <string name="reminder_deadline">%1$s %2$s</string>
+    <string name="backup_reminder_title">Back up your service book</string>
+    <!-- %1$s: the date of the last backup -->
+    <string name="backup_reminder_last">Last backup: %1$s. Export one, or turn on automatic backups.</string>
+    <string name="backup_reminder_never">You haven\'t backed up yet. Export one, or turn on automatic backups.</string>
+
+    <!-- Backup (ui/backup/BackupMenu.kt, BackupViewModel.kt) -->
+    <string name="action_cancel">Cancel</string>
+    <string name="backup_more_options">More options</string>
+    <string name="backup_menu_export">Export backup</string>
+    <string name="backup_menu_restore">Restore from backup</string>
+    <string name="backup_menu_auto">Automatic backups…</string>
+    <string name="backup_action_back_up_now">Back up now</string>
+
+    <!-- Restore confirmation -->
+    <string name="backup_restore_title">Replace all data?</string>
+    <!-- %1$s: the date of the backup; %2$s-%5$s: the counts below, e.g. "2 vehicles" -->
+    <string name="backup_restore_body">This backup from %1$s has %2$s, %3$s, %4$s and %5$s.\n\nEverything currently in the app will be replaced. Export a backup first if you might need it.</string>
+    <string name="backup_restore_confirm">Replace</string>
+    <plurals name="backup_count_vehicles">
+        <item quantity="one">%d vehicle</item>
+        <item quantity="other">%d vehicles</item>
+    </plurals>
+    <plurals name="backup_count_fuel_entries">
+        <item quantity="one">%d fill-up</item>
+        <item quantity="other">%d fill-ups</item>
+    </plurals>
+    <plurals name="backup_count_service_entries">
+        <item quantity="one">%d service record</item>
+        <item quantity="other">%d service records</item>
+    </plurals>
+    <plurals name="backup_count_deadlines">
+        <item quantity="one">%d deadline</item>
+        <item quantity="other">%d deadlines</item>
+    </plurals>
+
+    <!-- Results shown in the snackbar -->
+    <string name="backup_message_saved">Backup saved</string>
+    <string name="backup_message_save_failed">Couldn\'t save the backup.</string>
+    <string name="backup_message_read_failed">Couldn\'t read the file.</string>
+    <string name="backup_message_restored">Backup restored</string>
+    <string name="backup_message_folder_unsupported">That folder can\'t be used for automatic backups. Try a folder on the phone that a sync app uploads.</string>
+    <string name="backup_message_auto_on">Automatic backups on</string>
+    <string name="backup_message_auto_off">Automatic backups off</string>
+    <string name="backup_message_running">Backing up…</string>
+
+    <!-- Why a file can't be restored (InvalidBackupException.Reason) -->
+    <string name="backup_invalid_not_a_backup">This isn\'t a CarThing backup file.</string>
+    <string name="backup_invalid_damaged">The backup file is damaged.</string>
+    <string name="backup_invalid_too_large">The backup file is too large.</string>
+    <string name="backup_invalid_newer_version">This backup was made by a newer version of CarThing. Update the app first.</string>
+    <!-- %1$d: how many photos the file lacks -->
+    <plurals name="backup_invalid_photos_missing">
+        <item quantity="one">The backup file is damaged (%1$d photo is missing).</item>
+        <item quantity="other">The backup file is damaged (%1$d photos are missing).</item>
+    </plurals>
+
+    <!-- Automatic backups dialog and the banner on the vehicle list -->
+    <string name="backup_auto_title">Automatic backups</string>
+    <!-- %1$s: the folder name -->
+    <string name="backup_auto_on_folder">Once a week, a backup is saved to “%1$s”.</string>
+    <string name="backup_auto_on_folder_unknown">Once a week, a backup is saved to the chosen folder.</string>
+    <plurals name="backup_auto_keep">
+        <item quantity="one">The newest backup is kept.</item>
+        <item quantity="other">The newest %1$d are kept.</item>
+    </plurals>
+    <string name="backup_auto_off_hint">Choose a folder and a backup is saved there every week. Pick a folder your cloud or sync app uploads, so a copy lives off this phone.</string>
+    <!-- %1$s: a date -->
+    <string name="backup_last">Last backup: %1$s</string>
+    <string name="backup_last_never">Last backup: never</string>
+    <string name="backup_auto_failed_folder">Last automatic backup failed: the folder can\'t be written to.</string>
+    <string name="backup_auto_failed_other">Last automatic backup failed.</string>
+    <string name="backup_auto_android_note">Android also backs the app up to your Google account on its own, if backup is enabled in the phone\'s settings.</string>
+    <string name="backup_auto_change_folder">Change folder</string>
+    <string name="backup_auto_choose_folder">Choose folder</string>
+    <string name="backup_auto_turn_off">Turn off</string>
+
+    <!-- Common actions and form fields (ui/common) -->
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_ok">OK</string>
+    <string name="action_back">Back</string>
+    <string name="date_clear">Clear date</string>
+    <string name="date_pick">Pick date</string>
+
+    <!-- Vehicle list and form (ui/vehicles) -->
+    <string name="vehicle_add">Add vehicle</string>
+    <string name="vehicle_edit">Edit vehicle</string>
+    <string name="vehicle_list_empty_title">No vehicles yet</string>
+    <string name="vehicle_list_empty_message">Tap + to add your car, then log fill-ups and services.</string>
+    <string name="appearance_wallpaper_colors">Wallpaper colours</string>
+    <!-- %1$s: the name of the item being deleted (vehicle or deadline; components use maintenance_delete_title) -->
+    <string name="form_delete_title">Delete %1$s?</string>
+    <string name="vehicle_form_delete_message">All fuel and service entries for this vehicle will be deleted too.</string>
+    <string name="form_name">Name *</string>
+    <string name="vehicle_form_make">Make</string>
+    <string name="vehicle_form_model">Model</string>
+    <string name="vehicle_form_year">Year</string>
+    <string name="vehicle_form_plate">License plate</string>
+    <string name="vehicle_form_vin">VIN</string>
+    <string name="vehicle_form_odometer">Odometer when added (km)</string>
+    <string name="form_name_required">Name is required</string>
+    <string name="vehicle_form_year_invalid">Enter a valid year</string>
+    <string name="vehicle_form_odometer_invalid">Enter a valid odometer reading</string>
+
+    <!-- Vehicle detail (ui/vehicles/VehicleDetailScreen.kt) -->
+    <string name="detail_add_fuel">Add fill-up</string>
+    <string name="detail_add_service">Add service</string>
+    <string name="detail_add_component">Add component</string>
+    <string name="detail_tab_fuel">Fuel</string>
+    <string name="detail_tab_service">Service</string>
+    <string name="detail_tab_maintenance">Maintenance</string>
+    <!-- %1$d: how many components and deadlines need attention -->
+    <string name="detail_tab_maintenance_attention">Maintenance (%1$d)</string>
+    <string name="detail_odometer">Odometer</string>
+    <string name="detail_odometer_update">Update</string>
+    <!-- Lifetime distance-weighted average fuel economy; label an implied "consumption" -->
+    <string name="detail_stat_average">Average</string>
+    <!-- Distance-weighted average economy over the last 3 full-to-full fill-ups, not the last single fill-up -->
+    <string name="detail_stat_recent">Recent</string>
+    <string name="detail_stat_total_spent">Total spent</string>
+    <string name="detail_stat_cost_per_km">Cost per km</string>
+    <string name="detail_fuel_empty_title">No fill-ups yet</string>
+    <string name="detail_fuel_empty_message">Log fill-ups to see your fuel economy and costs. Tip: snap the receipt and let the app read it.</string>
+    <!-- Flags in the details line of a fill-up -->
+    <string name="detail_fuel_flag_partial">partial</string>
+    <string name="detail_fuel_flag_missed_previous">missed previous</string>
+    <string name="detail_service_empty_title">No service records yet</string>
+    <string name="detail_service_empty_message">Add oil changes, repairs and inspections. Photos of invoices can fill in the form for you.</string>
+
+    <!-- Update odometer dialog -->
+    <string name="detail_odometer_dialog_title">Update odometer</string>
+    <string name="detail_odometer_dialog_body">A current reading keeps distance-based reminders accurate between fill-ups.</string>
+    <string name="detail_odometer_today">Odometer today (km)</string>
+    <string name="detail_odometer_required">Enter the odometer reading</string>
+    <!-- %1$s: the current reading, e.g. "50,000 km" -->
+    <string name="detail_odometer_too_low">Can\'t be lower than %1$s</string>
+
+    <!-- Shared by the fuel and service forms -->
+    <string name="form_date">Date</string>
+    <string name="form_date_from_receipt">Date (from receipt)</string>
+    <string name="form_date_from_invoice">Date (from invoice)</string>
+    <string name="form_note">Note</string>
+    <string name="form_hint_from_receipt">From receipt</string>
+    <string name="form_hint_from_invoice">From invoice</string>
+    <string name="delete_cannot_be_undone">This can\'t be undone.</string>
+    <string name="action_no">No</string>
+    <string name="action_read">Read</string>
+
+    <!-- Fuel form (ui/fuel/FuelFormScreen.kt) -->
+    <string name="fuel_form_add">Add fill-up</string>
+    <string name="fuel_form_edit">Edit fill-up</string>
+    <string name="fuel_delete_title">Delete fill-up?</string>
+    <string name="fuel_field_liters">Liters</string>
+    <string name="fuel_field_total_price">Total price</string>
+    <string name="fuel_field_station">Station</string>
+    <string name="fuel_switch_full_tank">Filled the tank completely</string>
+    <string name="fuel_switch_missed_previous">Missed recording the previous fill-up</string>
+    <string name="fuel_error_liters_required">Enter the amount of fuel</string>
+    <string name="fuel_error_liters_positive">Must be more than 0</string>
+    <string name="fuel_error_price_invalid">Enter a valid price</string>
+    <!-- %1$s: the vehicle's starting odometer, e.g. "50,000 km" -->
+    <string name="fuel_error_odometer_below_initial">Lower than the vehicle\'s starting odometer (%1$s)</string>
+    <!-- %1$s: the date of the other fill-up; %2$s: its odometer reading -->
+    <string name="fuel_error_odometer_out_of_order">Conflicts with the fill-up on %1$s at %2$s</string>
+    <!-- %1$s: the date of the other fill-up -->
+    <string name="fuel_error_duplicate_full_tank">There\'s already a full-tank fill-up at this reading (%1$s)</string>
+    <string name="fuel_save_anyway_title">Save anyway?</string>
+    <!-- %1$s: the odometer reading, e.g. "50,000 km" -->
+    <string name="fuel_save_anyway_body">There\'s already a fill-up at %1$s. Is this a top-off at the same stop?</string>
+    <string name="fuel_offer_read">Fill in the form from this receipt?</string>
+    <string name="fuel_reading_receipt">Reading the receipt…</string>
+    <!-- %1$s: the field names read, e.g. "liters, total price" -->
+    <string name="fuel_filled_from_receipt">Filled from the receipt: %1$s. Check them before saving.</string>
+
+    <!-- Service form (ui/service/ServiceFormScreen.kt) -->
+    <string name="service_form_add">Add service</string>
+    <string name="service_form_edit">Edit service</string>
+    <string name="service_delete_title">Delete service record?</string>
+    <string name="service_field_type">Type *</string>
+    <string name="service_field_cost">Cost</string>
+    <string name="service_field_shop">Shop</string>
+    <string name="service_field_component">Component (resets its schedule)</string>
+    <string name="service_component_none">None</string>
+    <string name="service_error_type_required">Service type is required</string>
+    <string name="service_error_cost_invalid">Enter a valid cost</string>
+    <!-- Note filled from an invoice listing several jobs; %1$s: the service names, comma-separated -->
+    <string name="service_note_work">Work: %1$s</string>
+    <string name="service_offer_read">Fill in the form from this invoice?</string>
+    <string name="service_reading_invoice">Reading the invoice…</string>
+    <!-- %1$s: the field names read, e.g. "type, date" -->
+    <string name="service_filled_from_invoice">Filled from the invoice: %1$s. Check them before saving.</string>
+
+    <!-- Names of the fields a receipt or invoice can fill, used in the "Filled from…" messages -->
+    <string name="read_field_liters">liters</string>
+    <string name="read_field_total_price">total price</string>
+    <string name="read_field_date">date</string>
+    <string name="read_field_station">station</string>
+    <string name="read_field_fuel_type">fuel type</string>
+    <string name="read_field_type">type</string>
+    <string name="read_field_odometer">odometer</string>
+    <string name="read_field_cost">cost</string>
+    <string name="read_field_shop">shop</string>
+    <string name="read_field_work_done">work done</string>
+
+    <!-- Photos and receipts (ui/attachments) -->
+    <string name="attachments_title_receipts">Receipts &amp; photos</string>
+    <string name="attachments_title_service_book">Service book</string>
+    <string name="attachments_photo_attached">Attached photo</string>
+    <string name="attachments_add_photo">Add photo</string>
+    <string name="attachments_take_photo">Take photo</string>
+    <string name="attachments_choose_gallery">Choose from gallery</string>
+    <string name="attachments_import_failed">Couldn\'t add the photo</string>
+    <string name="attachments_photo">Photo</string>
+    <string name="attachments_read_receipt">Read receipt</string>
+    <string name="attachments_delete_photo">Delete photo</string>
+    <string name="attachments_close">Close</string>
+    <string name="attachments_delete_title">Delete photo?</string>
+    <string name="attachments_delete_saved">It\'s removed from this entry.</string>
+    <string name="attachments_delete_unsaved">It won\'t be attached.</string>
+    <string name="receipt_read_nothing">Couldn\'t read anything from this photo. It\'s still attached.</string>
+
+    <!-- Odometer reading from a dashboard photo (ui/attachments/OdometerInput.kt) -->
+    <string name="odometer_input_label">Odometer (km)</string>
+    <string name="odometer_read_from_photo">Read from dashboard photo</string>
+    <string name="odometer_dialog_title">Odometer reading</string>
+    <string name="odometer_none_found">Couldn\'t find a reading in the photo. Try again closer to the display, without glare.</string>
+    <string name="odometer_pick">Pick the reading shown on the odometer:</string>
+    <string name="odometer_photo_attached">The photo is attached to this entry.</string>
+    <string name="odometer_none_of_these">None of these</string>
+
+    <!-- Maintenance tab and record dialog (ui/maintenance/MaintenanceTab.kt) -->
+    <string name="maintenance_not_tracked">Not tracked</string>
+    <string name="maintenance_record">Record</string>
+    <string name="maintenance_inspected">Inspected</string>
+    <string name="maintenance_replaced">Replaced</string>
+    <string name="maintenance_record_inspected_note">Only the inspection schedule restarts. Nothing is added to the service history.</string>
+    <string name="maintenance_record_replaced_note">Added to the service history. Both schedules restart, since a new part needs no inspection yet.</string>
+
+    <!-- Component form (ui/maintenance/MaintenanceItemFormScreen.kt) -->
+    <string name="maintenance_form_edit">Edit component</string>
+    <!-- %1$s: the component name -->
+    <string name="maintenance_delete_title">Stop tracking %1$s?</string>
+    <string name="maintenance_delete_message">Its schedule is removed. Service history is kept.</string>
+    <string name="maintenance_track">Track and remind</string>
+    <string name="maintenance_form_hint">Each schedule is due after whichever of its limits comes first. Leave a section empty if it doesn\'t apply.</string>
+    <string name="maintenance_error_no_schedule">Set at least one inspection or replacement interval</string>
+    <string name="maintenance_section_inspection">Inspection</string>
+    <string name="maintenance_section_replacement">Replacement</string>
+    <string name="maintenance_every_km">Every (km)</string>
+    <string name="maintenance_every_months">Every (months)</string>
+    <string name="maintenance_set_last_inspection">Set last inspection date</string>
+    <string name="maintenance_set_last_replacement">Set last replacement date</string>
+    <string name="maintenance_last_inspection">Last inspection</string>
+    <string name="maintenance_last_replacement">Last replacement</string>
+    <string name="maintenance_odometer_last_inspection">Odometer at last inspection (km)</string>
+    <string name="maintenance_odometer_last_replacement">Odometer at last replacement (km)</string>
+    <string name="maintenance_km_missing_note">Without the odometer reading, only the time limit is checked. Enter 0 for a part that\'s original from new.</string>
+    <string name="maintenance_error_distance">Enter a distance above 0</string>
+    <string name="maintenance_error_reading">Enter a valid reading</string>
+    <!-- Also used by the deadline form -->
+    <string name="form_error_whole_months">Enter a whole number of months</string>
+
+    <!-- Component icon picker -->
+    <string name="maintenance_icon">Icon</string>
+    <!-- %1$s: the icon picked from the name, e.g. "Brakes" -->
+    <string name="maintenance_icon_automatic_named">Automatic (%1$s)</string>
+    <string name="maintenance_icon_automatic">Automatic</string>
+    <string name="maintenance_icon_change">Change</string>
+    <string name="maintenance_icon_choose">Choose an icon</string>
+
+    <!-- Names of the icons in the picker (ComponentIcons.kt) -->
+    <string name="icon_oil">Oil</string>
+    <string name="icon_filter">Filter</string>
+    <string name="icon_air_cabin">Air / cabin</string>
+    <string name="icon_brakes">Brakes</string>
+    <string name="icon_fluid">Fluid</string>
+    <string name="icon_coolant">Coolant</string>
+    <string name="icon_ignition">Ignition</string>
+    <string name="icon_belt_engine">Belt / engine</string>
+    <string name="icon_tires">Tires</string>
+    <string name="icon_pressure">Pressure</string>
+    <string name="icon_battery">Battery</string>
+    <string name="icon_wipers">Wipers</string>
+    <string name="icon_lights">Lights</string>
+    <string name="icon_air_con">Air con</string>
+    <string name="icon_gearbox">Gearbox</string>
+    <string name="icon_inspection">Inspection</string>
+    <string name="icon_safety_kit">Safety kit</string>
+    <string name="icon_fuel">Fuel</string>
+    <string name="icon_wash">Wash</string>
+    <string name="icon_key">Key</string>
+    <string name="icon_warning">Warning</string>
+    <string name="icon_car">Car</string>
+    <string name="icon_general">General</string>
+
+    <!-- Deadlines list on the Maintenance tab (ui/deadlines/DeadlinesSection.kt) -->
+    <string name="deadlines_title">Deadlines</string>
+    <string name="deadlines_add">Add</string>
+    <string name="deadlines_empty">Add your technical inspection, vignette or insurance to be reminded before they expire.</string>
+    <!-- %1$s: a date -->
+    <string name="deadline_due">Due %1$s</string>
+    <!-- %1$s: a date; %2$d: the repeat interval in months -->
+    <plurals name="deadline_due_repeating">
+        <item quantity="one">Due %1$s · every month</item>
+        <item quantity="other">Due %1$s · every %2$d months</item>
+    </plurals>
+    <string name="deadlines_renew">Renew</string>
+    <!-- %1$s: the deadline title -->
+    <string name="deadlines_renew_title">Renew %1$s</string>
+    <string name="deadlines_renew_hint">Enter the new expiry date, e.g. from the inspection sticker or the new policy.</string>
+    <string name="deadlines_new_due_date">New due date</string>
+
+    <!-- Deadline form (ui/deadlines/DeadlineFormScreen.kt) -->
+    <string name="deadline_form_add">Add deadline</string>
+    <string name="deadline_form_edit">Edit deadline</string>
+    <string name="deadline_delete_message">You won\'t be reminded about it any more.</string>
+    <string name="deadline_form_title">Title *</string>
+    <string name="deadline_error_title_required">Title is required</string>
+    <string name="deadline_form_due">Due date (last valid day)</string>
+    <string name="deadline_form_repeat">Repeats every (months)</string>
 </resources>

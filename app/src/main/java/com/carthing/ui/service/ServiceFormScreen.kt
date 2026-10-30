@@ -1,5 +1,6 @@
 package com.carthing.ui.service
 
+import android.content.res.Resources
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,12 +31,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.carthing.R
 import com.carthing.data.attachments.AttachmentOwner
 import com.carthing.data.entity.MaintenanceItem
 import com.carthing.data.entity.ServiceEntry
+import com.carthing.data.maintenance.DefaultName
 import com.carthing.ui.attachments.EntryPhotos
 import com.carthing.ui.attachments.OdometerInput
 import com.carthing.ui.attachments.ReadOffer
@@ -45,6 +50,7 @@ import com.carthing.ui.common.BackButton
 import com.carthing.ui.common.DateInput
 import com.carthing.ui.common.DecimalInput
 import com.carthing.ui.common.DeleteAction
+import com.carthing.ui.common.currentLanguage
 import com.carthing.ui.common.LoadingBox
 import com.carthing.ui.common.TextInput
 import com.carthing.ui.common.editableNumber
@@ -53,8 +59,6 @@ import com.carthing.ui.vehicles.VehicleDetailUiState
 import com.carthing.ui.vehicles.VehicleDetailViewModel
 import java.time.ZoneId
 import kotlinx.coroutines.launch
-
-private val COMMON_TYPES = listOf("Oil change", "Tires", "Brakes", "Inspection", "Battery", "Filters", "Wipers", "Repair")
 
 /** Add ([entryId] = 0) or edit a service record. */
 @Composable
@@ -69,7 +73,8 @@ fun ServiceFormScreen(
     val existing = remember { s.serviceEntries.firstOrNull { it.id == entryId } }
     val suggestedOdometer = remember { s.currentOdometerKm }
     // Offer the user's own past types first, then the common ones.
-    val suggestions = remember { (s.serviceEntries.map { it.type } + COMMON_TYPES).distinct() }
+    val language = currentLanguage()
+    val suggestions = remember(language) { (s.serviceEntries.map { it.type } + DefaultName.SERVICE_TYPES.map { it.label(language) }).distinct() }
     val components = remember { s.maintenance.map { it.item }.sortedBy { it.name } }
     ServiceForm(existing, suggestedOdometer, suggestions, components, viewModel, onDone)
 }
@@ -85,6 +90,8 @@ private fun ServiceForm(
     onDone: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val language = currentLanguage()
+    val res = LocalContext.current.resources
     val photos = rememberPendingPhotos()
     var type by rememberSaveable { mutableStateOf(existing?.type.orEmpty()) }
     var date by rememberSaveable { mutableLongStateOf(existing?.dateEpochMillis ?: System.currentTimeMillis()) }
@@ -98,10 +105,12 @@ private fun ServiceForm(
     var touched by rememberSaveable { mutableStateOf(listOf<String>()) }
     var fromInvoice by rememberSaveable { mutableStateOf(listOf<String>()) }
     var reading by remember { mutableStateOf(false) }
-    var readMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    // Field keys filled by the last read (empty: nothing found); null: no message. Kept as keys so the text follows the language.
+    var readFilled by rememberSaveable { mutableStateOf<List<String>?>(null) }
     var offerRead by rememberSaveable { mutableStateOf<String?>(null) }
     fun touch(field: String) { touched = touched + field; fromInvoice = fromInvoice - field }
-    fun hint(field: String) = "From invoice".takeIf { field in fromInvoice }
+    val fromInvoiceHint = stringResource(R.string.form_hint_from_invoice)
+    fun hint(field: String) = fromInvoiceHint.takeIf { field in fromInvoice }
 
     fun readInvoice(fileName: String) = scope.launch {
         reading = true
@@ -112,29 +121,28 @@ private fun ServiceForm(
             if (value != null && field !in touched) { apply(); filled += field }
         }
         r?.let {
-            if (type.isBlank()) fill("type", it.services.firstOrNull()) { type = it.services.first() }
+            if (type.isBlank()) fill("type", it.services.firstOrNull()) { type = it.services.first().label(language) }
             fill("date", it.date) { date = it.date!!.atTime(12, 0).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() }
             fill("odometer", it.odometerKm) { odometer = editableNumber(it.odometerKm) }
             fill("cost", it.total) { cost = editableNumber(it.total) }
             fill("shop", it.shop) { shop = it.shop!! }
-            if (note.isBlank() && it.services.size > 1) fill("note", it.services) { note = "Work: " + it.services.joinToString(", ") }
+            if (note.isBlank() && it.services.size > 1) fill("note", it.services) { note = res.getString(R.string.service_note_work, it.services.joinToString(", ") { s -> s.label(language) }) }
         }
         fromInvoice = (fromInvoice + filled).distinct()
-        readMessage = if (filled.isEmpty()) "Couldn't read anything from this photo. It's still attached."
-            else "Filled from the invoice: ${filled.joinToString(", ") { LABELS.getValue(it) }}. Check them before saving."
+        readFilled = filled.toList()
     }
 
-    val typeError = if (submitted && type.isBlank()) "Service type is required" else null
-    val odometerError = if (submitted && (parseDecimal(odometer) ?: -1.0) < 0) "Enter the odometer reading" else null
-    val costError = if (cost.isNotBlank() && parseDecimal(cost) == null) "Enter a valid cost" else null
+    val typeError = if (submitted && type.isBlank()) stringResource(R.string.service_error_type_required) else null
+    val odometerError = if (submitted && (parseDecimal(odometer) ?: -1.0) < 0) stringResource(R.string.detail_odometer_required) else null
+    val costError = if (cost.isNotBlank() && parseDecimal(cost) == null) stringResource(R.string.service_error_cost_invalid) else null
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (existing == null) "Add service" else "Edit service") },
+                title = { Text(stringResource(if (existing == null) R.string.service_form_add else R.string.service_form_edit)) },
                 navigationIcon = { BackButton(onDone) },
                 actions = {
-                    if (existing != null) DeleteAction("Delete service record?", "This can't be undone.") {
+                    if (existing != null) DeleteAction(stringResource(R.string.service_delete_title), stringResource(R.string.delete_cannot_be_undone)) {
                         scope.launch { viewModel.deleteService(existing); onDone() }
                     }
                 }
@@ -147,15 +155,15 @@ private fun ServiceForm(
         ) {
             EntryPhotos(
                 existing?.let { AttachmentOwner.Service(it.id) }, photos, viewModel,
-                onPhotoAdded = { offerRead = it; readMessage = null },
+                onPhotoAdded = { offerRead = it; readFilled = null },
                 onRead = { offerRead = null; readInvoice(it) },
             )
             offerRead?.let { name ->
-                ReadOffer("Fill in the form from this invoice?", onRead = { offerRead = null; readInvoice(name) }, onDismiss = { offerRead = null })
+                ReadOffer(stringResource(R.string.service_offer_read), onRead = { offerRead = null; readInvoice(name) }, onDismiss = { offerRead = null })
             }
-            if (reading) Text("Reading the invoice…", style = MaterialTheme.typography.bodySmall)
-            readMessage?.let { ReceiptBanner(it) { readMessage = null } }
-            TextInput(type, { type = it; touch("type") }, "Type *", error = typeError, hint = hint("type"))
+            if (reading) Text(stringResource(R.string.service_reading_invoice), style = MaterialTheme.typography.bodySmall)
+            readFilled?.let { ReceiptBanner(filledMessage(res, it)) { readFilled = null } }
+            TextInput(type, { type = it; touch("type") }, stringResource(R.string.service_field_type), error = typeError, hint = hint("type"))
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 suggestions.forEach { SuggestionChip(onClick = { type = it; touch("type") }, label = { Text(it) }) }
             }
@@ -165,11 +173,11 @@ private fun ServiceForm(
                 if (picked != null && (type.isBlank() || type == previous)) type = picked.name
                 componentId = picked?.id
             }
-            DateInput(date, { date = it; touch("date") }, if ("date" in fromInvoice) "Date (from invoice)" else "Date")
+            DateInput(date, { date = it; touch("date") }, stringResource(if ("date" in fromInvoice) R.string.form_date_from_invoice else R.string.form_date))
             OdometerInput(odometer, { odometer = it; touch("odometer") }, odometerError, existing?.odometerKm ?: suggestedOdometerKm, viewModel, onPhotoAdded = { photos += it }, hint = hint("odometer"))
-            DecimalInput(cost, { cost = it; touch("cost") }, "Cost", costError, hint("cost"))
-            TextInput(shop, { shop = it; touch("shop") }, "Shop", hint = hint("shop"))
-            TextInput(note, { note = it; touch("note") }, "Note", singleLine = false, hint = hint("note"))
+            DecimalInput(cost, { cost = it; touch("cost") }, stringResource(R.string.service_field_cost), costError, hint("cost"))
+            TextInput(shop, { shop = it; touch("shop") }, stringResource(R.string.service_field_shop), hint = hint("shop"))
+            TextInput(note, { note = it; touch("note") }, stringResource(R.string.form_note), singleLine = false, hint = hint("note"))
             Button(
                 onClick = {
                     submitted = true
@@ -188,7 +196,7 @@ private fun ServiceForm(
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Save") }
+            ) { Text(stringResource(R.string.action_save)) }
         }
     }
 }
@@ -200,15 +208,15 @@ private fun ComponentPicker(components: List<MaintenanceItem>, selectedId: Long?
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
         OutlinedTextField(
-            value = components.firstOrNull { it.id == selectedId }?.name ?: "None",
+            value = components.firstOrNull { it.id == selectedId }?.name ?: stringResource(R.string.service_component_none),
             onValueChange = {},
             readOnly = true,
-            label = { Text("Component (resets its schedule)") },
+            label = { Text(stringResource(R.string.service_field_component)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
             modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable)
         )
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(text = { Text("None") }, onClick = { onPick(null); expanded = false })
+            DropdownMenuItem(text = { Text(stringResource(R.string.service_component_none)) }, onClick = { onPick(null); expanded = false })
             components.forEach { c ->
                 DropdownMenuItem(text = { Text(c.name) }, onClick = { onPick(c); expanded = false })
             }
@@ -216,6 +224,13 @@ private fun ComponentPicker(components: List<MaintenanceItem>, selectedId: Long?
     }
 }
 
+/** Names of the fields an invoice can fill, for the "Filled from the invoice: …" banner. */
 private val LABELS = mapOf(
-    "type" to "type", "date" to "date", "odometer" to "odometer", "cost" to "cost", "shop" to "shop", "note" to "work done",
+    "type" to R.string.read_field_type, "date" to R.string.read_field_date, "odometer" to R.string.read_field_odometer,
+    "cost" to R.string.read_field_cost, "shop" to R.string.read_field_shop, "note" to R.string.read_field_work_done,
 )
+
+/** The banner text after a read that filled [filled] (field keys); empty means nothing could be read. */
+private fun filledMessage(res: Resources, filled: List<String>): String =
+    if (filled.isEmpty()) res.getString(R.string.receipt_read_nothing)
+    else res.getString(R.string.service_filled_from_invoice, filled.joinToString(", ") { res.getString(LABELS.getValue(it)) })

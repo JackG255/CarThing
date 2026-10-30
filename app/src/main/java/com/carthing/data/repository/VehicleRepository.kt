@@ -2,6 +2,7 @@ package com.carthing.data.repository
 
 import androidx.room.withTransaction
 import com.carthing.data.CarThingDatabase
+import com.carthing.data.Language
 import com.carthing.data.dao.VehicleWithOdometer
 import com.carthing.data.entity.OdometerEntry
 import com.carthing.data.entity.Vehicle
@@ -9,7 +10,8 @@ import com.carthing.data.maintenance.DefaultSchedule
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
-class VehicleRepository(private val db: CarThingDatabase) {
+/** [language] gives the app's current language, used to name the default maintenance schedule of a new vehicle. */
+class VehicleRepository(private val db: CarThingDatabase, private val language: () -> Language = { Language.EN }) {
     private val dao = db.vehicleDao()
 
     fun observeAll(): Flow<List<Vehicle>> = dao.observeAll()
@@ -23,7 +25,7 @@ class VehicleRepository(private val db: CarThingDatabase) {
         return db.withTransaction {
             val id = dao.upsert(vehicle.copy(name = vehicle.name.trim()))
             if (id == -1L) vehicle.id
-            else id.also { db.maintenanceItemDao().insertAll(DefaultSchedule.itemsFor(it)) }
+            else id.also { db.maintenanceItemDao().insertAll(DefaultSchedule.itemsFor(it, language())) }
         }
     }
 

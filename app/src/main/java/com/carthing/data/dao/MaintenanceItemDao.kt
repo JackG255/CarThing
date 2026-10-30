@@ -21,6 +21,10 @@ interface MaintenanceItemDao {
     @Query("UPDATE maintenance_items SET inspectNotifiedLevel = :inspect, replaceNotifiedLevel = :replace WHERE id = :id")
     suspend fun setNotifiedLevels(id: Long, inspect: Int, replace: Int)
 
+    /** Renames items whose trimmed name is in [from] to [to]; returns the rows changed. */
+    @Query("UPDATE maintenance_items SET name = :to WHERE trim(name) IN (:from) AND name != :to")
+    suspend fun relabel(from: List<String>, to: String): Int
+
     @Insert suspend fun insertAll(items: List<MaintenanceItem>)
     @Upsert suspend fun upsert(item: MaintenanceItem): Long
     @Delete suspend fun delete(item: MaintenanceItem)

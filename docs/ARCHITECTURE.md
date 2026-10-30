@@ -37,7 +37,7 @@ An id of `0` means "new". Tapping a notification opens `MainActivity` with
 ## Background work (`notifications/`)
 | Worker | Schedule | Does |
 |---|---|---|
-| `MaintenanceCheckWorker` | daily; `MainActivity` schedules it with `KEEP` | Posts maintenance and deadline reminders, a stale-backup reminder, and sweeps orphaned photos |
+| `MaintenanceCheckWorker` | daily; `MainActivity` schedules it with `KEEP` | Relabels default names if the language changed, posts maintenance and deadline reminders, a stale-backup reminder, and sweeps orphaned photos |
 | `AutoBackupWorker` | weekly when a folder is set; `runOnce` for "Back up now" | Writes a zip into the chosen folder and prunes old automatic backups |
 
 `MaintenanceNotifier` posts on one channel (`maintenance`). Notification ids are stable per
@@ -49,10 +49,33 @@ Debug builds include `RunMaintenanceCheckReceiver`, which triggers the check imm
 adb shell am broadcast -n com.carthing.debug/com.carthing.debug.RunMaintenanceCheckReceiver
 ```
 
+## Languages
+The app is in English (default, and the fallback for every other language), Czech and Slovak.
+`AppContainer.language` follows the per-app locale. Pure-logic objects never read the locale; the
+language is passed in.
+
+Names the app supplies (default components, service quick picks, deadline presets) are `DefaultName`
+entries with a label per language. They are stored as plain text, so `DefaultNameRelabeler` rewrites
+them when the language changes:
+- A stored name is relabelled only if its **trimmed** text **exactly** equals (case-sensitive) a default in any of the three languages. Anything else, and all free-text notes, is left alone.
+- It covers component names, service entry types and deadline titles, in one transaction. Each table only matches its own names (`DefaultName.COMPONENTS`, `SERVICE_ENTRY_NAMES`, `DEADLINE_PRESETS`): `maintenance_items.name` the 12 default component names; `service_entries.type` the 8 service quick picks (`SERVICE_TYPES`) plus the component names, because `markDone` and the component picker copy those into the type; `deadlines.title` the 4 deadline presets. So a component called "Repair" or a deadline called "Battery" is left alone.
+- The last language it relabelled to is kept in the `language` preferences. Nothing is written to the database when it is unchanged.
+- On the first run, with no language stored, only the English labels count as defaults: data from 0.3.0 can only hold English defaults, so a Czech or Slovak one was typed by hand. Later runs match all three languages.
+- Triggers: `MainActivity.onCreate` (a per-app language change recreates the activity), the daily `MaintenanceCheckWorker`, and right after a backup is restored (always a full relabel).
+
+Everything else the app shows is a string resource:
+- `res/values/strings.xml` is English, `values-cs/` Czech and `values-sk/` Slovak. `res/resources.properties` marks `values/` as English, and `generateLocaleConfig` in `app/build.gradle.kts` turns the folders into the per-app language list in Android 13+ settings.
+- Text helpers (`formatKm`, `formatDays`, `MaintenanceStatus.describe`, `DeadlineStatus.describeExpiry`, …) take `Resources` first. Each has a `@Composable` overload without it for screens; workers and notifications pass `context.resources`.
+- A ViewModel that picks a message returns a `UiText` (resource id plus args), and the screen calls `resolve()`.
+- Sentences are whole format strings with numbered args (`%1$s`, `%2$s`), never glued fragments, so a translation can reorder words. Counts use `<plurals>`. Czech and Slovak need `one` (1), `few` (2–4), `many` (fractions only, so never hit by whole numbers) and `other` (0, 5+). When a phrase puts the count in another case, it gets its own plurals, e.g. `deadline_expired_days_ago` ("před 5 dny") next to `days` ("5 dní").
+- Units: English uses `L` and `L/100km`; Czech and Slovak use `l` and `l/100 km`.
+
+To add a string, put it in all three `strings.xml` files; `TranslationsTest` fails when a name is missing or extra in `cs` or `sk`, or a Czech or Slovak plural lacks a quantity. Mark brand names `translatable="false"`. To add a language, add a `values-xx/strings.xml` with every string, a `Language` entry and its `DefaultName` labels, and add the folder to `TranslationsTest`.
+
 ## Storage
 - Room database `carthing.db`.
 - Photos: `filesDir/attachments/<uuid>.jpg`, see [BACKUP.md](BACKUP.md#photos).
-- SharedPreferences: `backup_settings` (backup bookkeeping and folder URI) and `ui_settings` (wallpaper colours).
+- SharedPreferences: `backup_settings` (backup bookkeeping and folder URI), `ui_settings` (wallpaper colours) and `language` (the language default names were last relabelled to).
 - Android's own backup (`res/xml/data_extraction_rules.xml`, `backup_rules.xml`) includes the database and preferences. It leaves out `backup_settings.xml`, because a folder permission only works on the same device, and it doesn't include photos.
 
 ## Build variants

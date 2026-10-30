@@ -1,0 +1,401 @@
+<resources>
+    <string name="format_km">%1$s km</string>
+    <string name="format_liters">%1$s l</string>
+    <string name="format_economy">%1$s l/100 km</string>
+    <string name="format_cost_per_km">%1$s/km</string>
+
+    <plurals name="days">
+        <item quantity="one">%d deň</item>
+        <item quantity="few">%d dni</item>
+        <item quantity="many">%d dňa</item>
+        <item quantity="other">%d dní</item>
+    </plurals>
+    <plurals name="weeks">
+        <item quantity="one">%d týždeň</item>
+        <item quantity="few">%d týždne</item>
+        <item quantity="many">%d týždňa</item>
+        <item quantity="other">%d týždňov</item>
+    </plurals>
+    <plurals name="months">
+        <item quantity="one">%d mesiac</item>
+        <item quantity="few">%d mesiace</item>
+        <item quantity="many">%d mesiaca</item>
+        <item quantity="other">%d mesiacov</item>
+    </plurals>
+    <plurals name="years">
+        <item quantity="one">%d rok</item>
+        <item quantity="few">%d roky</item>
+        <item quantity="many">%d roka</item>
+        <item quantity="other">%d rokov</item>
+    </plurals>
+
+    <string name="status_not_recorded">Zatiaľ nezaznamenané</string>
+    <string name="status_overdue">Po termíne</string>
+    <string name="status_overdue_by">Po termíne o %1$s</string>
+    <string name="status_due_today">Termín je dnes</string>
+    <string name="status_due_in_km">O ~%1$s</string>
+    <string name="status_due_in_time">O %1$s</string>
+    <string name="status_due_in_km_and_time">O ~%1$s · %2$s</string>
+    <string name="status_no_schedule">Bez plánu</string>
+    <string name="status_inspection">Kontrola: %1$s</string>
+    <string name="status_replacement">Výmena: %1$s</string>
+
+    <string name="schedule_inspect">Kontrola %1$s</string>
+    <string name="schedule_replace">Výmena %1$s</string>
+    <string name="schedule_every_km">každých %1$s</string>
+    <plurals name="schedule_every_months">
+        <item quantity="one">každý mesiac</item>
+        <item quantity="few">každé %d mesiace</item>
+        <item quantity="many">každých %d mesiaca</item>
+        <item quantity="other">každých %d mesiacov</item>
+    </plurals>
+    <plurals name="schedule_every_km_or_months">
+        <item quantity="one">každých %1$s alebo %2$d mesiac</item>
+        <item quantity="few">každých %1$s alebo %2$d mesiace</item>
+        <item quantity="many">každých %1$s alebo %2$d mesiaca</item>
+        <item quantity="other">každých %1$s alebo %2$d mesiacov</item>
+    </plurals>
+    <string name="schedule_last">naposledy %1$s</string>
+    <string name="schedule_last_at">naposledy %1$s pri %2$s</string>
+    <string name="schedule_km_not_recorded">chýba stav km</string>
+
+    <string name="deadline_expires_today">platnosť končí dnes</string>
+    <string name="deadline_expires_in">platnosť končí o %1$s</string>
+    <plurals name="deadline_expired_days_ago">
+        <item quantity="one">platnosť skončila pred %d dňom</item>
+        <item quantity="few">platnosť skončila pred %d dňami</item>
+        <item quantity="many">platnosť skončila pred %d dňa</item>
+        <item quantity="other">platnosť skončila pred %d dňami</item>
+    </plurals>
+    <plurals name="deadline_expired_weeks_ago">
+        <item quantity="one">platnosť skončila pred %d týždňom</item>
+        <item quantity="few">platnosť skončila pred %d týždňami</item>
+        <item quantity="many">platnosť skončila pred %d týždňa</item>
+        <item quantity="other">platnosť skončila pred %d týždňami</item>
+    </plurals>
+    <plurals name="deadline_expired_months_ago">
+        <item quantity="one">platnosť skončila pred %d mesiacom</item>
+        <item quantity="few">platnosť skončila pred %d mesiacmi</item>
+        <item quantity="many">platnosť skončila pred %d mesiaca</item>
+        <item quantity="other">platnosť skončila pred %d mesiacmi</item>
+    </plurals>
+    <plurals name="deadline_expired_years_ago">
+        <item quantity="one">platnosť skončila pred %d rokom</item>
+        <item quantity="few">platnosť skončila pred %d rokmi</item>
+        <item quantity="many">platnosť skončila pred %d roka</item>
+        <item quantity="other">platnosť skončila pred %d rokmi</item>
+    </plurals>
+
+    <string name="notification_channel_name">Pripomienky údržby</string>
+    <string name="notification_channel_description">Keď sa blíži alebo už uplynul termín údržby či platnosti</string>
+    <string name="reminder_inspection_overdue">%1$s: kontrola je po termíne</string>
+    <string name="reminder_replacement_overdue">%1$s: výmena je po termíne</string>
+    <string name="reminder_inspection_due_soon">%1$s: blíži sa kontrola</string>
+    <string name="reminder_replacement_due_soon">%1$s: blíži sa výmena</string>
+    <string name="reminder_deadline">%1$s: %2$s</string>
+    <string name="backup_reminder_title">Zálohujte servisnú knižku</string>
+    <string name="backup_reminder_last">Posledná záloha: %1$s. Vytvorte novú alebo zapnite automatické zálohovanie.</string>
+    <string name="backup_reminder_never">Zatiaľ nemáte žiadnu zálohu. Vytvorte ju alebo zapnite automatické zálohovanie.</string>
+
+    <string name="action_cancel">Zrušiť</string>
+    <string name="backup_more_options">Ďalšie možnosti</string>
+    <string name="backup_menu_export">Exportovať zálohu</string>
+    <string name="backup_menu_restore">Obnoviť zo zálohy</string>
+    <string name="backup_menu_auto">Automatické zálohy…</string>
+    <string name="backup_action_back_up_now">Zálohovať teraz</string>
+
+    <string name="backup_restore_title">Nahradiť všetky údaje?</string>
+    <string name="backup_restore_body">Záloha z %1$s obsahuje %2$s, %3$s, %4$s a %5$s.\n\nVšetko, čo je teraz v aplikácii, sa nahradí. Ak by ste to mohli potrebovať, najprv si exportujte zálohu.</string>
+    <string name="backup_restore_confirm">Nahradiť</string>
+    <plurals name="backup_count_vehicles">
+        <item quantity="one">%d vozidlo</item>
+        <item quantity="few">%d vozidlá</item>
+        <item quantity="many">%d vozidla</item>
+        <item quantity="other">%d vozidiel</item>
+    </plurals>
+    <plurals name="backup_count_fuel_entries">
+        <item quantity="one">%d tankovanie</item>
+        <item quantity="few">%d tankovania</item>
+        <item quantity="many">%d tankovania</item>
+        <item quantity="other">%d tankovaní</item>
+    </plurals>
+    <plurals name="backup_count_service_entries">
+        <item quantity="one">%d servisný záznam</item>
+        <item quantity="few">%d servisné záznamy</item>
+        <item quantity="many">%d servisného záznamu</item>
+        <item quantity="other">%d servisných záznamov</item>
+    </plurals>
+    <plurals name="backup_count_deadlines">
+        <item quantity="one">%d termín</item>
+        <item quantity="few">%d termíny</item>
+        <item quantity="many">%d termínu</item>
+        <item quantity="other">%d termínov</item>
+    </plurals>
+
+    <string name="backup_message_saved">Záloha uložená</string>
+    <string name="backup_message_save_failed">Zálohu sa nepodarilo uložiť.</string>
+    <string name="backup_message_read_failed">Súbor sa nepodarilo prečítať.</string>
+    <string name="backup_message_restored">Záloha obnovená</string>
+    <string name="backup_message_folder_unsupported">Tento priečinok nie je možné použiť na automatické zálohy. Skúste priečinok v telefóne, ktorý nahráva synchronizačná aplikácia.</string>
+    <string name="backup_message_auto_on">Automatické zálohy zapnuté</string>
+    <string name="backup_message_auto_off">Automatické zálohy vypnuté</string>
+    <string name="backup_message_running">Zálohujem…</string>
+
+    <string name="backup_invalid_not_a_backup">Toto nie je záložný súbor CarThing.</string>
+    <string name="backup_invalid_damaged">Záložný súbor je poškodený.</string>
+    <string name="backup_invalid_too_large">Záložný súbor je príliš veľký.</string>
+    <string name="backup_invalid_newer_version">Táto záloha bola vytvorená novšou verziou CarThing. Najprv aktualizujte aplikáciu.</string>
+    <plurals name="backup_invalid_photos_missing">
+        <item quantity="one">Záložný súbor je poškodený (chýba %1$d fotka).</item>
+        <item quantity="few">Záložný súbor je poškodený (chýbajú %1$d fotky).</item>
+        <item quantity="many">Záložný súbor je poškodený (chýba %1$d fotky).</item>
+        <item quantity="other">Záložný súbor je poškodený (chýba %1$d fotiek).</item>
+    </plurals>
+
+    <string name="backup_auto_title">Automatické zálohy</string>
+    <string name="backup_auto_on_folder">Raz týždenne sa záloha uloží do priečinka „%1$s“.</string>
+    <string name="backup_auto_on_folder_unknown">Raz týždenne sa záloha uloží do vybraného priečinka.</string>
+    <plurals name="backup_auto_keep">
+        <item quantity="one">Uchováva sa najnovšia záloha.</item>
+        <item quantity="few">Uchovávajú sa %1$d najnovšie zálohy.</item>
+        <item quantity="many">Uchováva sa %1$d najnovšej zálohy.</item>
+        <item quantity="other">Uchováva sa %1$d najnovších záloh.</item>
+    </plurals>
+    <string name="backup_auto_off_hint">Vyberte priečinok a záloha sa tam bude ukladať každý týždeň. Zvoľte priečinok, ktorý nahráva vaša cloudová alebo synchronizačná aplikácia, aby existovala kópia mimo tohto telefónu.</string>
+    <string name="backup_last">Posledná záloha: %1$s</string>
+    <string name="backup_last_never">Posledná záloha: nikdy</string>
+    <string name="backup_auto_failed_folder">Posledné automatické zálohovanie zlyhalo: do priečinka sa nedá zapisovať.</string>
+    <string name="backup_auto_failed_other">Posledné automatické zálohovanie zlyhalo.</string>
+    <string name="backup_auto_android_note">Android tiež sám zálohuje aplikáciu do vášho účtu Google, ak je zálohovanie zapnuté v nastaveniach telefónu.</string>
+    <string name="backup_auto_change_folder">Zmeniť priečinok</string>
+    <string name="backup_auto_choose_folder">Vybrať priečinok</string>
+    <string name="backup_auto_turn_off">Vypnúť</string>
+
+    <!-- Spoločné akcie a polia formulárov (ui/common) -->
+    <string name="action_save">Uložiť</string>
+    <string name="action_delete">Zmazať</string>
+    <string name="action_ok">OK</string>
+    <string name="action_back">Späť</string>
+    <string name="date_clear">Vymazať dátum</string>
+    <string name="date_pick">Vybrať dátum</string>
+
+    <!-- Zoznam vozidiel a formulár (ui/vehicles) -->
+    <string name="vehicle_add">Pridať vozidlo</string>
+    <string name="vehicle_edit">Upraviť vozidlo</string>
+    <string name="vehicle_list_empty_title">Zatiaľ žiadne vozidlá</string>
+    <string name="vehicle_list_empty_message">Klepnutím na + pridajte svoje auto a potom zapisujte tankovanie a servis.</string>
+    <string name="appearance_wallpaper_colors">Farby z tapety</string>
+    <string name="form_delete_title">Zmazať: %1$s?</string>
+    <string name="vehicle_form_delete_message">Zmažú sa aj všetky tankovania a servisné záznamy tohto vozidla.</string>
+    <string name="form_name">Názov *</string>
+    <string name="vehicle_form_make">Značka</string>
+    <string name="vehicle_form_model">Model</string>
+    <string name="vehicle_form_year">Rok výroby</string>
+    <string name="vehicle_form_plate">EČV</string>
+    <string name="vehicle_form_vin">VIN</string>
+    <string name="vehicle_form_odometer">Stav tachometra pri pridaní (km)</string>
+    <string name="form_name_required">Zadajte názov</string>
+    <string name="vehicle_form_year_invalid">Zadajte platný rok</string>
+    <string name="vehicle_form_odometer_invalid">Zadajte platný stav tachometra</string>
+
+    <!-- Detail vozidla (ui/vehicles/VehicleDetailScreen.kt) -->
+    <string name="detail_add_fuel">Pridať tankovanie</string>
+    <string name="detail_add_service">Pridať servisný záznam</string>
+    <string name="detail_add_component">Pridať súčasť</string>
+    <string name="detail_tab_fuel">Palivo</string>
+    <string name="detail_tab_service">Servis</string>
+    <string name="detail_tab_maintenance">Údržba</string>
+    <string name="detail_tab_maintenance_attention">Údržba (%1$d)</string>
+    <string name="detail_odometer">Tachometer</string>
+    <string name="detail_odometer_update">Aktualizovať</string>
+    <string name="detail_stat_average">Priemerná</string>
+    <string name="detail_stat_recent">Nedávna</string>
+    <string name="detail_stat_total_spent">Celkové výdavky</string>
+    <string name="detail_stat_cost_per_km">Náklady na km</string>
+    <string name="detail_fuel_empty_title">Zatiaľ žiadne tankovania</string>
+    <string name="detail_fuel_empty_message">Zapisujte tankovania a uvidíte spotrebu aj náklady. Tip: odfoťte bloček a nechajte ho prečítať aplikácii.</string>
+    <string name="detail_fuel_flag_partial">čiastočné</string>
+    <string name="detail_fuel_flag_missed_previous">chýba predchádzajúce tankovanie</string>
+    <string name="detail_service_empty_title">Zatiaľ žiadne servisné záznamy</string>
+    <string name="detail_service_empty_message">Pridajte výmeny oleja, opravy a kontroly. Fotografie faktúr môžu formulár vyplniť za vás.</string>
+
+    <!-- Dialóg aktualizácie tachometra -->
+    <string name="detail_odometer_dialog_title">Aktualizovať stav tachometra</string>
+    <string name="detail_odometer_dialog_body">Aktuálny stav udržiava pripomienky podľa najazdených kilometrov presné aj medzi tankovaniami.</string>
+    <string name="detail_odometer_today">Stav tachometra dnes (km)</string>
+    <string name="detail_odometer_required">Zadajte stav tachometra</string>
+    <string name="detail_odometer_too_low">Hodnota nemôže byť nižšia ako %1$s</string>
+
+    <!-- Spoločné pre formuláre tankovania a servisu -->
+    <string name="form_date">Dátum</string>
+    <string name="form_date_from_receipt">Dátum (z bločku)</string>
+    <string name="form_date_from_invoice">Dátum (z faktúry)</string>
+    <string name="form_note">Poznámka</string>
+    <string name="form_hint_from_receipt">Z bločku</string>
+    <string name="form_hint_from_invoice">Z faktúry</string>
+    <string name="delete_cannot_be_undone">Túto akciu nie je možné vrátiť späť.</string>
+    <string name="action_no">Nie</string>
+    <string name="action_read">Prečítať</string>
+
+    <!-- Formulár tankovania (ui/fuel/FuelFormScreen.kt) -->
+    <string name="fuel_form_add">Pridať tankovanie</string>
+    <string name="fuel_form_edit">Upraviť tankovanie</string>
+    <string name="fuel_delete_title">Zmazať tankovanie?</string>
+    <string name="fuel_field_liters">Litre</string>
+    <string name="fuel_field_total_price">Celková cena</string>
+    <string name="fuel_field_station">Čerpacia stanica</string>
+    <string name="fuel_switch_full_tank">Natankované do plna</string>
+    <string name="fuel_switch_missed_previous">Chýba záznam predchádzajúceho tankovania</string>
+    <string name="fuel_error_liters_required">Zadajte množstvo paliva</string>
+    <string name="fuel_error_liters_positive">Musí byť väčšie ako 0</string>
+    <string name="fuel_error_price_invalid">Zadajte platnú cenu</string>
+    <string name="fuel_error_odometer_below_initial">Menej než počiatočný stav tachometra vozidla (%1$s)</string>
+    <string name="fuel_error_odometer_out_of_order">Koliduje s tankovaním zo dňa %1$s (%2$s)</string>
+    <string name="fuel_error_duplicate_full_tank">Pri tomto stave tachometra už existuje tankovanie do plna (%1$s)</string>
+    <string name="fuel_save_anyway_title">Napriek tomu uložiť?</string>
+    <string name="fuel_save_anyway_body">Tankovanie so stavom %1$s už existuje. Ide o dotankovanie pri tej istej zastávke?</string>
+    <string name="fuel_offer_read">Vyplniť formulár podľa tohto bločku?</string>
+    <string name="fuel_reading_receipt">Čítam bloček…</string>
+    <string name="fuel_filled_from_receipt">Z bločku vyplnené: %1$s. Pred uložením údaje skontrolujte.</string>
+
+    <!-- Formulár servisu (ui/service/ServiceFormScreen.kt) -->
+    <string name="service_form_add">Pridať servisný záznam</string>
+    <string name="service_form_edit">Upraviť servisný záznam</string>
+    <string name="service_delete_title">Zmazať servisný záznam?</string>
+    <string name="service_field_type">Typ *</string>
+    <string name="service_field_cost">Cena</string>
+    <string name="service_field_shop">Autoservis</string>
+    <string name="service_field_component">Súčasť (vynuluje jej plán)</string>
+    <string name="service_component_none">Žiadna</string>
+    <string name="service_error_type_required">Zadajte typ servisu</string>
+    <string name="service_error_cost_invalid">Zadajte platnú cenu</string>
+    <string name="service_note_work">Práce: %1$s</string>
+    <string name="service_offer_read">Vyplniť formulár podľa tejto faktúry?</string>
+    <string name="service_reading_invoice">Čítam faktúru…</string>
+    <string name="service_filled_from_invoice">Z faktúry vyplnené: %1$s. Pred uložením údaje skontrolujte.</string>
+
+    <!-- Názvy polí, ktoré môže vyplniť bloček alebo faktúra, v správach „Vyplnené z…“ -->
+    <string name="read_field_liters">litre</string>
+    <string name="read_field_total_price">celková cena</string>
+    <string name="read_field_date">dátum</string>
+    <string name="read_field_station">čerpacia stanica</string>
+    <string name="read_field_fuel_type">typ paliva</string>
+    <string name="read_field_type">typ</string>
+    <string name="read_field_odometer">stav tachometra</string>
+    <string name="read_field_cost">cena</string>
+    <string name="read_field_shop">autoservis</string>
+    <string name="read_field_work_done">vykonané práce</string>
+
+    <!-- Fotky a bločky (ui/attachments) -->
+    <string name="attachments_title_receipts">Bločky a fotky</string>
+    <string name="attachments_title_service_book">Servisná knižka</string>
+    <string name="attachments_photo_attached">Priložená fotka</string>
+    <string name="attachments_add_photo">Pridať fotku</string>
+    <string name="attachments_take_photo">Odfotiť</string>
+    <string name="attachments_choose_gallery">Vybrať z galérie</string>
+    <string name="attachments_import_failed">Fotku sa nepodarilo pridať</string>
+    <string name="attachments_photo">Fotka</string>
+    <string name="attachments_read_receipt">Prečítať bloček</string>
+    <string name="attachments_delete_photo">Zmazať fotku</string>
+    <string name="attachments_close">Zavrieť</string>
+    <string name="attachments_delete_title">Zmazať fotku?</string>
+    <string name="attachments_delete_saved">Odstráni sa z tohto záznamu.</string>
+    <string name="attachments_delete_unsaved">Nebude priložená.</string>
+    <string name="receipt_read_nothing">Z tejto fotky sa nepodarilo nič prečítať. Zostáva priložená.</string>
+
+    <!-- Čítanie tachometra z fotky palubnej dosky (ui/attachments/OdometerInput.kt) -->
+    <string name="odometer_input_label">Stav tachometra (km)</string>
+    <string name="odometer_read_from_photo">Prečítať z fotky palubnej dosky</string>
+    <string name="odometer_dialog_title">Stav tachometra</string>
+    <string name="odometer_none_found">Na fotke sa nepodarilo nájsť stav tachometra. Skúste to znova bližšie k displeju a bez odleskov.</string>
+    <string name="odometer_pick">Vyberte hodnotu zobrazenú na tachometri:</string>
+    <string name="odometer_photo_attached">Fotka je priložená k tomuto záznamu.</string>
+    <string name="odometer_none_of_these">Žiadna z nich</string>
+
+    <!-- Karta údržby a dialóg záznamu (ui/maintenance/MaintenanceTab.kt) -->
+    <string name="maintenance_not_tracked">Nesledované</string>
+    <string name="maintenance_record">Zapísať</string>
+    <string name="maintenance_inspected">Skontrolované</string>
+    <string name="maintenance_replaced">Vymenené</string>
+    <string name="maintenance_record_inspected_note">Reštartuje sa len plán kontroly. Do servisnej histórie sa nič nepridá.</string>
+    <string name="maintenance_record_replaced_note">Pridá sa do servisnej histórie. Reštartujú sa oba plány, pretože nový diel zatiaľ kontrolu nepotrebuje.</string>
+
+    <!-- Formulár súčasti (ui/maintenance/MaintenanceItemFormScreen.kt) -->
+    <string name="maintenance_form_edit">Upraviť súčasť</string>
+    <string name="maintenance_delete_title">Prestať sledovať: %1$s?</string>
+    <string name="maintenance_delete_message">Plán sa odstráni. Servisná história zostane zachovaná.</string>
+    <string name="maintenance_track">Sledovať a pripomínať</string>
+    <string name="maintenance_form_hint">Termín každého plánu nastane podľa toho, ktorý z jeho limitov príde skôr. Ak sa sekcia netýka, nechajte ju prázdnu.</string>
+    <string name="maintenance_error_no_schedule">Zadajte aspoň jeden interval kontroly alebo výmeny</string>
+    <string name="maintenance_section_inspection">Kontrola</string>
+    <string name="maintenance_section_replacement">Výmena</string>
+    <string name="maintenance_every_km">Interval (km)</string>
+    <string name="maintenance_every_months">Interval (v mesiacoch)</string>
+    <string name="maintenance_set_last_inspection">Nastaviť dátum poslednej kontroly</string>
+    <string name="maintenance_set_last_replacement">Nastaviť dátum poslednej výmeny</string>
+    <string name="maintenance_last_inspection">Posledná kontrola</string>
+    <string name="maintenance_last_replacement">Posledná výmena</string>
+    <string name="maintenance_odometer_last_inspection">Stav tachometra pri poslednej kontrole (km)</string>
+    <string name="maintenance_odometer_last_replacement">Stav tachometra pri poslednej výmene (km)</string>
+    <string name="maintenance_km_missing_note">Bez stavu tachometra sa kontroluje len časový limit. Pri diele pôvodnom z výroby zadajte 0.</string>
+    <string name="maintenance_error_distance">Zadajte vzdialenosť väčšiu ako 0</string>
+    <string name="maintenance_error_reading">Zadajte platný stav tachometra</string>
+    <string name="form_error_whole_months">Zadajte celý počet mesiacov</string>
+
+    <!-- Výber ikony súčasti -->
+    <string name="maintenance_icon">Ikona</string>
+    <string name="maintenance_icon_automatic_named">Automaticky (%1$s)</string>
+    <string name="maintenance_icon_automatic">Automaticky</string>
+    <string name="maintenance_icon_change">Zmeniť</string>
+    <string name="maintenance_icon_choose">Vyberte ikonu</string>
+
+    <!-- Názvy ikon vo výbere (ComponentIcons.kt) -->
+    <string name="icon_oil">Olej</string>
+    <string name="icon_filter">Filter</string>
+    <string name="icon_air_cabin">Vzduch / kabína</string>
+    <string name="icon_brakes">Brzdy</string>
+    <string name="icon_fluid">Kvapalina</string>
+    <string name="icon_coolant">Chladiaca kvapalina</string>
+    <string name="icon_ignition">Zapaľovanie</string>
+    <string name="icon_belt_engine">Remeň / motor</string>
+    <string name="icon_tires">Pneumatiky</string>
+    <string name="icon_pressure">Tlak</string>
+    <string name="icon_battery">Batéria</string>
+    <string name="icon_wipers">Stierače</string>
+    <string name="icon_lights">Svetlá</string>
+    <string name="icon_air_con">Klimatizácia</string>
+    <string name="icon_gearbox">Prevodovka</string>
+    <string name="icon_inspection">Kontrola</string>
+    <string name="icon_safety_kit">Povinná výbava</string>
+    <string name="icon_fuel">Palivo</string>
+    <string name="icon_wash">Umývanie</string>
+    <string name="icon_key">Kľúč</string>
+    <string name="icon_warning">Varovanie</string>
+    <string name="icon_car">Auto</string>
+    <string name="icon_general">Všeobecné</string>
+
+    <!-- Termíny na karte údržby (ui/deadlines/DeadlinesSection.kt) -->
+    <string name="deadlines_title">Termíny</string>
+    <string name="deadlines_add">Pridať</string>
+    <string name="deadlines_empty">Pridajte technickú kontrolu, diaľničnú známku alebo poistenie a pripomenieme vám ich pred skončením platnosti.</string>
+    <string name="deadline_due">Platnosť do %1$s</string>
+    <plurals name="deadline_due_repeating">
+        <item quantity="one">Platnosť do %1$s · každý mesiac</item>
+        <item quantity="few">Platnosť do %1$s · každé %2$d mesiace</item>
+        <item quantity="many">Platnosť do %1$s · každých %2$d mesiaca</item>
+        <item quantity="other">Platnosť do %1$s · každých %2$d mesiacov</item>
+    </plurals>
+    <string name="deadlines_renew">Obnoviť</string>
+    <string name="deadlines_renew_title">Obnoviť: %1$s</string>
+    <string name="deadlines_renew_hint">Zadajte nový dátum konca platnosti, napr. z nálepky STK alebo z novej poistnej zmluvy.</string>
+    <string name="deadlines_new_due_date">Nová platnosť do</string>
+
+    <!-- Formulár termínu (ui/deadlines/DeadlineFormScreen.kt) -->
+    <string name="deadline_form_add">Pridať termín</string>
+    <string name="deadline_form_edit">Upraviť termín</string>
+    <string name="deadline_delete_message">Už sa k nemu nebudú zobrazovať pripomienky.</string>
+    <string name="deadline_form_title">Názov *</string>
+    <string name="deadline_error_title_required">Zadajte názov</string>
+    <string name="deadline_form_due">Platnosť do (posledný platný deň)</string>
+    <string name="deadline_form_repeat">Opakovanie (v mesiacoch)</string>
+</resources>

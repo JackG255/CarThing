@@ -1,6 +1,7 @@
 package com.carthing.notifications
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
@@ -8,7 +9,10 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.carthing.BuildConfig
 import com.carthing.CarThingApp
+import com.carthing.data.backup.AutoBackupError
+import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 /** Weekly export into the folder chosen under "Automatic backups". */
@@ -23,7 +27,9 @@ class AutoBackupWorker(context: Context, params: WorkerParameters) : CoroutineWo
         } catch (e: Exception) {
             // Typically the folder was deleted or its permission revoked. The backup reminder
             // takes over once the last good backup goes stale.
-            c.backupSettings.recordAutoError(e.message ?: e.javaClass.simpleName)
+            if (BuildConfig.DEBUG) Log.w("CarThing", "Automatic backup failed", e)
+            val error = if (e is IOException || e is SecurityException) AutoBackupError.FOLDER_UNAVAILABLE else AutoBackupError.OTHER
+            c.backupSettings.recordAutoError(error)
             Result.success()
         }
     }

@@ -4,6 +4,8 @@ Each release is published on [GitHub Releases](https://github.com/JackG255/CarTh
 
 ## [Unreleased]
 - Documentation: architecture, data model, maintenance, OCR, backup, testing and release guides.
+- Fuel economy: the "Last fill-up" figure is now "Recent", averaged over the last 3 full-to-full fills, so one over- or under-filled tank no longer causes a spike. The fuel list still shows each fill's own figure.
+- Czech and Slovak. The app follows the phone's language, or the per-app language in Android 13+ settings. Default component names, service types and deadline presets you haven't renamed switch language too, including after a backup is restored. A name you typed yourself is left alone unless it exactly matches a built-in name.
 
 ## [0.3.0] - 2026-09-29
 - Icons for maintenance components, picked from the name or chosen by hand (#17). Database v8, backup format 4.

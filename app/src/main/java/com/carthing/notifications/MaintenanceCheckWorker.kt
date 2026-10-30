@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit
 class MaintenanceCheckWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         val container = (applicationContext as CarThingApp).container
+        container.relabeler.relabelIfLanguageChangedSafely() // a failure here must not block the reminders
         container.maintenanceRepository.collectReminders().forEach { MaintenanceNotifier.post(applicationContext, it) }
         container.deadlineRepository.collectReminders().forEach { MaintenanceNotifier.post(applicationContext, it) }
         remindToBackUp(container)

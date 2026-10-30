@@ -24,15 +24,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.carthing.R
 import com.carthing.data.deadlines.DeadlineTemplates
 import com.carthing.data.entity.Deadline
 import com.carthing.ui.common.BackButton
 import com.carthing.ui.common.DateInput
 import com.carthing.ui.common.DeleteAction
+import com.carthing.ui.common.currentLanguage
 import com.carthing.ui.common.LoadingBox
 import com.carthing.ui.common.TextInput
 import com.carthing.ui.vehicles.VehicleDetailUiState
@@ -60,6 +63,7 @@ fun DeadlineFormScreen(
 private fun DeadlineForm(existing: Deadline?, viewModel: VehicleDetailViewModel, onDone: () -> Unit) {
     val scope = rememberCoroutineScope()
     val zone = ZoneId.systemDefault()
+    val language = currentLanguage()
     var title by rememberSaveable { mutableStateOf(existing?.title.orEmpty()) }
     var due by rememberSaveable {
         mutableLongStateOf(existing?.dueEpochMillis ?: LocalDate.now(zone).plusMonths(1).atStartOfDay(zone).toInstant().toEpochMilli())
@@ -69,16 +73,16 @@ private fun DeadlineForm(existing: Deadline?, viewModel: VehicleDetailViewModel,
     var submitted by rememberSaveable { mutableStateOf(false) }
 
     val repeatValue = repeat.trim().toIntOrNull()
-    val titleError = if (submitted && title.isBlank()) "Title is required" else null
-    val repeatError = if (repeat.isNotBlank() && (repeatValue ?: 0) <= 0) "Enter a whole number of months" else null
+    val titleError = if (submitted && title.isBlank()) stringResource(R.string.deadline_error_title_required) else null
+    val repeatError = if (repeat.isNotBlank() && (repeatValue ?: 0) <= 0) stringResource(R.string.form_error_whole_months) else null
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (existing == null) "Add deadline" else "Edit deadline") },
+                title = { Text(stringResource(if (existing == null) R.string.deadline_form_add else R.string.deadline_form_edit)) },
                 navigationIcon = { BackButton(onDone) },
                 actions = {
-                    if (existing != null) DeleteAction("Delete ${existing.title}?", "You won't be reminded about it any more.") {
+                    if (existing != null) DeleteAction(stringResource(R.string.form_delete_title, existing.title), stringResource(R.string.deadline_delete_message)) {
                         scope.launch { viewModel.deleteDeadline(existing); onDone() }
                     }
                 }
@@ -89,17 +93,18 @@ private fun DeadlineForm(existing: Deadline?, viewModel: VehicleDetailViewModel,
             Modifier.padding(padding).imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            TextInput(title, { title = it }, "Title *", error = titleError)
+            TextInput(title, { title = it }, stringResource(R.string.deadline_form_title), error = titleError)
             if (existing == null) {
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     DeadlineTemplates.all.forEach { t ->
-                        SuggestionChip(onClick = { title = t.title; repeat = t.repeatMonths?.toString().orEmpty() }, label = { Text(t.title) })
+                        val name = t.name.label(language)
+                        SuggestionChip(onClick = { title = name; repeat = t.repeatMonths?.toString().orEmpty() }, label = { Text(name) })
                     }
                 }
             }
-            DateInput(due, { due = it }, "Due date (last valid day)")
-            TextInput(repeat, { repeat = it }, "Repeats every (months)", error = repeatError, keyboardType = KeyboardType.Number)
-            TextInput(note, { note = it }, "Note", singleLine = false)
+            DateInput(due, { due = it }, stringResource(R.string.deadline_form_due))
+            TextInput(repeat, { repeat = it }, stringResource(R.string.deadline_form_repeat), error = repeatError, keyboardType = KeyboardType.Number)
+            TextInput(note, { note = it }, stringResource(R.string.form_note), singleLine = false)
             Button(
                 onClick = {
                     submitted = true
@@ -113,7 +118,7 @@ private fun DeadlineForm(existing: Deadline?, viewModel: VehicleDetailViewModel,
                     scope.launch { viewModel.saveDeadline(deadline); onDone() }
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Save") }
+            ) { Text(stringResource(R.string.action_save)) }
         }
     }
 }

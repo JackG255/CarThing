@@ -29,12 +29,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.carthing.data.backup.BackupPolicy
+import com.carthing.R
+import com.carthing.data.backup.AutoBackupError
 import com.carthing.data.backup.BackupSettings
 import com.carthing.ui.common.formatDate
+import com.carthing.ui.common.resolve
 
 /** Overflow menu with backup export/import, plus the import confirmation and result snackbar. */
 @Composable
@@ -62,17 +68,17 @@ fun BackupMenu(
     }
 
     Box {
-        IconButton(onClick = { open = true }) { Icon(Icons.Default.MoreVert, contentDescription = "More options") }
+        IconButton(onClick = { open = true }) { Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.backup_more_options)) }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            DropdownMenuItem(text = { Text("Export backup") }, onClick = {
+            DropdownMenuItem(text = { Text(stringResource(R.string.backup_menu_export)) }, onClick = {
                 open = false
                 exportLauncher.launch(viewModel.suggestedFileName())
             })
-            DropdownMenuItem(text = { Text("Restore from backup") }, onClick = {
+            DropdownMenuItem(text = { Text(stringResource(R.string.backup_menu_restore)) }, onClick = {
                 open = false
                 importLauncher.launch(arrayOf("application/zip", "application/json", "text/plain", "application/octet-stream"))
             })
-            DropdownMenuItem(text = { Text("Automatic backups…") }, onClick = { open = false; showAuto = true })
+            DropdownMenuItem(text = { Text(stringResource(R.string.backup_menu_auto)) }, onClick = { open = false; showAuto = true })
             extraItems { open = false }
         }
     }
@@ -89,20 +95,26 @@ fun BackupMenu(
         val s = p.summary
         AlertDialog(
             onDismissRequest = viewModel::cancelImport,
-            title = { Text("Replace all data?") },
+            title = { Text(stringResource(R.string.backup_restore_title)) },
             text = {
-                Text("This backup from ${formatDate(s.exportedAtEpochMillis)} has ${s.vehicles} vehicle(s), " +
-                    "${s.fuelEntries} fill-up(s), ${s.serviceEntries} service record(s) and ${s.deadlines} deadline(s).\n\n" +
-                    "Everything currently in the app will be replaced. Export a backup first if you might need it.")
+                Text(stringResource(
+                    R.string.backup_restore_body,
+                    formatDate(s.exportedAtEpochMillis),
+                    pluralStringResource(R.plurals.backup_count_vehicles, s.vehicles, s.vehicles),
+                    pluralStringResource(R.plurals.backup_count_fuel_entries, s.fuelEntries, s.fuelEntries),
+                    pluralStringResource(R.plurals.backup_count_service_entries, s.serviceEntries, s.serviceEntries),
+                    pluralStringResource(R.plurals.backup_count_deadlines, s.deadlines, s.deadlines),
+                ))
             },
-            confirmButton = { TextButton(onClick = viewModel::confirmImport) { Text("Replace") } },
-            dismissButton = { TextButton(onClick = viewModel::cancelImport) { Text("Cancel") } }
+            confirmButton = { TextButton(onClick = viewModel::confirmImport) { Text(stringResource(R.string.backup_restore_confirm)) } },
+            dismissButton = { TextButton(onClick = viewModel::cancelImport) { Text(stringResource(R.string.action_cancel)) } }
         )
     }
 
+    val resources = LocalContext.current.resources
     LaunchedEffect(message) {
         message?.let {
-            snackbar.showSnackbar(it)
+            snackbar.showSnackbar(it.resolve(resources))
             viewModel.messageShown()
         }
     }
@@ -120,28 +132,46 @@ private fun AutoBackupDialog(
     val on = settings.autoFolder != null
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Automatic backups") },
+        title = { Text(stringResource(R.string.backup_auto_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    if (on) "Once a week, a backup is saved to “${folderName ?: "the chosen folder"}”. The newest ${BackupPolicy.KEEP_AUTO_BACKUPS} are kept."
-                    else "Choose a folder and a backup is saved there every week. Pick a folder your cloud or sync app uploads, so a copy lives off this phone."
-                )
-                Text("Last backup: ${settings.lastBackupEpochMillis?.let(::formatDate) ?: "never"}", style = MaterialTheme.typography.bodySmall)
+                if (on) {
+                    Text(
+                        if (folderName != null) stringResource(R.string.backup_auto_on_folder, folderName)
+                        else stringResource(R.string.backup_auto_on_folder_unknown)
+                    )
+                    Text(pluralStringResource(R.plurals.backup_auto_keep, BackupPolicy.KEEP_AUTO_BACKUPS, BackupPolicy.KEEP_AUTO_BACKUPS))
+                } else Text(stringResource(R.string.backup_auto_off_hint))
+                Text(lastBackupText(settings.lastBackupEpochMillis), style = MaterialTheme.typography.bodySmall)
                 settings.autoError?.let {
-                    Text("Last automatic backup failed: $it", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(it.messageRes), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                 }
-                Text("Android also backs the app up to your Google account on its own, if backup is enabled in the phone's settings.",
-                    style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.backup_auto_android_note), style = MaterialTheme.typography.bodySmall)
             }
         },
         confirmButton = {
-            if (on) Row { TextButton(onClick = onChooseFolder) { Text("Change folder") }; TextButton(onClick = onBackUpNow) { Text("Back up now") } }
-            else TextButton(onClick = onChooseFolder) { Text("Choose folder") }
+            if (on) Row {
+                TextButton(onClick = onChooseFolder) { Text(stringResource(R.string.backup_auto_change_folder)) }
+                TextButton(onClick = onBackUpNow) { Text(stringResource(R.string.backup_action_back_up_now)) }
+            } else TextButton(onClick = onChooseFolder) { Text(stringResource(R.string.backup_auto_choose_folder)) }
         },
-        dismissButton = { if (on) TextButton(onClick = onTurnOff) { Text("Turn off") } else TextButton(onClick = onDismiss) { Text("Cancel") } }
+        dismissButton = {
+            if (on) TextButton(onClick = onTurnOff) { Text(stringResource(R.string.backup_auto_turn_off)) }
+            else TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+        }
     )
 }
+
+private val AutoBackupError.messageRes
+    get() = when (this) {
+        AutoBackupError.FOLDER_UNAVAILABLE -> R.string.backup_auto_failed_folder
+        AutoBackupError.OTHER -> R.string.backup_auto_failed_other
+    }
+
+/** "Last backup: 12 Mar 2026", or "never" when [epochMillis] is null. */
+@Composable
+private fun lastBackupText(epochMillis: Long?) =
+    if (epochMillis != null) stringResource(R.string.backup_last, formatDate(epochMillis)) else stringResource(R.string.backup_last_never)
 
 /** Nudge shown at the top of a non-empty vehicle list while the last backup is stale. */
 @Composable
@@ -156,10 +186,10 @@ fun BackupBanner(viewModel: BackupViewModel) {
     ) {
         Row(Modifier.padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("Back up your service book", style = MaterialTheme.typography.titleSmall)
-                Text("Last backup: ${settings.lastBackupEpochMillis?.let(::formatDate) ?: "never"}", style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.backup_reminder_title), style = MaterialTheme.typography.titleSmall)
+                Text(lastBackupText(settings.lastBackupEpochMillis), style = MaterialTheme.typography.bodySmall)
             }
-            TextButton(onClick = { exportLauncher.launch(viewModel.suggestedFileName()) }) { Text("Back up now") }
+            TextButton(onClick = { exportLauncher.launch(viewModel.suggestedFileName()) }) { Text(stringResource(R.string.backup_action_back_up_now)) }
         }
     }
 }

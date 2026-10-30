@@ -1,5 +1,6 @@
 package com.carthing.ui.maintenance
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -45,7 +47,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.carthing.R
 import com.carthing.data.entity.MaintenanceItem
+import com.carthing.data.maintenance.ScheduleKind
 import com.carthing.ui.common.BackButton
 import com.carthing.ui.common.DateInput
 import com.carthing.ui.common.DecimalInput
@@ -89,9 +93,10 @@ private class ScheduleFields(
     val lastKmValue get() = parseDecimal(lastKm)
     val isSet get() = km.isNotBlank() || months.isNotBlank()
 
-    val kmError get() = if (km.isNotBlank() && (kmValue ?: 0.0) <= 0) "Enter a distance above 0" else null
-    val monthsError get() = if (months.isNotBlank() && (monthsValue ?: 0) <= 0) "Enter a whole number of months" else null
-    val lastKmError get() = if (lastKm.isNotBlank() && (lastKmValue ?: -1.0) < 0) "Enter a valid reading" else null
+    /** Each field's error as a string resource, or null when it's fine. */
+    @get:StringRes val kmError get() = if (km.isNotBlank() && (kmValue ?: 0.0) <= 0) R.string.maintenance_error_distance else null
+    @get:StringRes val monthsError get() = if (months.isNotBlank() && (monthsValue ?: 0) <= 0) R.string.form_error_whole_months else null
+    @get:StringRes val lastKmError get() = if (lastKm.isNotBlank() && (lastKmValue ?: -1.0) < 0) R.string.maintenance_error_reading else null
     val hasError get() = kmError != null || monthsError != null || lastKmError != null
 }
 
@@ -114,18 +119,18 @@ private fun MaintenanceItemForm(existing: MaintenanceItem?, viewModel: VehicleDe
     val inspect = rememberScheduleFields(existing?.inspectKm, existing?.inspectMonths, existing?.lastInspectedEpochMillis, existing?.lastInspectedOdometerKm)
     val replace = rememberScheduleFields(existing?.replaceKm, existing?.replaceMonths, existing?.lastReplacedEpochMillis, existing?.lastReplacedOdometerKm)
 
-    val nameError = if (submitted && name.isBlank()) "Name is required" else null
+    val nameError = if (submitted && name.isBlank()) stringResource(R.string.form_name_required) else null
     val noSchedule = submitted && !inspect.isSet && !replace.isSet
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (existing == null) "Add component" else "Edit component") },
+                title = { Text(stringResource(if (existing == null) R.string.detail_add_component else R.string.maintenance_form_edit)) },
                 navigationIcon = { BackButton(onDone) },
                 actions = {
                     if (existing != null) DeleteAction(
-                        "Stop tracking ${existing.name}?",
-                        "Its schedule is removed. Service history is kept."
+                        stringResource(R.string.maintenance_delete_title, existing.name),
+                        stringResource(R.string.maintenance_delete_message)
                     ) { scope.launch { viewModel.deleteMaintenanceItem(existing); onDone() } }
                 }
             )
@@ -135,16 +140,15 @@ private fun MaintenanceItemForm(existing: MaintenanceItem?, viewModel: VehicleDe
             Modifier.padding(padding).imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            TextInput(name, { name = it }, "Name *", error = nameError)
+            TextInput(name, { name = it }, stringResource(R.string.form_name), error = nameError)
             IconField(icon, name) { icon = it }
-            SwitchRow("Track and remind", enabled) { enabled = it }
-            Text("Each schedule is due after whichever of its limits comes first. Leave a section empty if it doesn't apply.",
-                style = MaterialTheme.typography.bodySmall)
-            if (noSchedule) Text("Set at least one inspection or replacement interval",
+            SwitchRow(stringResource(R.string.maintenance_track), enabled) { enabled = it }
+            Text(stringResource(R.string.maintenance_form_hint), style = MaterialTheme.typography.bodySmall)
+            if (noSchedule) Text(stringResource(R.string.maintenance_error_no_schedule),
                 color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
 
-            ScheduleSection("Inspection", inspect)
-            ScheduleSection("Replacement", replace)
+            ScheduleSection(ScheduleKind.INSPECTION, inspect)
+            ScheduleSection(ScheduleKind.REPLACEMENT, replace)
 
             Button(
                 onClick = {
@@ -166,27 +170,34 @@ private fun MaintenanceItemForm(existing: MaintenanceItem?, viewModel: VehicleDe
                     scope.launch { viewModel.saveMaintenanceItem(saved); onDone() }
                 },
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-            ) { Text("Save") }
+            ) { Text(stringResource(R.string.action_save)) }
         }
     }
 }
 
 @Composable
-private fun ScheduleSection(title: String, fields: ScheduleFields) {
-    Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 12.dp))
-    DecimalInput(fields.km, { fields.km = it }, "Every (km)", fields.kmError)
-    TextInput(fields.months, { fields.months = it }, "Every (months)", error = fields.monthsError, keyboardType = KeyboardType.Number)
+private fun ScheduleSection(kind: ScheduleKind, fields: ScheduleFields) {
+    val inspection = kind == ScheduleKind.INSPECTION
+    Text(stringResource(if (inspection) R.string.maintenance_section_inspection else R.string.maintenance_section_replacement),
+        style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 12.dp))
+    DecimalInput(fields.km, { fields.km = it }, stringResource(R.string.maintenance_every_km), fields.kmError?.let { stringResource(it) })
+    TextInput(fields.months, { fields.months = it }, stringResource(R.string.maintenance_every_months),
+        error = fields.monthsError?.let { stringResource(it) }, keyboardType = KeyboardType.Number)
     val date = fields.lastDate.value
     if (date == null) {
         OutlinedButton(onClick = { fields.lastDate.value = System.currentTimeMillis() }, modifier = Modifier.fillMaxWidth()) {
-            Text("Set last ${title.lowercase()} date")
+            Text(stringResource(if (inspection) R.string.maintenance_set_last_inspection else R.string.maintenance_set_last_replacement))
         }
     } else {
-        DateInput(date, { fields.lastDate.value = it }, "Last ${title.lowercase()}", onClear = { fields.lastDate.value = null })
+        DateInput(date, { fields.lastDate.value = it },
+            stringResource(if (inspection) R.string.maintenance_last_inspection else R.string.maintenance_last_replacement),
+            onClear = { fields.lastDate.value = null })
     }
-    DecimalInput(fields.lastKm, { fields.lastKm = it }, "Odometer at last ${title.lowercase()} (km)", fields.lastKmError)
+    DecimalInput(fields.lastKm, { fields.lastKm = it },
+        stringResource(if (inspection) R.string.maintenance_odometer_last_inspection else R.string.maintenance_odometer_last_replacement),
+        fields.lastKmError?.let { stringResource(it) })
     if (fields.km.isNotBlank() && fields.lastDate.value != null && fields.lastKm.isBlank()) {
-        Text("Without the odometer reading, only the time limit is checked. Enter 0 for a part that's original from new.",
+        Text(stringResource(R.string.maintenance_km_missing_note),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
     }
 }
@@ -214,23 +225,24 @@ private fun IconField(key: String?, name: String, onPick: (String?) -> Unit) {
     ) {
         IconBadge(shown.vector, size = 48.dp, container = MaterialTheme.colorScheme.primaryContainer, content = MaterialTheme.colorScheme.onPrimaryContainer)
         Column(Modifier.weight(1f).padding(start = 16.dp)) {
-            Text("Icon", style = MaterialTheme.typography.labelMedium)
-            Text(if (chosen == null) "Automatic (${shown.label})" else shown.label, style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.maintenance_icon), style = MaterialTheme.typography.labelMedium)
+            val label = stringResource(shown.label)
+            Text(if (chosen == null) stringResource(R.string.maintenance_icon_automatic_named, label) else label, style = MaterialTheme.typography.bodyLarge)
         }
-        TextButton(onClick = { picking = true }) { Text("Change") }
+        TextButton(onClick = { picking = true }) { Text(stringResource(R.string.maintenance_icon_change)) }
     }
     if (picking) AlertDialog(
         onDismissRequest = { picking = false },
-        title = { Text("Choose an icon") },
+        title = { Text(stringResource(R.string.maintenance_icon_choose)) },
         text = {
             LazyVerticalGrid(columns = GridCells.Adaptive(76.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                item { IconCell(ComponentIcons.guess(name).vector, "Automatic", selected = key == null) { onPick(null); picking = false } }
+                item { IconCell(ComponentIcons.guess(name).vector, stringResource(R.string.maintenance_icon_automatic), selected = key == null) { onPick(null); picking = false } }
                 items(ComponentIcons.all, key = { it.key }) { option ->
-                    IconCell(option.vector, option.label, selected = option.key == key) { onPick(option.key); picking = false }
+                    IconCell(option.vector, stringResource(option.label), selected = option.key == key) { onPick(option.key); picking = false }
                 }
             }
         },
-        confirmButton = { TextButton(onClick = { picking = false }) { Text("Cancel") } },
+        confirmButton = { TextButton(onClick = { picking = false }) { Text(stringResource(R.string.action_cancel)) } },
     )
 }
 

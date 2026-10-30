@@ -4,10 +4,13 @@ import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -31,9 +34,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.carthing.R
 import com.carthing.data.entity.Deadline
 import com.carthing.data.entity.MaintenanceItem
 import com.carthing.data.maintenance.UrgencyBand
@@ -80,12 +86,17 @@ fun MaintenanceTab(
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         item.inspection?.let { Text(it.describe(ScheduleKind.INSPECTION), style = MaterialTheme.typography.bodySmall) }
                         item.replacement?.let { Text(it.describe(ScheduleKind.REPLACEMENT), style = MaterialTheme.typography.bodySmall) }
-                        if (item.enabled) StatusChip(UrgencyBand.of(status.level, status.primary?.fractionRemaining), status.describe())
-                        else Text("Not tracked")
+                        // The record button shares the chip's line rather than the trailing slot, so a long
+                        // label ("Zkontrolováno") doesn't squeeze the name and status in every language.
+                        if (item.enabled) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically) {
+                            Box(Modifier.weight(1f, fill = false)) {
+                                StatusChip(UrgencyBand.of(status.level, status.primary?.fractionRemaining), status.describe())
+                            }
+                            TextButton(onClick = { recording = item }) { Text(stringResource(recordLabel(item))) }
+                        }
+                        else Text(stringResource(R.string.maintenance_not_tracked))
                     }
-                },
-                trailingContent = {
-                    if (item.enabled) TextButton(onClick = { recording = item }) { Text(recordLabel(item)) }
                 },
                 modifier = Modifier.clickable { onEdit(item.id) }
             )
@@ -104,10 +115,11 @@ fun MaintenanceTab(
     }
 }
 
+@StringRes
 private fun recordLabel(item: MaintenanceItem) = when {
-    item.inspection != null && item.replacement != null -> "Record"
-    item.inspection != null -> "Inspected"
-    else -> "Replaced"
+    item.inspection != null && item.replacement != null -> R.string.maintenance_record
+    item.inspection != null -> R.string.maintenance_inspected
+    else -> R.string.maintenance_replaced
 }
 
 @Composable
@@ -153,20 +165,20 @@ private fun RecordDialog(
                             SegmentedButton(
                                 selected = kind == k, onClick = { kind = k },
                                 shape = SegmentedButtonDefaults.itemShape(i, ScheduleKind.entries.size)
-                            ) { Text(if (k == ScheduleKind.INSPECTION) "Inspected" else "Replaced") }
+                            ) { Text(stringResource(if (k == ScheduleKind.INSPECTION) R.string.maintenance_inspected else R.string.maintenance_replaced)) }
                         }
                     }
                 }
                 Text(
-                    if (kind == ScheduleKind.INSPECTION) "Only the inspection schedule restarts. Nothing is added to the service history."
-                    else "Added to the service history. Both schedules restart, since a new part needs no inspection yet.",
+                    stringResource(if (kind == ScheduleKind.INSPECTION) R.string.maintenance_record_inspected_note else R.string.maintenance_record_replaced_note),
                     style = MaterialTheme.typography.bodyMedium
                 )
-                DateInput(date, { date = it }, "Date")
-                DecimalInput(odometer, { odometer = it }, "Odometer (km)",
-                    error = if (odo == null || odo < 0) "Enter the odometer reading" else null)
+                DateInput(date, { date = it }, stringResource(R.string.form_date))
+                DecimalInput(odometer, { odometer = it }, stringResource(R.string.odometer_input_label),
+                    error = if (odo == null || odo < 0) stringResource(R.string.detail_odometer_required) else null)
                 if (kind == ScheduleKind.REPLACEMENT) {
-                    DecimalInput(cost, { cost = it }, "Cost", error = if (costInvalid) "Enter a valid cost" else null)
+                    DecimalInput(cost, { cost = it }, stringResource(R.string.service_field_cost),
+                        error = if (costInvalid) stringResource(R.string.service_error_cost_invalid) else null)
                 }
             }
         },
@@ -174,9 +186,9 @@ private fun RecordDialog(
             TextButton(
                 enabled = odo != null && odo >= 0 && !costInvalid,
                 onClick = { onConfirm(kind, date, odo!!, costValue.takeIf { kind == ScheduleKind.REPLACEMENT }) }
-            ) { Text("Save") }
+            ) { Text(stringResource(R.string.action_save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } }
     )
 }
 

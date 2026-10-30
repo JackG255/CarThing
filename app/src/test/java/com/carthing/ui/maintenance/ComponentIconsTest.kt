@@ -1,6 +1,8 @@
 package com.carthing.ui.maintenance
 
+import com.carthing.data.Language
 import com.carthing.data.entity.MaintenanceItem
+import com.carthing.data.maintenance.DefaultSchedule
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -13,6 +15,15 @@ class ComponentIconsTest {
             "Tire pressure" to "pressure", "Battery" to "battery", "Wiper blades" to "wipers",
         )
         assertEquals(expected, expected.keys.associateWith { ComponentIcons.guess(it).key })
+    }
+
+    @Test fun defaultNamesGetTheSameIconInEveryLanguage() {
+        DefaultSchedule.templates.map { it.name }.forEach { entry ->
+            val key = ComponentIcons.guess(entry.label(Language.EN)).key
+            Language.entries.forEach { lang ->
+                assertEquals("${entry.name} in $lang", key, ComponentIcons.guess(entry.label(lang)).key)
+            }
+        }
     }
 
     @Test fun czechNamesAndUnknownOnes() {
