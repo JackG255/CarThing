@@ -36,6 +36,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.carthing.data.attachments.AttachmentOwner
 import com.carthing.data.entity.MaintenanceItem
 import com.carthing.data.entity.ServiceEntry
+import com.carthing.data.maintenance.DefaultName
 import com.carthing.ui.attachments.EntryPhotos
 import com.carthing.ui.attachments.OdometerInput
 import com.carthing.ui.attachments.ReadOffer
@@ -45,6 +46,7 @@ import com.carthing.ui.common.BackButton
 import com.carthing.ui.common.DateInput
 import com.carthing.ui.common.DecimalInput
 import com.carthing.ui.common.DeleteAction
+import com.carthing.ui.common.currentLanguage
 import com.carthing.ui.common.LoadingBox
 import com.carthing.ui.common.TextInput
 import com.carthing.ui.common.editableNumber
@@ -54,7 +56,11 @@ import com.carthing.ui.vehicles.VehicleDetailViewModel
 import java.time.ZoneId
 import kotlinx.coroutines.launch
 
-private val COMMON_TYPES = listOf("Oil change", "Tires", "Brakes", "Inspection", "Battery", "Filters", "Wipers", "Repair")
+/** Quick-pick service types, in the order offered. */
+val SERVICE_TYPES = listOf(
+    DefaultName.OIL_CHANGE, DefaultName.TIRES, DefaultName.BRAKES, DefaultName.INSPECTION,
+    DefaultName.BATTERY, DefaultName.FILTERS, DefaultName.WIPERS, DefaultName.REPAIR,
+)
 
 /** Add ([entryId] = 0) or edit a service record. */
 @Composable
@@ -69,7 +75,8 @@ fun ServiceFormScreen(
     val existing = remember { s.serviceEntries.firstOrNull { it.id == entryId } }
     val suggestedOdometer = remember { s.currentOdometerKm }
     // Offer the user's own past types first, then the common ones.
-    val suggestions = remember { (s.serviceEntries.map { it.type } + COMMON_TYPES).distinct() }
+    val language = currentLanguage()
+    val suggestions = remember(language) { (s.serviceEntries.map { it.type } + SERVICE_TYPES.map { it.label(language) }).distinct() }
     val components = remember { s.maintenance.map { it.item }.sortedBy { it.name } }
     ServiceForm(existing, suggestedOdometer, suggestions, components, viewModel, onDone)
 }
@@ -85,6 +92,7 @@ private fun ServiceForm(
     onDone: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val language = currentLanguage()
     val photos = rememberPendingPhotos()
     var type by rememberSaveable { mutableStateOf(existing?.type.orEmpty()) }
     var date by rememberSaveable { mutableLongStateOf(existing?.dateEpochMillis ?: System.currentTimeMillis()) }
@@ -112,12 +120,12 @@ private fun ServiceForm(
             if (value != null && field !in touched) { apply(); filled += field }
         }
         r?.let {
-            if (type.isBlank()) fill("type", it.services.firstOrNull()) { type = it.services.first() }
+            if (type.isBlank()) fill("type", it.services.firstOrNull()) { type = it.services.first().label(language) }
             fill("date", it.date) { date = it.date!!.atTime(12, 0).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() }
             fill("odometer", it.odometerKm) { odometer = editableNumber(it.odometerKm) }
             fill("cost", it.total) { cost = editableNumber(it.total) }
             fill("shop", it.shop) { shop = it.shop!! }
-            if (note.isBlank() && it.services.size > 1) fill("note", it.services) { note = "Work: " + it.services.joinToString(", ") }
+            if (note.isBlank() && it.services.size > 1) fill("note", it.services) { note = "Work: " + it.services.joinToString(", ") { s -> s.label(language) } }
         }
         fromInvoice = (fromInvoice + filled).distinct()
         readMessage = if (filled.isEmpty()) "Couldn't read anything from this photo. It's still attached."

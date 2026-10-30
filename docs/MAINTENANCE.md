@@ -11,8 +11,11 @@ Each schedule has `intervalKm` and/or `intervalMonths`, and it's due when **eith
 interval means that limit isn't tracked. Replacing a component also counts as inspecting it.
 `Schedule.of` returns null when both intervals are null.
 
-New vehicles get `DefaultSchedule.templates` (12 generic components). The owner's service book is
-the real source of intervals, so they're meant to be edited.
+New vehicles get `DefaultSchedule.templates` (12 generic components). Each template holds a
+`DefaultName`, and `DefaultSchedule.itemsFor(vehicleId, language)` names the items in the app's language
+(English, Czech or Slovak; `VehicleRepository` takes the language from `AppContainer.language`). The
+intervals are the same in every language. The owner's service book is the real source of intervals, so
+they're meant to be edited.
 
 Schedules restart when:
 - the user marks one done (`MaintenanceRepository.markDone`, which uses `MaintenanceItem.recorded`), or

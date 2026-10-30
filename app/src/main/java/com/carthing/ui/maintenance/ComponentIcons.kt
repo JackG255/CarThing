@@ -60,22 +60,22 @@ object ComponentIcons {
     private val fallback = byKey.getValue("wrench")
 
     /**
-     * Name words (English and Czech stems, lower case) to icons, most specific first:
+     * Name words (English, Czech and Slovak stems, lower case) to icons, most specific first:
      * "Brake fluid" is a fluid before it's brakes, "Air filter" a filter before it's air.
      */
     private val RULES = listOf(
         "pressure" to listOf("pressure", "tlak"),
-        "coolant" to listOf("coolant", "antifreeze", "chladic", "chladicí", "nemrz"),
-        "fluid" to listOf("fluid", "kapalin"),
+        "coolant" to listOf("coolant", "antifreeze", "chladic", "chladicí", "chladiac", "nemrz"),
+        "fluid" to listOf("fluid", "kapalin", "kvapalin"),
         "oil" to listOf("oil", "olej"),
-        "air" to listOf("cabin", "pollen", "kabin", "pyl"),
+        "air" to listOf("cabin", "pollen", "kabin", "kabín", "pyl"),
         "filter" to listOf("filter", "filtr"),
         "brakes" to listOf("brake", "brzd"),
-        "spark" to listOf("spark", "ignition", "svíčk", "svick", "zapal"),
-        "belt" to listOf("belt", "chain", "řemen", "remen", "rozvod"),
+        "spark" to listOf("spark", "ignition", "svíčk", "svick", "sviečk", "zapal", "zapaľ"),
+        "belt" to listOf("belt", "chain", "řemen", "remen", "remeň", "rozvod"),
         "tires" to listOf("tire", "tyre", "wheel", "pneu", "kol"),
         "battery" to listOf("battery", "akumul", "bateri"),
-        "wipers" to listOf("wiper", "stěrač", "sterac", "stirac"),
+        "wipers" to listOf("wiper", "stěrač", "sterac", "stierač", "stirac"),
         "lights" to listOf("light", "bulb", "žárov", "zarov", "světl", "svetl"),
         "ac" to listOf("air con", "a/c", "klimatiz"),
         "gearbox" to listOf("gear", "transmission", "clutch", "převod", "prevod", "spojk"),

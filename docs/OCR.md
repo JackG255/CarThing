@@ -20,7 +20,7 @@ Debug builds log the recognised rows under the `CarThing` tag to help tune the r
 | Parser | Output | Key rules |
 |---|---|---|
 | `FuelReceiptParser` | `FuelReceipt`: date, litres, price/L, total, station, fuel type | Known station brands and fuel names; keyword rows (`CELKEM`, `MNOZSTVI`, `CENA/L`); ignores tax and ID rows (`ICO`, `DPH`…). Checks litres × price against the total and drops the total if it's off by more than 2%. Fills in a missing value when the other two are known |
-| `ServiceInvoiceParser` | `ServiceInvoice`: date, total, shop, odometer, service kinds | Prefers the amount payable over net and VAT lines, and the date of issue or work over the due date (`SPLATNOST`). Reads the odometer from rows like `STAV KM`. Service kinds come from keyword stems (`OLEJ` → Oil change, `PNEU` → Tires…) |
+| `ServiceInvoiceParser` | `ServiceInvoice`: date, total, shop, odometer, service kinds (`DefaultName` entries, shown in the app's language by the form) | Prefers the amount payable over net and VAT lines, and the date of issue or work over the due date (`SPLATNOST`). Reads the odometer from rows like `STAV KM`. Service kinds come from keyword stems (`OLEJ` → Oil change, `PNEU` → Tires…) |
 | `OdometerParser` | Up to 3 candidate km values, best first | Skips trip, range, consumption and clock rows. Longer numbers score higher, and a `KM` unit or `ODO` word adds points. When the last known reading is available, values closest to it win and anything more than 100 km below it is dropped. Gauge-scale numbers are dropped once a longer reading is seen |
 
 Parsers return `null` for anything they can't read reliably. It's better to leave a field empty than to fill it with a wrong value.

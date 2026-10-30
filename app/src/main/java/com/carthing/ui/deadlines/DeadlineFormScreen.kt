@@ -33,6 +33,7 @@ import com.carthing.data.entity.Deadline
 import com.carthing.ui.common.BackButton
 import com.carthing.ui.common.DateInput
 import com.carthing.ui.common.DeleteAction
+import com.carthing.ui.common.currentLanguage
 import com.carthing.ui.common.LoadingBox
 import com.carthing.ui.common.TextInput
 import com.carthing.ui.vehicles.VehicleDetailUiState
@@ -60,6 +61,7 @@ fun DeadlineFormScreen(
 private fun DeadlineForm(existing: Deadline?, viewModel: VehicleDetailViewModel, onDone: () -> Unit) {
     val scope = rememberCoroutineScope()
     val zone = ZoneId.systemDefault()
+    val language = currentLanguage()
     var title by rememberSaveable { mutableStateOf(existing?.title.orEmpty()) }
     var due by rememberSaveable {
         mutableLongStateOf(existing?.dueEpochMillis ?: LocalDate.now(zone).plusMonths(1).atStartOfDay(zone).toInstant().toEpochMilli())
@@ -93,7 +95,8 @@ private fun DeadlineForm(existing: Deadline?, viewModel: VehicleDetailViewModel,
             if (existing == null) {
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     DeadlineTemplates.all.forEach { t ->
-                        SuggestionChip(onClick = { title = t.title; repeat = t.repeatMonths?.toString().orEmpty() }, label = { Text(t.title) })
+                        val name = t.name.label(language)
+                        SuggestionChip(onClick = { title = name; repeat = t.repeatMonths?.toString().orEmpty() }, label = { Text(name) })
                     }
                 }
             }

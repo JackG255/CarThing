@@ -3,6 +3,7 @@ package com.carthing.data.repository
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.carthing.data.CarThingDatabase
+import com.carthing.data.Language
 import com.carthing.data.entity.FuelEntry
 import com.carthing.data.entity.ServiceEntry
 import com.carthing.data.entity.Vehicle
@@ -35,6 +36,11 @@ class RepositoryTest {
 
     private fun fill(vehicleId: Long, date: Long, odo: Double, full: Boolean = true) =
         FuelEntry(vehicleId = vehicleId, dateEpochMillis = date, odometerKm = odo, liters = 30.0, isFullTank = full)
+
+    @Test fun newVehicleGetsDefaultsInItsLanguage() = runTest {
+        val id = VehicleRepository(db) { Language.SK }.save(Vehicle(name = "Car"))
+        assertTrue(db.maintenanceItemDao().getForVehicle(id).any { it.name == "Brzdová kvapalina" })
+    }
 
     @Test fun saveReturnsIdForInsertAndUpdate() = runTest {
         val id = vehicles.save(Vehicle(name = "  Car  "))

@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.TireRepair
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.carthing.data.maintenance.DefaultName
 import com.carthing.ui.common.EmptyState
 import com.carthing.ui.common.IconBadge
 import androidx.compose.foundation.lazy.LazyColumn
@@ -254,6 +255,13 @@ private fun ServiceList(entries: List<ServiceEntry>, withPhotos: Set<Long>, onEd
 
 /** An icon hinting at the kind of work, from the service type's wording. */
 private fun serviceIcon(type: String): ImageVector {
+    when (DefaultName.find(type)) {
+        DefaultName.OIL_CHANGE, DefaultName.ENGINE_OIL -> return Icons.Default.OilBarrel
+        DefaultName.TIRES -> return Icons.Default.TireRepair
+        DefaultName.INSPECTION, DefaultName.TECHNICAL_INSPECTION, DefaultName.EMISSIONS -> return Icons.AutoMirrored.Filled.FactCheck
+        DefaultName.BATTERY -> return Icons.Default.BatteryChargingFull
+        else -> {}
+    }
     val t = type.lowercase()
     return when {
         listOf("oil", "olej").any { it in t } -> Icons.Default.OilBarrel

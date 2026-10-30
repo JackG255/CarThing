@@ -5,6 +5,7 @@ Each release is published on [GitHub Releases](https://github.com/JackG255/CarTh
 ## [Unreleased]
 - Documentation: architecture, data model, maintenance, OCR, backup, testing and release guides.
 - Fuel economy: the "Last fill-up" figure is now "Recent", averaged over the last 3 full-to-full fills, so one over- or under-filled tank no longer causes a spike. The fuel list still shows each fill's own figure.
+- New vehicles' default components, the service type quick picks and the deadline presets are named in the app's language (English, Czech or Slovak).
 
 ## [0.3.0] - 2026-09-29
 - Icons for maintenance components, picked from the name or chosen by hand (#17). Database v8, backup format 4.

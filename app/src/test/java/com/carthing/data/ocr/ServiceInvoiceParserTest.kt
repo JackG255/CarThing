@@ -1,5 +1,6 @@
 package com.carthing.data.ocr
 
+import com.carthing.data.maintenance.DefaultName
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -33,7 +34,7 @@ class ServiceInvoiceParserTest {
         assertEquals(2952.40, r.total!!, 1e-9)
         assertEquals("AutoServis Novák s.r.o.", r.shop)
         assertEquals(94020.0, r.odometerKm!!, 1e-9)
-        assertEquals(listOf("Oil change", "Filters"), r.services)
+        assertEquals(listOf(DefaultName.OIL_CHANGE, DefaultName.FILTERS), r.services)
     }
 
     @Test fun shortShopReceipt() {
@@ -47,7 +48,7 @@ class ServiceInvoiceParserTest {
         assertEquals("PNEUSERVIS U Mostu", r.shop)
         assertEquals(1200.0, r.total!!, 1e-9)
         assertEquals(LocalDate.of(2026, 4, 12), r.date)
-        assertEquals(listOf("Tires"), r.services)
+        assertEquals(listOf(DefaultName.TIRES), r.services)
         assertNull(r.odometerKm)
     }
 
@@ -59,13 +60,13 @@ class ServiceInvoiceParserTest {
     @Test fun kilometresAfterNumberButNotPrice() {
         val r = parse("Servis Brno", "Brzdové destičky přední   1 950 Kč", "Najeto 101 450 km", "Celkem 1 950 Kč")
         assertEquals(101450.0, r.odometerKm!!, 1e-9)
-        assertEquals(listOf("Brakes"), r.services)
+        assertEquals(listOf(DefaultName.BRAKES), r.services)
     }
 
     @Test fun inspectionStation() {
         val r = parse("STK Brno - Líšeň", "Technická kontrola M1   1 000,00", "Měření emisí   550,00", "K úhradě   1 550,00 Kč")
         assertEquals(1550.0, r.total!!, 1e-9)
-        assertEquals("Inspection", r.services.first())
+        assertEquals(DefaultName.INSPECTION, r.services.first())
     }
 
     @Test fun dueDateAloneIsUsedWhenNothingElse() {

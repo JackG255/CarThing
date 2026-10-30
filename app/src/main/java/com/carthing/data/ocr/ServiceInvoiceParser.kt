@@ -1,5 +1,6 @@
 package com.carthing.data.ocr
 
+import com.carthing.data.maintenance.DefaultName
 import com.carthing.data.ocr.FuelReceiptParser.fold
 import com.carthing.data.ocr.FuelReceiptParser.repair
 import java.time.LocalDate
@@ -10,8 +11,8 @@ data class ServiceInvoice(
     val total: Double? = null,
     val shop: String? = null,
     val odometerKm: Double? = null,
-    /** Kinds of work found, most significant first (e.g. "Oil change", "Filters"). */
-    val services: List<String> = emptyList(),
+    /** Kinds of work found, most significant first (e.g. [DefaultName.OIL_CHANGE], [DefaultName.FILTERS]). */
+    val services: List<DefaultName> = emptyList(),
 ) {
     val isEmpty get() = date == null && total == null && shop == null && odometerKm == null && services.isEmpty()
 }
@@ -23,13 +24,13 @@ data class ServiceInvoice(
 object ServiceInvoiceParser {
     /** Keyword stems (folded) to the service types the form suggests; order = significance. */
     private val SERVICES = listOf(
-        "Inspection" to listOf("STK", "TECHNICKA KONTROLA", "EMISE", "MERENI EMIS"),
-        "Oil change" to listOf("VYMENA OLEJE", "MOTOROVY OLEJ", "OLEJ", "OIL"),
-        "Brakes" to listOf("BRZD", "BRAKE"),
-        "Tires" to listOf("PNEU", "PREZUT", "PREZOUV", "VYVAZ", "GEOMETRI"),
-        "Battery" to listOf("AKUMULATOR", "BATERI", "BATTERY"),
-        "Filters" to listOf("FILTR", "FILTER"),
-        "Wipers" to listOf("STERAC", "STIRAC", "STETIN", "WIPER"),
+        DefaultName.INSPECTION to listOf("STK", "TECHNICKA KONTROLA", "EMISE", "MERENI EMIS"),
+        DefaultName.OIL_CHANGE to listOf("VYMENA OLEJE", "MOTOROVY OLEJ", "OLEJ", "OIL"),
+        DefaultName.BRAKES to listOf("BRZD", "BRAKE"),
+        DefaultName.TIRES to listOf("PNEU", "PREZUT", "PREZOUV", "VYVAZ", "GEOMETRI"),
+        DefaultName.BATTERY to listOf("AKUMULATOR", "BATERI", "BATTERY"),
+        DefaultName.FILTERS to listOf("FILTR", "FILTER"),
+        DefaultName.WIPERS to listOf("STERAC", "STIRAC", "STETIN", "WIPER"),
     )
     private val PAYABLE_WORDS = listOf("K UHRADE", "CELKEM K ZAPLACENI", "ZAPLACENO", "CELKEM S DPH", "CELKEM VC", "CELKEM VCETNE")
     private val TOTAL_WORDS = listOf("CELKEM", "TOTAL", "SUMA", "CASTKA")
