@@ -31,7 +31,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.carthing.R
 import com.carthing.ui.common.DecimalInput
 import com.carthing.ui.common.formatKm
 import com.carthing.ui.vehicles.VehicleDetailViewModel
@@ -75,16 +77,16 @@ fun OdometerInput(
     }
     val gallery = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> uri?.let(::read) }
 
-    DecimalInput(value, onValueChange, "Odometer (km)", error, hint) {
+    DecimalInput(value, onValueChange, stringResource(R.string.odometer_input_label), error, hint) {
         if (reading) CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
         else Box {
-            IconButton(onClick = { menu = true }) { Icon(CameraIcon, contentDescription = "Read from dashboard photo") }
+            IconButton(onClick = { menu = true }) { Icon(CameraIcon, contentDescription = stringResource(R.string.odometer_read_from_photo)) }
             DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                DropdownMenuItem(text = { Text("Take photo") }, onClick = {
+                DropdownMenuItem(text = { Text(stringResource(R.string.attachments_take_photo)) }, onClick = {
                     menu = false
                     viewModel.newCameraUri().also { cameraUri = it; camera.launch(it) }
                 })
-                DropdownMenuItem(text = { Text("Choose from gallery") }, onClick = {
+                DropdownMenuItem(text = { Text(stringResource(R.string.attachments_choose_gallery)) }, onClick = {
                     menu = false
                     gallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 })
@@ -95,21 +97,21 @@ fun OdometerInput(
     choices?.let { found ->
         AlertDialog(
             onDismissRequest = { choices = null },
-            title = { Text("Odometer reading") },
+            title = { Text(stringResource(R.string.odometer_dialog_title)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (found.isEmpty()) {
-                        Text("Couldn't find a reading in the photo. Try again closer to the display, without glare.")
+                        Text(stringResource(R.string.odometer_none_found))
                     } else {
-                        Text("Pick the reading shown on the odometer:", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.odometer_pick), style = MaterialTheme.typography.bodyMedium)
                         found.forEach { km ->
                             OutlinedButton(onClick = { onValueChange(km.toLong().toString()); choices = null }) { Text(formatKm(km)) }
                         }
                     }
-                    Text("The photo is attached to this entry.", style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.odometer_photo_attached), style = MaterialTheme.typography.bodySmall)
                 }
             },
-            confirmButton = { TextButton(onClick = { choices = null }) { Text(if (found.isEmpty()) "OK" else "None of these") } },
+            confirmButton = { TextButton(onClick = { choices = null }) { Text(stringResource(if (found.isEmpty()) R.string.action_ok else R.string.odometer_none_of_these)) } },
         )
     }
 }

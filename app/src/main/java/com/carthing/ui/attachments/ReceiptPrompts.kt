@@ -11,21 +11,23 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.carthing.R
 
 /** Asks before reading a new photo; reading is opt-in since not every photo is a receipt. */
 @Composable
 fun ReadOffer(question: String, onRead: () -> Unit, onDismiss: () -> Unit) {
     PromptCard(question) {
-        TextButton(onClick = onDismiss) { Text("No") }
-        TextButton(onClick = onRead) { Text("Read") }
+        TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_no)) }
+        TextButton(onClick = onRead) { Text(stringResource(R.string.action_read)) }
     }
 }
 
 /** Says what was filled from a photo, or that nothing could be read. */
 @Composable
 fun ReceiptBanner(message: String, onDismiss: () -> Unit) {
-    PromptCard(message) { TextButton(onClick = onDismiss) { Text("OK") } }
+    PromptCard(message) { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_ok)) } }
 }
 
 @Composable

@@ -48,10 +48,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import com.carthing.R
 import java.io.File
 import kotlinx.coroutines.launch
 
@@ -71,21 +73,20 @@ fun AttachmentsSection(
     onDelete: (PhotoItem) -> Unit,
     /** When set, the viewer offers reading the photo as a receipt (only ever on request). */
     onRead: ((PhotoItem) -> Unit)? = null,
-    title: String = "Receipts & photos",
+    title: String = stringResource(R.string.attachments_title_receipts),
 ) {
     val scope = rememberCoroutineScope()
     var menu by remember { mutableStateOf(false) }
     var importing by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
+    var importFailed by remember { mutableStateOf(false) }
     var viewing by remember { mutableStateOf<PhotoItem?>(null) }
     var cameraUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     fun import(uri: Uri) = scope.launch {
         importing = true
-        error = runCatching { onAdded(importPhoto(uri)) }.exceptionOrNull()?.let {
+        importFailed = runCatching { onAdded(importPhoto(uri)) }.onFailure {
             Log.w("CarThing", "Photo import failed for $uri", it)
-            "Couldn't add the photo"
-        }
+        }.isFailure
         importing = false
     }
     val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { taken ->
@@ -99,7 +100,7 @@ fun AttachmentsSection(
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             photos.forEach { p ->
                 AsyncImage(
-                    model = p.file, contentDescription = "Attached photo", contentScale = ContentScale.Crop,
+                    model = p.file, contentDescription = stringResource(R.string.attachments_photo_attached), contentScale = ContentScale.Crop,
                     modifier = Modifier.size(THUMB).clip(RoundedCornerShape(8.dp)).clickable { viewing = p }
                 )
             }
@@ -107,22 +108,22 @@ fun AttachmentsSection(
                 OutlinedCard(onClick = { menu = true }, modifier = Modifier.size(THUMB)) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         if (importing) CircularProgressIndicator(Modifier.size(24.dp))
-                        else Icon(Icons.Default.Add, contentDescription = "Add photo")
+                        else Icon(Icons.Default.Add, contentDescription = stringResource(R.string.attachments_add_photo))
                     }
                 }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                    DropdownMenuItem(text = { Text("Take photo") }, onClick = {
+                    DropdownMenuItem(text = { Text(stringResource(R.string.attachments_take_photo)) }, onClick = {
                         menu = false
                         newCameraUri().also { cameraUri = it; camera.launch(it) }
                     })
-                    DropdownMenuItem(text = { Text("Choose from gallery") }, onClick = {
+                    DropdownMenuItem(text = { Text(stringResource(R.string.attachments_choose_gallery)) }, onClick = {
                         menu = false
                         gallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                     })
                 }
             }
         }
-        error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+        if (importFailed) Text(stringResource(R.string.attachments_import_failed), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
     }
 
     viewing?.let { p ->
@@ -144,23 +145,23 @@ private fun PhotoViewer(photo: PhotoItem, onClose: () -> Unit, onDelete: () -> U
     Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxSize().background(Color.Black)) {
             AsyncImage(
-                model = photo.file, contentDescription = "Photo", contentScale = ContentScale.Fit,
+                model = photo.file, contentDescription = stringResource(R.string.attachments_photo), contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize().transformable(transform)
                     .graphicsLayer(scaleX = scale, scaleY = scale, translationX = offset.x, translationY = offset.y)
             )
             Row(Modifier.align(Alignment.TopEnd).padding(8.dp)) {
-                if (onRead != null) TextButton(onClick = onRead) { Text("Read receipt", color = Color.White) }
-                IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Default.Delete, "Delete photo", tint = Color.White) }
-                IconButton(onClick = onClose) { Icon(Icons.Default.Close, "Close", tint = Color.White) }
+                if (onRead != null) TextButton(onClick = onRead) { Text(stringResource(R.string.attachments_read_receipt), color = Color.White) }
+                IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Default.Delete, stringResource(R.string.attachments_delete_photo), tint = Color.White) }
+                IconButton(onClick = onClose) { Icon(Icons.Default.Close, stringResource(R.string.attachments_close), tint = Color.White) }
             }
         }
     }
     if (confirmDelete) AlertDialog(
         onDismissRequest = { confirmDelete = false },
-        title = { Text("Delete photo?") },
-        text = { Text(if (photo.savedId != null) "It's removed from this entry." else "It won't be attached.") },
-        confirmButton = { TextButton(onClick = { confirmDelete = false; onDelete() }) { Text("Delete") } },
-        dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } }
+        title = { Text(stringResource(R.string.attachments_delete_title)) },
+        text = { Text(stringResource(if (photo.savedId != null) R.string.attachments_delete_saved else R.string.attachments_delete_unsaved)) },
+        confirmButton = { TextButton(onClick = { confirmDelete = false; onDelete() }) { Text(stringResource(R.string.action_delete)) } },
+        dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.action_cancel)) } }
     )
 }
 

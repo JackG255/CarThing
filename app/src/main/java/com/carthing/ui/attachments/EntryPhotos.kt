@@ -8,7 +8,9 @@ import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.carthing.R
 import com.carthing.data.attachments.AttachmentOwner
 import com.carthing.ui.vehicles.VehicleDetailViewModel
 import kotlinx.coroutines.flow.flowOf
@@ -68,6 +70,6 @@ fun ServiceBookPhotos(viewModel: VehicleDetailViewModel) {
         importPhoto = viewModel::importPhoto,
         onAdded = { name -> scope.launch { viewModel.attachPhotos(owner, listOf(name)) } },
         onDelete = { item -> saved.firstOrNull { it.id == item.savedId }?.let { scope.launch { viewModel.deleteAttachment(it) } } },
-        title = "Service book",
+        title = stringResource(R.string.attachments_title_service_book),
     )
 }

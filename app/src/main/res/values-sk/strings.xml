@@ -229,4 +229,90 @@
     <string name="detail_odometer_today">Stav tachometra dnes (km)</string>
     <string name="detail_odometer_required">Zadajte stav tachometra</string>
     <string name="detail_odometer_too_low">Hodnota nemôže byť nižšia ako %1$s</string>
+
+    <!-- Spoločné pre formuláre tankovania a servisu -->
+    <string name="form_date">Dátum</string>
+    <string name="form_date_from_receipt">Dátum (z bločku)</string>
+    <string name="form_date_from_invoice">Dátum (z faktúry)</string>
+    <string name="form_note">Poznámka</string>
+    <string name="form_hint_from_receipt">Z bločku</string>
+    <string name="form_hint_from_invoice">Z faktúry</string>
+    <string name="delete_cannot_be_undone">Túto akciu nie je možné vrátiť späť.</string>
+    <string name="action_no">Nie</string>
+    <string name="action_read">Prečítať</string>
+
+    <!-- Formulár tankovania (ui/fuel/FuelFormScreen.kt) -->
+    <string name="fuel_form_add">Pridať tankovanie</string>
+    <string name="fuel_form_edit">Upraviť tankovanie</string>
+    <string name="fuel_delete_title">Zmazať tankovanie?</string>
+    <string name="fuel_field_liters">Litre</string>
+    <string name="fuel_field_total_price">Celková cena</string>
+    <string name="fuel_field_station">Čerpacia stanica</string>
+    <string name="fuel_switch_full_tank">Natankované do plna</string>
+    <string name="fuel_switch_missed_previous">Chýba záznam predchádzajúceho tankovania</string>
+    <string name="fuel_error_liters_required">Zadajte množstvo paliva</string>
+    <string name="fuel_error_liters_positive">Musí byť väčšie ako 0</string>
+    <string name="fuel_error_price_invalid">Zadajte platnú cenu</string>
+    <string name="fuel_error_odometer_below_initial">Menej než počiatočný stav tachometra vozidla (%1$s)</string>
+    <string name="fuel_error_odometer_out_of_order">Koliduje s tankovaním zo dňa %1$s (%2$s)</string>
+    <string name="fuel_error_duplicate_full_tank">Pri tomto stave tachometra už existuje tankovanie do plna (%1$s)</string>
+    <string name="fuel_save_anyway_title">Napriek tomu uložiť?</string>
+    <string name="fuel_save_anyway_body">Tankovanie so stavom %1$s už existuje. Ide o dotankovanie pri tej istej zastávke?</string>
+    <string name="fuel_offer_read">Vyplniť formulár podľa tohto bločku?</string>
+    <string name="fuel_reading_receipt">Čítam bloček…</string>
+    <string name="fuel_filled_from_receipt">Z bločku vyplnené: %1$s. Pred uložením údaje skontrolujte.</string>
+
+    <!-- Formulár servisu (ui/service/ServiceFormScreen.kt) -->
+    <string name="service_form_add">Pridať servisný záznam</string>
+    <string name="service_form_edit">Upraviť servisný záznam</string>
+    <string name="service_delete_title">Zmazať servisný záznam?</string>
+    <string name="service_field_type">Typ *</string>
+    <string name="service_field_cost">Cena</string>
+    <string name="service_field_shop">Autoservis</string>
+    <string name="service_field_component">Súčasť (vynuluje jej plán)</string>
+    <string name="service_component_none">Žiadna</string>
+    <string name="service_error_type_required">Zadajte typ servisu</string>
+    <string name="service_error_cost_invalid">Zadajte platnú cenu</string>
+    <string name="service_note_work">Práce: %1$s</string>
+    <string name="service_offer_read">Vyplniť formulár podľa tejto faktúry?</string>
+    <string name="service_reading_invoice">Čítam faktúru…</string>
+    <string name="service_filled_from_invoice">Z faktúry vyplnené: %1$s. Pred uložením údaje skontrolujte.</string>
+
+    <!-- Názvy polí, ktoré môže vyplniť bloček alebo faktúra, v správach „Vyplnené z…“ -->
+    <string name="read_field_liters">litre</string>
+    <string name="read_field_total_price">celková cena</string>
+    <string name="read_field_date">dátum</string>
+    <string name="read_field_station">čerpacia stanica</string>
+    <string name="read_field_fuel_type">typ paliva</string>
+    <string name="read_field_type">typ</string>
+    <string name="read_field_odometer">stav tachometra</string>
+    <string name="read_field_cost">cena</string>
+    <string name="read_field_shop">autoservis</string>
+    <string name="read_field_work_done">vykonané práce</string>
+
+    <!-- Fotky a bločky (ui/attachments) -->
+    <string name="attachments_title_receipts">Bločky a fotky</string>
+    <string name="attachments_title_service_book">Servisná knižka</string>
+    <string name="attachments_photo_attached">Priložená fotka</string>
+    <string name="attachments_add_photo">Pridať fotku</string>
+    <string name="attachments_take_photo">Odfotiť</string>
+    <string name="attachments_choose_gallery">Vybrať z galérie</string>
+    <string name="attachments_import_failed">Fotku sa nepodarilo pridať</string>
+    <string name="attachments_photo">Fotka</string>
+    <string name="attachments_read_receipt">Prečítať bloček</string>
+    <string name="attachments_delete_photo">Zmazať fotku</string>
+    <string name="attachments_close">Zavrieť</string>
+    <string name="attachments_delete_title">Zmazať fotku?</string>
+    <string name="attachments_delete_saved">Odstráni sa z tohto záznamu.</string>
+    <string name="attachments_delete_unsaved">Nebude priložená.</string>
+    <string name="receipt_read_nothing">Z tejto fotky sa nepodarilo nič prečítať. Zostáva priložená.</string>
+
+    <!-- Čítanie tachometra z fotky palubnej dosky (ui/attachments/OdometerInput.kt) -->
+    <string name="odometer_input_label">Stav tachometra (km)</string>
+    <string name="odometer_read_from_photo">Prečítať z fotky palubnej dosky</string>
+    <string name="odometer_dialog_title">Stav tachometra</string>
+    <string name="odometer_none_found">Na fotke sa nepodarilo nájsť stav tachometra. Skúste to znova bližšie k displeju a bez odleskov.</string>
+    <string name="odometer_pick">Vyberte hodnotu zobrazenú na tachometri:</string>
+    <string name="odometer_photo_attached">Fotka je priložená k tomuto záznamu.</string>
+    <string name="odometer_none_of_these">Žiadna z nich</string>
 </resources>

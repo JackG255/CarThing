@@ -232,4 +232,97 @@
     <string name="detail_odometer_required">Enter the odometer reading</string>
     <!-- %1$s: the current reading, e.g. "50,000 km" -->
     <string name="detail_odometer_too_low">Can\'t be lower than %1$s</string>
+
+    <!-- Shared by the fuel and service forms -->
+    <string name="form_date">Date</string>
+    <string name="form_date_from_receipt">Date (from receipt)</string>
+    <string name="form_date_from_invoice">Date (from invoice)</string>
+    <string name="form_note">Note</string>
+    <string name="form_hint_from_receipt">From receipt</string>
+    <string name="form_hint_from_invoice">From invoice</string>
+    <string name="delete_cannot_be_undone">This can\'t be undone.</string>
+    <string name="action_no">No</string>
+    <string name="action_read">Read</string>
+
+    <!-- Fuel form (ui/fuel/FuelFormScreen.kt) -->
+    <string name="fuel_form_add">Add fill-up</string>
+    <string name="fuel_form_edit">Edit fill-up</string>
+    <string name="fuel_delete_title">Delete fill-up?</string>
+    <string name="fuel_field_liters">Liters</string>
+    <string name="fuel_field_total_price">Total price</string>
+    <string name="fuel_field_station">Station</string>
+    <string name="fuel_switch_full_tank">Filled the tank completely</string>
+    <string name="fuel_switch_missed_previous">Missed recording the previous fill-up</string>
+    <string name="fuel_error_liters_required">Enter the amount of fuel</string>
+    <string name="fuel_error_liters_positive">Must be more than 0</string>
+    <string name="fuel_error_price_invalid">Enter a valid price</string>
+    <!-- %1$s: the vehicle's starting odometer, e.g. "50,000 km" -->
+    <string name="fuel_error_odometer_below_initial">Lower than the vehicle\'s starting odometer (%1$s)</string>
+    <!-- %1$s: the date of the other fill-up; %2$s: its odometer reading -->
+    <string name="fuel_error_odometer_out_of_order">Conflicts with the fill-up on %1$s at %2$s</string>
+    <!-- %1$s: the date of the other fill-up -->
+    <string name="fuel_error_duplicate_full_tank">There\'s already a full-tank fill-up at this reading (%1$s)</string>
+    <string name="fuel_save_anyway_title">Save anyway?</string>
+    <!-- %1$s: the odometer reading, e.g. "50,000 km" -->
+    <string name="fuel_save_anyway_body">There\'s already a fill-up at %1$s. Is this a top-off at the same stop?</string>
+    <string name="fuel_offer_read">Fill in the form from this receipt?</string>
+    <string name="fuel_reading_receipt">Reading the receipt…</string>
+    <!-- %1$s: the field names read, e.g. "liters, total price" -->
+    <string name="fuel_filled_from_receipt">Filled from the receipt: %1$s. Check them before saving.</string>
+
+    <!-- Service form (ui/service/ServiceFormScreen.kt) -->
+    <string name="service_form_add">Add service</string>
+    <string name="service_form_edit">Edit service</string>
+    <string name="service_delete_title">Delete service record?</string>
+    <string name="service_field_type">Type *</string>
+    <string name="service_field_cost">Cost</string>
+    <string name="service_field_shop">Shop</string>
+    <string name="service_field_component">Component (resets its schedule)</string>
+    <string name="service_component_none">None</string>
+    <string name="service_error_type_required">Service type is required</string>
+    <string name="service_error_cost_invalid">Enter a valid cost</string>
+    <!-- Note filled from an invoice listing several jobs; %1$s: the service names, comma-separated -->
+    <string name="service_note_work">Work: %1$s</string>
+    <string name="service_offer_read">Fill in the form from this invoice?</string>
+    <string name="service_reading_invoice">Reading the invoice…</string>
+    <!-- %1$s: the field names read, e.g. "type, date" -->
+    <string name="service_filled_from_invoice">Filled from the invoice: %1$s. Check them before saving.</string>
+
+    <!-- Names of the fields a receipt or invoice can fill, used in the "Filled from…" messages -->
+    <string name="read_field_liters">liters</string>
+    <string name="read_field_total_price">total price</string>
+    <string name="read_field_date">date</string>
+    <string name="read_field_station">station</string>
+    <string name="read_field_fuel_type">fuel type</string>
+    <string name="read_field_type">type</string>
+    <string name="read_field_odometer">odometer</string>
+    <string name="read_field_cost">cost</string>
+    <string name="read_field_shop">shop</string>
+    <string name="read_field_work_done">work done</string>
+
+    <!-- Photos and receipts (ui/attachments) -->
+    <string name="attachments_title_receipts">Receipts &amp; photos</string>
+    <string name="attachments_title_service_book">Service book</string>
+    <string name="attachments_photo_attached">Attached photo</string>
+    <string name="attachments_add_photo">Add photo</string>
+    <string name="attachments_take_photo">Take photo</string>
+    <string name="attachments_choose_gallery">Choose from gallery</string>
+    <string name="attachments_import_failed">Couldn\'t add the photo</string>
+    <string name="attachments_photo">Photo</string>
+    <string name="attachments_read_receipt">Read receipt</string>
+    <string name="attachments_delete_photo">Delete photo</string>
+    <string name="attachments_close">Close</string>
+    <string name="attachments_delete_title">Delete photo?</string>
+    <string name="attachments_delete_saved">It\'s removed from this entry.</string>
+    <string name="attachments_delete_unsaved">It won\'t be attached.</string>
+    <string name="receipt_read_nothing">Couldn\'t read anything from this photo. It\'s still attached.</string>
+
+    <!-- Odometer reading from a dashboard photo (ui/attachments/OdometerInput.kt) -->
+    <string name="odometer_input_label">Odometer (km)</string>
+    <string name="odometer_read_from_photo">Read from dashboard photo</string>
+    <string name="odometer_dialog_title">Odometer reading</string>
+    <string name="odometer_none_found">Couldn\'t find a reading in the photo. Try again closer to the display, without glare.</string>
+    <string name="odometer_pick">Pick the reading shown on the odometer:</string>
+    <string name="odometer_photo_attached">The photo is attached to this entry.</string>
+    <string name="odometer_none_of_these">None of these</string>
 </resources>
