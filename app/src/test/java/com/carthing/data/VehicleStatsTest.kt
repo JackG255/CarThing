@@ -13,7 +13,7 @@ class VehicleStatsTest {
     @Test fun emptyHistory() {
         val s = VehicleStats.from(emptyList(), emptyList())
         assertNull(s.averageLitersPer100Km)
-        assertNull(s.lastLitersPer100Km)
+        assertNull(s.recentLitersPer100Km)
         assertNull(s.costPerKm)
         assertEquals(0.0, s.trackedDistanceKm, 1e-9)
     }
@@ -24,7 +24,7 @@ class VehicleStatsTest {
         val service = listOf(ServiceEntry(vehicleId = 1, dateEpochMillis = 0, odometerKm = 1200.0, type = "Oil", cost = 35.0))
         val s = VehicleStats.from(fuel, service)
         assertEquals(46.0 / 700.0 * 100.0, s.averageLitersPer100Km!!, 1e-9)
-        assertEquals(8.0, s.lastLitersPer100Km!!, 1e-9)
+        assertEquals(46.0 / 700.0 * 100.0, s.recentLitersPer100Km!!, 1e-9)
         assertEquals(105.0, s.totalFuelCost, 1e-9)
         assertEquals(35.0, s.totalServiceCost, 1e-9)
         assertEquals(700.0, s.trackedDistanceKm, 1e-9)
@@ -35,5 +35,17 @@ class VehicleStatsTest {
     @Test fun costPerKmExcludesFirstFillEvenWhenUnsorted() {
         val fuel = listOf(fill(2, 1650.0, 40.5, 1500.0), fill(1, 1000.0, 45.0, 1650.0))
         assertEquals(1500.0 / 650.0, VehicleStats.from(fuel, emptyList()).costPerKm!!, 1e-9)
+    }
+
+    @Test fun recentUsesLastThreeSegmentsDistanceWeighted() {
+        // Segments: 50/500 (10.0), 30/500 (6.0), 20/200 (10.0), 70/1000 (7.0); the first falls out of the window.
+        val fuel = listOf(fill(1, 0.0, 40.0, null), fill(2, 500.0, 50.0, null), fill(3, 1000.0, 30.0, null),
+            fill(4, 1200.0, 20.0, null), fill(5, 2200.0, 70.0, null))
+        assertEquals(120.0 / 1700.0 * 100.0, VehicleStats.from(fuel, emptyList()).recentLitersPer100Km!!, 1e-9)
+    }
+
+    @Test fun recentWithOneSegmentEqualsThatSegment() {
+        val fuel = listOf(fill(1, 0.0, 40.0, null), fill(2, 500.0, 35.0, null))
+        assertEquals(7.0, VehicleStats.from(fuel, emptyList()).recentLitersPer100Km!!, 1e-9)
     }
 }

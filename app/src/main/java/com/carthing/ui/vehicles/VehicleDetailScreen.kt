@@ -180,7 +180,7 @@ private fun StatsCard(odometerKm: Double, stats: VehicleStats, onUpdateOdometer:
             }
             Row(Modifier.fillMaxWidth()) {
                 Stat(Icons.Default.LocalGasStation, "Average", formatEconomy(stats.averageLitersPer100Km), Modifier.weight(1f))
-                Stat(Icons.Default.History, "Last fill-up", formatEconomy(stats.lastLitersPer100Km), Modifier.weight(1f))
+                Stat(Icons.Default.History, "Recent", formatEconomy(stats.recentLitersPer100Km), Modifier.weight(1f))
             }
             Row(Modifier.fillMaxWidth()) {
                 Stat(Icons.Default.Payments, "Total spent", formatMoney(stats.totalFuelCost + stats.totalServiceCost), Modifier.weight(1f))
