@@ -42,6 +42,21 @@ enum class DefaultName(private val en: String, private val cs: String, private v
     val all: List<String> = listOf(en, cs, sk).distinct()
 
     companion object {
+        /** The 12 default component names (`DefaultSchedule`); the only defaults matched in `maintenance_items.name`. */
+        val COMPONENTS = listOf(
+            ENGINE_OIL, AIR_FILTER, CABIN_FILTER, BRAKE_FLUID, BRAKE_PADS, COOLANT,
+            SPARK_PLUGS, TIMING_BELT, TIRES, TIRE_PRESSURE, BATTERY, WIPER_BLADES,
+        )
+
+        /** Quick-pick service types, in the order offered. */
+        val SERVICE_TYPES = listOf(OIL_CHANGE, TIRES, BRAKES, INSPECTION, BATTERY, FILTERS, WIPERS, REPAIR)
+
+        /** Deadline presets; the only defaults matched in `deadlines.title`. */
+        val DEADLINE_PRESETS = listOf(TECHNICAL_INSPECTION, EMISSIONS, VIGNETTE, INSURANCE)
+
+        /** Defaults matched in `service_entries.type`: the quick picks plus component names (`markDone` and the component picker copy those in). */
+        val SERVICE_ENTRY_NAMES = SERVICE_TYPES + COMPONENTS
+
         /** The entry whose label in any language equals `name.trim()` exactly (case-sensitive); null if none. */
         fun find(name: String): DefaultName? = name.trim().let { n -> entries.firstOrNull { n in it.all } }
     }

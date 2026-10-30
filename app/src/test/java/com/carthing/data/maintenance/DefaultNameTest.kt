@@ -38,4 +38,11 @@ class DefaultNameTest {
             assertEquals("duplicate labels in $lang", labels.size, labels.toSet().size)
         }
     }
+
+    @Test fun setsMatchTheirUsers() {
+        assertEquals(DefaultSchedule.templates.map { it.name }, DefaultName.COMPONENTS)
+        assertEquals(com.carthing.data.deadlines.DeadlineTemplates.all.map { it.name }, DefaultName.DEADLINE_PRESETS)
+        assertEquals(8, DefaultName.SERVICE_TYPES.size)
+        assertEquals(DefaultName.SERVICE_TYPES + DefaultName.COMPONENTS, DefaultName.SERVICE_ENTRY_NAMES)
+    }
 }

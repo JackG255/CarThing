@@ -14,6 +14,7 @@ Reports are written to `app/build/reports/tests/`. When CI fails, it uploads the
 |---|---|---|
 | Pure logic | `FuelEconomyTest`, `UsageTest`, `MaintenanceStatusTest`, `ReminderPolicyTest`, `DeadlineStatusTest`, `BackupPolicyTest`, OCR parser tests | Plain JUnit; pass fixed `now`/`today` values and a `ZoneId` |
 | Database and repositories | `DaoTest`, `RepositoryTest`, `MaintenanceRepositoryTest`, `BackupRepositoryTest` | `@RunWith(RobolectricTestRunner::class)`, `Room.inMemoryDatabaseBuilder(...).allowMainThreadQueries()`, `runTest` |
+| Translations and language | `TranslationsTest` (every string and plural present in `cs` and `sk`), `DefaultNameRelabelerTest`, and Robolectric resource tests such as `BackupMessagesTest` and `StatusTextTest` | `@RunWith(RobolectricTestRunner::class)`; set the locale with `@Config(qualifiers = ...)` |
 | Migrations | `MigrationTest` | `MigrationTestHelper` with the exported schemas; see below |
 | ViewModel | `VehicleDetailViewModelTest` | Real repositories over an in-memory database |
 

@@ -185,7 +185,7 @@
     <string name="vehicle_list_empty_title">Zatím žádná vozidla</string>
     <string name="vehicle_list_empty_message">Klepnutím na + přidejte své auto a pak zapisujte tankování a servis.</string>
     <string name="appearance_wallpaper_colors">Barvy z tapety</string>
-    <string name="form_delete_title">Smazat %1$s?</string>
+    <string name="form_delete_title">Smazat: %1$s?</string>
     <string name="vehicle_form_delete_message">Smažou se i všechna tankování a servisní záznamy tohoto vozidla.</string>
     <string name="form_name">Název *</string>
     <string name="vehicle_form_make">Značka</string>
@@ -322,7 +322,7 @@
 
     <!-- Formulář součásti (ui/maintenance/MaintenanceItemFormScreen.kt) -->
     <string name="maintenance_form_edit">Upravit součást</string>
-    <string name="maintenance_delete_title">Přestat sledovat %1$s?</string>
+    <string name="maintenance_delete_title">Přestat sledovat: %1$s?</string>
     <string name="maintenance_delete_message">Plán se odstraní. Servisní historie zůstane zachována.</string>
     <string name="maintenance_track">Sledovat a připomínat</string>
     <string name="maintenance_form_hint">Termín každého plánu nastane podle toho, který z jeho limitů přijde dřív. Pokud se sekce netýká, nechte ji prázdnou.</string>

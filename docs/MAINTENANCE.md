@@ -15,7 +15,7 @@ New vehicles get `DefaultSchedule.templates` (12 generic components). Each templ
 `DefaultName`, and `DefaultSchedule.itemsFor(vehicleId, language)` names the items in the app's language
 (English, Czech or Slovak; `VehicleRepository` takes the language from `AppContainer.language`). The
 intervals are the same in every language. The owner's service book is the real source of intervals, so
-they're meant to be edited.
+they're meant to be edited. Default component names are relabelled when the app language changes (see "Languages" in [ARCHITECTURE.md](ARCHITECTURE.md)).
 
 Schedules restart when:
 - the user marks one done (`MaintenanceRepository.markDone`, which uses `MaintenanceItem.recorded`), or

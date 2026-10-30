@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import com.carthing.BuildConfig
 import com.carthing.R
 import java.io.File
 import kotlinx.coroutines.launch
@@ -85,7 +86,7 @@ fun AttachmentsSection(
     fun import(uri: Uri) = scope.launch {
         importing = true
         importFailed = runCatching { onAdded(importPhoto(uri)) }.onFailure {
-            Log.w("CarThing", "Photo import failed for $uri", it)
+            if (BuildConfig.DEBUG) Log.w("CarThing", "Photo import failed for $uri", it)
         }.isFailure
         importing = false
     }

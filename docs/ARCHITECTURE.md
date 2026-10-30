@@ -58,9 +58,9 @@ Names the app supplies (default components, service quick picks, deadline preset
 entries with a label per language. They are stored as plain text, so `DefaultNameRelabeler` rewrites
 them when the language changes:
 - A stored name is relabelled only if its **trimmed** text **exactly** equals (case-sensitive) a default in any of the three languages. Anything else, and all free-text notes, is left alone.
-- It covers component names, service entry types and deadline titles, in one transaction.
+- It covers component names, service entry types and deadline titles, in one transaction. Each table only matches its own names (`DefaultName.COMPONENTS`, `SERVICE_ENTRY_NAMES`, `DEADLINE_PRESETS`): `maintenance_items.name` the 12 default component names; `service_entries.type` the 8 service quick picks (`SERVICE_TYPES`) plus the component names, because `markDone` and the component picker copy those into the type; `deadlines.title` the 4 deadline presets. So a component called "Repair" or a deadline called "Battery" is left alone.
 - The last language it relabelled to is kept in the `language` preferences. Nothing is written to the database when it is unchanged.
-- On the first run, with no language stored, only the English labels count as defaults: data from 0.3.0 can only hold English defaults, so a Czech or Slovak one was typed by hand.
+- On the first run, with no language stored, only the English labels count as defaults: data from 0.3.0 can only hold English defaults, so a Czech or Slovak one was typed by hand. Later runs match all three languages.
 - Triggers: `MainActivity.onCreate` (a per-app language change recreates the activity), the daily `MaintenanceCheckWorker`, and right after a backup is restored (always a full relabel).
 
 Everything else the app shows is a string resource:

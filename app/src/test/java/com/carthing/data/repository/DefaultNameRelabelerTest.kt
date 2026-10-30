@@ -89,16 +89,42 @@ class DefaultNameRelabelerTest {
     @Test fun firstRunOnlyTouchesEnglishDefaults() = runTest {
         db.serviceEntryDao().upsert(ServiceEntry(vehicleId = vehicleId, dateEpochMillis = 1, odometerKm = 1.0, type = "Oprava"))
         db.deadlineDao().upsert(Deadline(vehicleId = vehicleId, title = "Pojištění", dueEpochMillis = 1))
+        db.deadlineDao().upsert(Deadline(vehicleId = vehicleId, title = "Poistenie", dueEpochMillis = 1)) // Slovak, typed by hand
 
         relabeler(prefs("fresh-en")).relabelIfLanguageChanged()
         assertTrue("Oprava" in types())
         assertTrue("Pojištění" in titles())
+        assertTrue("Poistenie" in titles())
 
         lang = Language.CS
         relabeler(prefs("fresh-cs")).relabelIfLanguageChanged()
         assertEquals("Brzdová kapalina", items().first())
         assertTrue("Oprava" in types())
         assertTrue("Pojištění" in titles())
+        assertTrue("Poistenie" in titles())
+    }
+
+    @Test fun eachTableOnlyMatchesItsOwnNames() = runTest {
+        db.maintenanceItemDao().insertAll(listOf("Repair", "Insurance").map { MaintenanceItem(vehicleId = vehicleId, name = it) })
+        db.deadlineDao().upsert(Deadline(vehicleId = vehicleId, title = "Battery", dueEpochMillis = 1))
+        db.serviceEntryDao().upsert(ServiceEntry(vehicleId = vehicleId, dateEpochMillis = 1, odometerKm = 1.0, type = "Brake fluid"))
+        db.serviceEntryDao().upsert(ServiceEntry(vehicleId = vehicleId, dateEpochMillis = 1, odometerKm = 1.0, type = "Repair"))
+
+        lang = Language.CS
+        relabeler().relabel()
+
+        assertTrue("Repair" in items() && "Insurance" in items()) // not component names
+        assertTrue("Battery" in titles()) // not a deadline preset
+        assertTrue("Brzdová kapalina" in types()) // a component name copied into a service type
+        assertTrue("Oprava" in types()) // a service quick pick
+    }
+
+    @Test fun relabelFailureIsSwallowedByTheSafeVariants() = runTest {
+        lang = Language.CS
+        val r = relabeler()
+        db.close()
+        assertEquals(0, r.relabelIfLanguageChangedSafely())
+        assertEquals(0, r.relabelSafely())
     }
 
     @Test fun forcedRelabelAfterRestore() = runTest {

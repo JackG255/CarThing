@@ -115,9 +115,9 @@
     </plurals>
     <plurals name="backup_count_fuel_entries">
         <item quantity="one">%d tankovanie</item>
-        <item quantity="few">%d tankovanie</item>
-        <item quantity="many">%d tankovanie</item>
-        <item quantity="other">%d tankovanie</item>
+        <item quantity="few">%d tankovania</item>
+        <item quantity="many">%d tankovania</item>
+        <item quantity="other">%d tankovaní</item>
     </plurals>
     <plurals name="backup_count_service_entries">
         <item quantity="one">%d servisný záznam</item>
@@ -185,7 +185,7 @@
     <string name="vehicle_list_empty_title">Zatiaľ žiadne vozidlá</string>
     <string name="vehicle_list_empty_message">Klepnutím na + pridajte svoje auto a potom zapisujte tankovanie a servis.</string>
     <string name="appearance_wallpaper_colors">Farby z tapety</string>
-    <string name="form_delete_title">Zmazať %1$s?</string>
+    <string name="form_delete_title">Zmazať: %1$s?</string>
     <string name="vehicle_form_delete_message">Zmažú sa aj všetky tankovania a servisné záznamy tohto vozidla.</string>
     <string name="form_name">Názov *</string>
     <string name="vehicle_form_make">Značka</string>
@@ -322,7 +322,7 @@
 
     <!-- Formulár súčasti (ui/maintenance/MaintenanceItemFormScreen.kt) -->
     <string name="maintenance_form_edit">Upraviť súčasť</string>
-    <string name="maintenance_delete_title">Prestať sledovať %1$s?</string>
+    <string name="maintenance_delete_title">Prestať sledovať: %1$s?</string>
     <string name="maintenance_delete_message">Plán sa odstráni. Servisná história zostane zachovaná.</string>
     <string name="maintenance_track">Sledovať a pripomínať</string>
     <string name="maintenance_form_hint">Termín každého plánu nastane podľa toho, ktorý z jeho limitov príde skôr. Ak sa sekcia netýka, nechajte ju prázdnu.</string>

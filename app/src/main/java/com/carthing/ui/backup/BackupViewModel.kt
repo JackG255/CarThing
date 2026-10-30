@@ -98,7 +98,7 @@ class BackupViewModel(
         _pending.value = null
         withContext(Dispatchers.IO) {
             archive.restore(p.parsed)
-            relabeler.relabel() // a backup may hold names in another language
+            relabeler.relabelSafely() // a failure must not hide the restore; a backup may hold names in another language
         }
         _message.value = UiText(R.string.backup_message_restored)
     }

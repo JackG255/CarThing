@@ -32,7 +32,7 @@ older app can read fields added later within the same format.
 2. The user confirms after seeing a `BackupSummary`.
 3. `restore` writes the photos first. It then replaces all data in one transaction (`BackupRepository.replaceAll`) and finally deletes photos that are no longer referenced.
 
-4. The ViewModel then runs `DefaultNameRelabeler.relabel()`: component names, service types and deadline titles that equal a default name in any language become the current language's name. Names typed by hand are untouched. The backup format is unchanged; the files keep the names as stored.
+4. The ViewModel then runs `DefaultNameRelabeler.relabel()`: component names, service types and deadline titles that equal a default name in any language become the current language's name. Each table only matches its own names: `maintenance_items.name` the 12 default component names, `service_entries.type` the 8 service quick picks plus those component names, `deadlines.title` the 4 deadline presets. Names typed by hand are left alone unless they exactly match one of those built-in names. The backup format is unchanged; the files keep the names as stored.
 
 Files that can't be restored are reported as `InvalidBackupException` carrying a `Reason` (`NOT_A_BACKUP`, `DAMAGED`, `TOO_LARGE`, `NEWER_VERSION`, `PHOTOS_MISSING`, the last with a `count`). The UI words it in the app language; the exception message holds technical detail for logs only. I/O failures are worded without the system message, which is logged in debug builds only.
 

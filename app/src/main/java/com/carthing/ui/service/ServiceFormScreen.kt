@@ -60,12 +60,6 @@ import com.carthing.ui.vehicles.VehicleDetailViewModel
 import java.time.ZoneId
 import kotlinx.coroutines.launch
 
-/** Quick-pick service types, in the order offered. */
-val SERVICE_TYPES = listOf(
-    DefaultName.OIL_CHANGE, DefaultName.TIRES, DefaultName.BRAKES, DefaultName.INSPECTION,
-    DefaultName.BATTERY, DefaultName.FILTERS, DefaultName.WIPERS, DefaultName.REPAIR,
-)
-
 /** Add ([entryId] = 0) or edit a service record. */
 @Composable
 fun ServiceFormScreen(
@@ -80,7 +74,7 @@ fun ServiceFormScreen(
     val suggestedOdometer = remember { s.currentOdometerKm }
     // Offer the user's own past types first, then the common ones.
     val language = currentLanguage()
-    val suggestions = remember(language) { (s.serviceEntries.map { it.type } + SERVICE_TYPES.map { it.label(language) }).distinct() }
+    val suggestions = remember(language) { (s.serviceEntries.map { it.type } + DefaultName.SERVICE_TYPES.map { it.label(language) }).distinct() }
     val components = remember { s.maintenance.map { it.item }.sortedBy { it.name } }
     ServiceForm(existing, suggestedOdometer, suggestions, components, viewModel, onDone)
 }
