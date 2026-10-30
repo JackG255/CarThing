@@ -174,4 +174,59 @@
     <string name="backup_auto_change_folder">Zmeniť priečinok</string>
     <string name="backup_auto_choose_folder">Vybrať priečinok</string>
     <string name="backup_auto_turn_off">Vypnúť</string>
+
+    <!-- Spoločné akcie a polia formulárov (ui/common) -->
+    <string name="action_save">Uložiť</string>
+    <string name="action_delete">Zmazať</string>
+    <string name="action_ok">OK</string>
+    <string name="action_back">Späť</string>
+    <string name="date_clear">Vymazať dátum</string>
+    <string name="date_pick">Vybrať dátum</string>
+
+    <!-- Zoznam vozidiel a formulár (ui/vehicles) -->
+    <string name="vehicle_add">Pridať vozidlo</string>
+    <string name="vehicle_edit">Upraviť vozidlo</string>
+    <string name="vehicle_list_empty_title">Zatiaľ žiadne vozidlá</string>
+    <string name="vehicle_list_empty_message">Klepnutím na + pridajte svoje auto a potom zapisujte tankovanie a servis.</string>
+    <string name="appearance_wallpaper_colors">Farby z tapety</string>
+    <string name="vehicle_form_delete_title">Zmazať %1$s?</string>
+    <string name="vehicle_form_delete_message">Zmažú sa aj všetky tankovania a servisné záznamy tohto vozidla.</string>
+    <string name="vehicle_form_name">Názov *</string>
+    <string name="vehicle_form_make">Značka</string>
+    <string name="vehicle_form_model">Model</string>
+    <string name="vehicle_form_year">Rok výroby</string>
+    <string name="vehicle_form_plate">EČV</string>
+    <string name="vehicle_form_vin">VIN</string>
+    <string name="vehicle_form_odometer">Stav tachometra pri pridaní (km)</string>
+    <string name="vehicle_form_name_required">Zadajte názov</string>
+    <string name="vehicle_form_year_invalid">Zadajte platný rok</string>
+    <string name="vehicle_form_odometer_invalid">Zadajte platný stav tachometra</string>
+
+    <!-- Detail vozidla (ui/vehicles/VehicleDetailScreen.kt) -->
+    <string name="detail_add_fuel">Pridať tankovanie</string>
+    <string name="detail_add_service">Pridať servisný záznam</string>
+    <string name="detail_add_component">Pridať súčasť</string>
+    <string name="detail_tab_fuel">Palivo</string>
+    <string name="detail_tab_service">Servis</string>
+    <string name="detail_tab_maintenance">Údržba</string>
+    <string name="detail_tab_maintenance_attention">Údržba (%1$d)</string>
+    <string name="detail_odometer">Tachometer</string>
+    <string name="detail_odometer_update">Aktualizovať</string>
+    <string name="detail_stat_average">Priemer</string>
+    <string name="detail_stat_recent">Posledné</string>
+    <string name="detail_stat_total_spent">Celkové výdavky</string>
+    <string name="detail_stat_cost_per_km">Náklady na km</string>
+    <string name="detail_fuel_empty_title">Zatiaľ žiadne tankovania</string>
+    <string name="detail_fuel_empty_message">Zapisujte tankovania a uvidíte spotrebu aj náklady. Tip: odfoťte bloček a nechajte ho prečítať aplikácii.</string>
+    <string name="detail_fuel_flag_partial">čiastočné</string>
+    <string name="detail_fuel_flag_missed_previous">chýba predchádzajúce tankovanie</string>
+    <string name="detail_service_empty_title">Zatiaľ žiadne servisné záznamy</string>
+    <string name="detail_service_empty_message">Pridajte výmeny oleja, opravy a kontroly. Fotografie faktúr môžu formulár vyplniť za vás.</string>
+
+    <!-- Dialóg aktualizácie tachometra -->
+    <string name="detail_odometer_dialog_title">Aktualizovať stav tachometra</string>
+    <string name="detail_odometer_dialog_body">Aktuálny stav udržiava pripomienky podľa najazdených kilometrov presné aj medzi tankovaniami.</string>
+    <string name="detail_odometer_today">Stav tachometra dnes (km)</string>
+    <string name="detail_odometer_required">Zadajte stav tachometra</string>
+    <string name="detail_odometer_too_low">Hodnota nemôže byť nižšia ako %1$s</string>
 </resources>

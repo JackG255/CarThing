@@ -171,4 +171,64 @@
     <string name="backup_auto_change_folder">Change folder</string>
     <string name="backup_auto_choose_folder">Choose folder</string>
     <string name="backup_auto_turn_off">Turn off</string>
+
+    <!-- Common actions and form fields (ui/common) -->
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_ok">OK</string>
+    <string name="action_back">Back</string>
+    <string name="date_clear">Clear date</string>
+    <string name="date_pick">Pick date</string>
+
+    <!-- Vehicle list and form (ui/vehicles) -->
+    <string name="vehicle_add">Add vehicle</string>
+    <string name="vehicle_edit">Edit vehicle</string>
+    <string name="vehicle_list_empty_title">No vehicles yet</string>
+    <string name="vehicle_list_empty_message">Tap + to add your car, then log fill-ups and services.</string>
+    <string name="appearance_wallpaper_colors">Wallpaper colours</string>
+    <!-- %1$s: the vehicle name -->
+    <string name="vehicle_form_delete_title">Delete %1$s?</string>
+    <string name="vehicle_form_delete_message">All fuel and service entries for this vehicle will be deleted too.</string>
+    <string name="vehicle_form_name">Name *</string>
+    <string name="vehicle_form_make">Make</string>
+    <string name="vehicle_form_model">Model</string>
+    <string name="vehicle_form_year">Year</string>
+    <string name="vehicle_form_plate">License plate</string>
+    <string name="vehicle_form_vin">VIN</string>
+    <string name="vehicle_form_odometer">Odometer when added (km)</string>
+    <string name="vehicle_form_name_required">Name is required</string>
+    <string name="vehicle_form_year_invalid">Enter a valid year</string>
+    <string name="vehicle_form_odometer_invalid">Enter a valid odometer reading</string>
+
+    <!-- Vehicle detail (ui/vehicles/VehicleDetailScreen.kt) -->
+    <string name="detail_add_fuel">Add fill-up</string>
+    <string name="detail_add_service">Add service</string>
+    <string name="detail_add_component">Add component</string>
+    <string name="detail_tab_fuel">Fuel</string>
+    <string name="detail_tab_service">Service</string>
+    <string name="detail_tab_maintenance">Maintenance</string>
+    <!-- %1$d: how many components and deadlines need attention -->
+    <string name="detail_tab_maintenance_attention">Maintenance (%1$d)</string>
+    <string name="detail_odometer">Odometer</string>
+    <string name="detail_odometer_update">Update</string>
+    <string name="detail_stat_average">Average</string>
+    <!-- Economy over the last few fill-ups -->
+    <string name="detail_stat_recent">Recent</string>
+    <string name="detail_stat_total_spent">Total spent</string>
+    <string name="detail_stat_cost_per_km">Cost per km</string>
+    <string name="detail_fuel_empty_title">No fill-ups yet</string>
+    <string name="detail_fuel_empty_message">Log fill-ups to see your fuel economy and costs. Tip: snap the receipt and let the app read it.</string>
+    <!-- Flags in the details line of a fill-up -->
+    <string name="detail_fuel_flag_partial">partial</string>
+    <string name="detail_fuel_flag_missed_previous">missed previous</string>
+    <string name="detail_service_empty_title">No service records yet</string>
+    <string name="detail_service_empty_message">Add oil changes, repairs and inspections. Photos of invoices can fill in the form for you.</string>
+
+    <!-- Update odometer dialog -->
+    <string name="detail_odometer_dialog_title">Update odometer</string>
+    <string name="detail_odometer_dialog_body">A current reading keeps distance-based reminders accurate between fill-ups.</string>
+    <string name="detail_odometer_today">Odometer today (km)</string>
+    <string name="detail_odometer_required">Enter the odometer reading</string>
+    <!-- %1$s: the current reading, e.g. "50,000 km" -->
+    <string name="detail_odometer_too_low">Can\'t be lower than %1$s</string>
 </resources>

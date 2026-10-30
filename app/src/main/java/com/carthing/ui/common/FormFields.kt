@@ -1,5 +1,7 @@
 package com.carthing.ui.common
 
+import com.carthing.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
@@ -74,8 +76,8 @@ fun DateInput(epochMillis: Long, onChange: (Long) -> Unit, label: String, onClea
         label = { Text(label) },
         trailingIcon = {
             Row {
-                if (onClear != null) IconButton(onClick = onClear) { Icon(Icons.Default.Clear, contentDescription = "Clear date") }
-                IconButton(onClick = { showPicker = true }) { Icon(Icons.Default.DateRange, contentDescription = "Pick date") }
+                if (onClear != null) IconButton(onClick = onClear) { Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.date_clear)) }
+                IconButton(onClick = { showPicker = true }) { Icon(Icons.Default.DateRange, contentDescription = stringResource(R.string.date_pick)) }
             }
         },
         modifier = Modifier.fillMaxWidth()
@@ -95,9 +97,9 @@ fun DateInput(epochMillis: Long, onChange: (Long) -> Unit, label: String, onClea
                         onChange(LocalDateTime.of(date, current.toLocalTime()).atZone(zone).toInstant().toEpochMilli())
                     }
                     showPicker = false
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.action_ok)) }
             },
-            dismissButton = { TextButton(onClick = { showPicker = false }) { Text("Cancel") } }
+            dismissButton = { TextButton(onClick = { showPicker = false }) { Text(stringResource(R.string.action_cancel)) } }
         ) { DatePicker(state = pickerState) }
     }
 }

@@ -1,5 +1,7 @@
 package com.carthing.ui.vehicles
 
+import com.carthing.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -113,15 +115,15 @@ fun VehicleDetailScreen(
                 title = { Text((state as? VehicleDetailUiState.Loaded)?.vehicle?.name.orEmpty()) },
                 navigationIcon = { BackButton(onBack) },
                 actions = {
-                    IconButton(onClick = onEditVehicle) { Icon(Icons.Default.Edit, contentDescription = "Edit vehicle") }
+                    IconButton(onClick = onEditVehicle) { Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.vehicle_edit)) }
                 }
             )
         },
         floatingActionButton = {
             val (onAdd, label) = when (tab) {
-                TAB_FUEL -> onAddFuel to "Add fill-up"
-                TAB_SERVICE -> onAddService to "Add service"
-                else -> onAddMaintenanceItem to "Add component"
+                TAB_FUEL -> onAddFuel to stringResource(R.string.detail_add_fuel)
+                TAB_SERVICE -> onAddService to stringResource(R.string.detail_add_service)
+                else -> onAddMaintenanceItem to stringResource(R.string.detail_add_component)
             }
             FloatingActionButton(onClick = onAdd) { Icon(Icons.Default.Add, contentDescription = label) }
         }
@@ -136,11 +138,11 @@ fun VehicleDetailScreen(
         Column(Modifier.padding(padding)) {
             StatsCard(s.currentOdometerKm, s.stats, onUpdateOdometer = { updatingOdometer = true })
             TabRow(selectedTabIndex = tab) {
-                Tab(selected = tab == TAB_FUEL, onClick = { tab = TAB_FUEL }, text = { Text("Fuel") })
-                Tab(selected = tab == TAB_SERVICE, onClick = { tab = TAB_SERVICE }, text = { Text("Service") })
+                Tab(selected = tab == TAB_FUEL, onClick = { tab = TAB_FUEL }, text = { Text(stringResource(R.string.detail_tab_fuel)) })
+                Tab(selected = tab == TAB_SERVICE, onClick = { tab = TAB_SERVICE }, text = { Text(stringResource(R.string.detail_tab_service)) })
                 Tab(
                     selected = tab == TAB_MAINTENANCE, onClick = { tab = TAB_MAINTENANCE },
-                    text = { Text(if (attention > 0) "Maintenance ($attention)" else "Maintenance", maxLines = 1) }
+                    text = { Text(if (attention > 0) stringResource(R.string.detail_tab_maintenance_attention, attention) else stringResource(R.string.detail_tab_maintenance), maxLines = 1) }
                 )
             }
             when (tab) {
@@ -174,18 +176,18 @@ private fun StatsCard(odometerKm: Double, stats: VehicleStats, onUpdateOdometer:
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Speed, contentDescription = null, modifier = Modifier.size(28.dp))
                 Column(Modifier.weight(1f).padding(start = 12.dp)) {
-                    Text("Odometer", style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(R.string.detail_odometer), style = MaterialTheme.typography.labelMedium)
                     Text(formatKm(odometerKm), style = MaterialTheme.typography.headlineSmall)
                 }
-                FilledTonalButton(onClick = onUpdateOdometer) { Text("Update") }
+                FilledTonalButton(onClick = onUpdateOdometer) { Text(stringResource(R.string.detail_odometer_update)) }
             }
             Row(Modifier.fillMaxWidth()) {
-                Stat(Icons.Default.LocalGasStation, "Average", formatEconomy(stats.averageLitersPer100Km), Modifier.weight(1f))
-                Stat(Icons.Default.History, "Recent", formatEconomy(stats.recentLitersPer100Km), Modifier.weight(1f))
+                Stat(Icons.Default.LocalGasStation, stringResource(R.string.detail_stat_average), formatEconomy(stats.averageLitersPer100Km), Modifier.weight(1f))
+                Stat(Icons.Default.History, stringResource(R.string.detail_stat_recent), formatEconomy(stats.recentLitersPer100Km), Modifier.weight(1f))
             }
             Row(Modifier.fillMaxWidth()) {
-                Stat(Icons.Default.Payments, "Total spent", formatMoney(stats.totalFuelCost + stats.totalServiceCost), Modifier.weight(1f))
-                Stat(Icons.Default.Route, "Cost per km", formatCostPerKm(stats.costPerKm), Modifier.weight(1f))
+                Stat(Icons.Default.Payments, stringResource(R.string.detail_stat_total_spent), formatMoney(stats.totalFuelCost + stats.totalServiceCost), Modifier.weight(1f))
+                Stat(Icons.Default.Route, stringResource(R.string.detail_stat_cost_per_km), formatCostPerKm(stats.costPerKm), Modifier.weight(1f))
             }
         }
     }
@@ -204,11 +206,13 @@ private fun Stat(icon: ImageVector, label: String, value: String, modifier: Modi
 
 @Composable
 private fun FuelList(entries: List<FuelEntry>, withPhotos: Set<Long>, onEdit: (Long) -> Unit) {
-    if (entries.isEmpty()) return EmptyTab(Icons.Default.LocalGasStation, "No fill-ups yet", "Log fill-ups to see your fuel economy and costs. Tip: snap the receipt and let the app read it.")
+    if (entries.isEmpty()) return EmptyTab(Icons.Default.LocalGasStation, stringResource(R.string.detail_fuel_empty_title), stringResource(R.string.detail_fuel_empty_message))
+    val partial = stringResource(R.string.detail_fuel_flag_partial)
+    val missedPrevious = stringResource(R.string.detail_fuel_flag_missed_previous)
     val economyByEntry = remember(entries) { FuelEconomy.segments(entries).associate { it.endEntryId to it.litersPer100Km } }
     LazyColumn(contentPadding = PaddingValues(bottom = 88.dp)) {
         items(entries, key = { it.id }) { e ->
-            val flags = listOfNotNull("partial".takeIf { !e.isFullTank }, "missed previous".takeIf { e.missedPrevious }, PHOTO_MARK.takeIf { e.id in withPhotos })
+            val flags = listOfNotNull(partial.takeIf { !e.isFullTank }, missedPrevious.takeIf { e.missedPrevious }, PHOTO_MARK.takeIf { e.id in withPhotos })
             ListItem(
                 leadingContent = { IconBadge(Icons.Default.LocalGasStation) },
                 headlineContent = { Text("${formatLiters(e.liters)} · ${formatKm(e.odometerKm)}") },
@@ -236,7 +240,7 @@ private fun ServiceList(entries: List<ServiceEntry>, withPhotos: Set<Long>, onEd
             HorizontalDivider()
         }
         if (entries.isEmpty()) item {
-            EmptyState(Icons.Default.Build, "No service records yet", "Add oil changes, repairs and inspections. Photos of invoices can fill in the form for you.")
+            EmptyState(Icons.Default.Build, stringResource(R.string.detail_service_empty_title), stringResource(R.string.detail_service_empty_message))
         }
         items(entries, key = { it.id }) { e ->
             ListItem(
@@ -284,23 +288,23 @@ private fun UpdateOdometerDialog(currentKm: Double, onDismiss: () -> Unit, onCon
     var text by rememberSaveable { mutableStateOf(editableNumber(currentKm)) }
     val km = parseDecimal(text)
     val error = when {
-        km == null -> "Enter the odometer reading"
-        km < currentKm -> "Can't be lower than ${formatKm(currentKm)}"
+        km == null -> stringResource(R.string.detail_odometer_required)
+        km < currentKm -> stringResource(R.string.detail_odometer_too_low, formatKm(currentKm))
         else -> null
     }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Update odometer") },
+        title = { Text(stringResource(R.string.detail_odometer_dialog_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("A current reading keeps distance-based reminders accurate between fill-ups.",
+                Text(stringResource(R.string.detail_odometer_dialog_body),
                     style = MaterialTheme.typography.bodyMedium)
-                DecimalInput(text, { text = it }, "Odometer today (km)", error)
+                DecimalInput(text, { text = it }, stringResource(R.string.detail_odometer_today), error)
             }
         },
         confirmButton = {
-            TextButton(enabled = error == null, onClick = { onConfirm(System.currentTimeMillis(), km!!) }) { Text("Save") }
+            TextButton(enabled = error == null, onClick = { onConfirm(System.currentTimeMillis(), km!!) }) { Text(stringResource(R.string.action_save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } }
     )
 }

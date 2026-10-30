@@ -1,5 +1,7 @@
 package com.carthing.ui.vehicles
 
+import com.carthing.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
@@ -67,7 +69,7 @@ fun VehicleListScreen(
         topBar = { TopAppBar(title = { Text("CarThing") }, actions = { BackupMenu(snackbar, backupViewModel) { close -> AppearanceMenuItems(close) } }) },
         snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddVehicle) { Icon(Icons.Default.Add, contentDescription = "Add vehicle") }
+            FloatingActionButton(onClick = onAddVehicle) { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.vehicle_add)) }
         }
     ) { padding ->
         when (val s = state) {
@@ -89,7 +91,7 @@ fun VehicleListScreen(
 @Composable
 private fun EmptyVehicles(modifier: Modifier) {
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        EmptyState(Icons.Default.DirectionsCar, "No vehicles yet", "Tap + to add your car, then log fill-ups and services.")
+        EmptyState(Icons.Default.DirectionsCar, stringResource(R.string.vehicle_list_empty_title), stringResource(R.string.vehicle_list_empty_message))
     }
 }
 
@@ -138,7 +140,7 @@ private fun AppearanceMenuItems(close: () -> Unit) {
     if (!appearance.wallpaperColorsAvailable) return
     HorizontalDivider()
     DropdownMenuItem(
-        text = { Text("Wallpaper colours") },
+        text = { Text(stringResource(R.string.appearance_wallpaper_colors)) },
         trailingIcon = { Checkbox(checked = appearance.useWallpaperColors, onCheckedChange = null) },
         onClick = { appearance.setWallpaperColors(!appearance.useWallpaperColors); close() },
     )

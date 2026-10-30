@@ -1,5 +1,7 @@
 package com.carthing.ui.vehicles
 
+import com.carthing.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -68,19 +70,19 @@ private fun VehicleForm(
     var odometer by rememberSaveable { mutableStateOf(editableNumber(existing?.initialOdometerKm)) }
     var submitted by rememberSaveable { mutableStateOf(false) }
 
-    val nameError = if (submitted && name.isBlank()) "Name is required" else null
-    val yearError = if (year.isNotBlank() && year.trim().toIntOrNull()?.takeIf { it in 1886..2100 } == null) "Enter a valid year" else null
-    val odometerError = if (odometer.isNotBlank() && (parseDecimal(odometer) ?: -1.0) < 0) "Enter a valid odometer reading" else null
+    val nameError = if (submitted && name.isBlank()) stringResource(R.string.vehicle_form_name_required) else null
+    val yearError = if (year.isNotBlank() && year.trim().toIntOrNull()?.takeIf { it in 1886..2100 } == null) stringResource(R.string.vehicle_form_year_invalid) else null
+    val odometerError = if (odometer.isNotBlank() && (parseDecimal(odometer) ?: -1.0) < 0) stringResource(R.string.vehicle_form_odometer_invalid) else null
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (existing == null) "Add vehicle" else "Edit vehicle") },
+                title = { Text(stringResource(if (existing == null) R.string.vehicle_add else R.string.vehicle_edit)) },
                 navigationIcon = { BackButton(onBack) },
                 actions = {
                     if (existing != null) DeleteAction(
-                        title = "Delete ${existing.name}?",
-                        message = "All fuel and service entries for this vehicle will be deleted too."
+                        title = stringResource(R.string.vehicle_form_delete_title, existing.name),
+                        message = stringResource(R.string.vehicle_form_delete_message)
                     ) { scope.launch { viewModel.delete(existing); onDeleted() } }
                 }
             )
@@ -90,13 +92,13 @@ private fun VehicleForm(
             Modifier.padding(padding).imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            TextInput(name, { name = it }, "Name *", error = nameError)
-            TextInput(make, { make = it }, "Make")
-            TextInput(model, { model = it }, "Model")
-            TextInput(year, { year = it }, "Year", error = yearError, keyboardType = KeyboardType.Number)
-            TextInput(plate, { plate = it }, "License plate")
-            TextInput(vin, { vin = it }, "VIN")
-            DecimalInput(odometer, { odometer = it }, "Odometer when added (km)", error = odometerError)
+            TextInput(name, { name = it }, stringResource(R.string.vehicle_form_name), error = nameError)
+            TextInput(make, { make = it }, stringResource(R.string.vehicle_form_make))
+            TextInput(model, { model = it }, stringResource(R.string.vehicle_form_model))
+            TextInput(year, { year = it }, stringResource(R.string.vehicle_form_year), error = yearError, keyboardType = KeyboardType.Number)
+            TextInput(plate, { plate = it }, stringResource(R.string.vehicle_form_plate))
+            TextInput(vin, { vin = it }, stringResource(R.string.vehicle_form_vin))
+            DecimalInput(odometer, { odometer = it }, stringResource(R.string.vehicle_form_odometer), error = odometerError)
             Button(
                 onClick = {
                     submitted = true
@@ -113,7 +115,7 @@ private fun VehicleForm(
                     scope.launch { onSaved(viewModel.save(vehicle)) }
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Save") }
+            ) { Text(stringResource(R.string.action_save)) }
         }
     }
 }
