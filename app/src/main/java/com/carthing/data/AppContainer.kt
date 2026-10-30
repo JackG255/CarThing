@@ -16,11 +16,13 @@ import com.carthing.data.repository.ServiceRepository
 import com.carthing.data.repository.VehicleRepository
 import com.carthing.notifications.ReminderNotifications
 import com.carthing.ui.AppearanceSettings
+import com.carthing.ui.LanguageSettings
 
 /** Manual dependency container; one instance per process, owned by [com.carthing.CarThingApp]. */
 class AppContainer(context: Context, db: CarThingDatabase = CarThingDatabase.get(context)) {
-    /** The app's current language; follows the per-app locale (Android 13+) because it reads the application context. */
-    val language: () -> Language = { Language.of(context.resources.configuration.locales[0]) }
+    val languageSettings = LanguageSettings(context)
+    /** The app's current language: the per-app locale on Android 13+, the in-app choice on older phones, else the phone's. */
+    val language: () -> Language = { Language.of(languageSettings.wrap(context).resources.configuration.locales[0]) }
 
     val vehicleRepository = VehicleRepository(db, language)
     val fuelRepository = FuelRepository(db.fuelEntryDao(), db.vehicleDao())

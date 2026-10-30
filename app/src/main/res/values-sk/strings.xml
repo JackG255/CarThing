@@ -185,6 +185,8 @@
     <string name="vehicle_list_empty_title">Zatiaľ žiadne vozidlá</string>
     <string name="vehicle_list_empty_message">Klepnutím na + pridajte svoje auto a potom zapisujte tankovanie a servis.</string>
     <string name="appearance_wallpaper_colors">Farby z tapety</string>
+    <string name="language_title">Jazyk</string>
+    <string name="language_system">Podľa systému</string>
     <string name="form_delete_title">Zmazať: %1$s?</string>
     <string name="vehicle_form_delete_message">Zmažú sa aj všetky tankovania a servisné záznamy tohto vozidla.</string>
     <string name="form_name">Názov *</string>

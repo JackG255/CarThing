@@ -182,6 +182,12 @@
     <string name="vehicle_list_empty_title">No vehicles yet</string>
     <string name="vehicle_list_empty_message">Tap + to add your car, then log fill-ups and services.</string>
     <string name="appearance_wallpaper_colors">Wallpaper colours</string>
+    <!-- In-app language picker (⋮ menu). Language names stay in their own language. -->
+    <string name="language_title">Language</string>
+    <string name="language_system">System default</string>
+    <string name="language_name_en" translatable="false">English</string>
+    <string name="language_name_cs" translatable="false">Čeština</string>
+    <string name="language_name_sk" translatable="false">Slovenčina</string>
     <!-- %1$s: the name of the item being deleted (vehicle or deadline; components use maintenance_delete_title) -->
     <string name="form_delete_title">Delete %1$s?</string>
     <string name="vehicle_form_delete_message">All fuel and service entries for this vehicle will be deleted too.</string>
