@@ -212,8 +212,8 @@
     <string name="detail_tab_maintenance_attention">Údržba (%1$d)</string>
     <string name="detail_odometer">Tachometer</string>
     <string name="detail_odometer_update">Aktualizovať</string>
-    <string name="detail_stat_average">Priemer</string>
-    <string name="detail_stat_recent">Posledné</string>
+    <string name="detail_stat_average">Priemerná</string>
+    <string name="detail_stat_recent">Nedávna</string>
     <string name="detail_stat_total_spent">Celkové výdavky</string>
     <string name="detail_stat_cost_per_km">Náklady na km</string>
     <string name="detail_fuel_empty_title">Zatiaľ žiadne tankovania</string>

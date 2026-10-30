@@ -211,8 +211,9 @@
     <string name="detail_tab_maintenance_attention">Maintenance (%1$d)</string>
     <string name="detail_odometer">Odometer</string>
     <string name="detail_odometer_update">Update</string>
+    <!-- Lifetime distance-weighted average fuel economy; label an implied "consumption" -->
     <string name="detail_stat_average">Average</string>
-    <!-- Economy over the last few fill-ups -->
+    <!-- Distance-weighted average economy over the last 3 full-to-full fill-ups, not the last single fill-up -->
     <string name="detail_stat_recent">Recent</string>
     <string name="detail_stat_total_spent">Total spent</string>
     <string name="detail_stat_cost_per_km">Cost per km</string>
